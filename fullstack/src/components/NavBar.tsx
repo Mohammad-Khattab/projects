@@ -65,6 +65,20 @@ export default function NavBar({ scrapedAt, onRefresh, refreshing }: NavBarProps
             Dashboard
           </Link>
           <Link
+            href="/calendar"
+            style={{
+              padding: '6px 14px',
+              borderRadius: 'var(--radius-sm)',
+              fontSize: 14,
+              fontWeight: 500,
+              color: pathname === '/calendar' ? 'var(--accent-from)' : 'var(--text-secondary)',
+              background: pathname === '/calendar' ? 'rgba(99,102,241,0.1)' : 'transparent',
+              transition: 'all 0.15s'
+            }}
+          >
+            Calendar
+          </Link>
+          <Link
             href="/ai"
             style={{
               padding: '6px 14px',

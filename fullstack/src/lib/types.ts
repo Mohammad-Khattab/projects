@@ -25,12 +25,30 @@ export interface Assignment {
   submitted: boolean
 }
 
+export interface ScheduleSlot {
+  day: 'Sun' | 'Mon' | 'Tue' | 'Wed' | 'Thu'
+  startTime: string  // "08:30"
+  endTime: string    // "10:00"
+  room: string
+}
+
+export interface CourseSchedule {
+  courseId: string      // "ENGL1001"
+  courseName: string    // "Upper Intermediate English"
+  section: string       // "9"
+  instructor: string
+  credits: number
+  slots: ScheduleSlot[]
+  color: string         // CSS color for calendar display
+}
+
 export interface ScrapedData {
   subjects: Subject[]
   resources: Resource[]
   assignments: Assignment[]
   scrapedAt: string
   stale?: boolean
+  schedule?: CourseSchedule[]
 }
 
 export interface SubjectNotes {

@@ -1,7 +1,7 @@
 import { chromium, type Page, type BrowserContext } from 'playwright'
 import { readCookies, writeCookies, readScrapedData, writeScrapedData } from './storage'
 import { mergeScrapedData } from './merge'
-import type { ScrapedData, Subject, Resource, Assignment } from './types'
+import type { ScrapedData, Subject, Resource, Assignment, CourseSchedule } from './types'
 
 interface ScrapeResult {
   subjects: Subject[]
@@ -9,13 +9,102 @@ interface ScrapeResult {
   assignments: Assignment[]
 }
 
-// Exported for testing
 export function slugify(name: string): string {
   return name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
 }
 
-async function isLoggedInToMoodle(page: Page): Promise<boolean> {
-  return page.url().includes('/my/') || page.url().includes('/dashboard')
+// Hardcoded enrolled course IDs from myGJU Semester 2 - 2025/2026
+// Update this list each semester by checking myGJU schedule
+const ENROLLED_COURSE_IDS = ['ENGL1001', 'GERL102B2', 'IE0111', 'IE0121', 'IE0141', 'MATH102', 'PHYS104', 'PHYS106']
+
+// Course colors for calendar display
+const COURSE_COLORS: Record<string, string> = {
+  'ENGL1001':  '#6366f1',
+  'GERL102B2': '#8b5cf6',
+  'IE0111':    '#06b6d4',
+  'IE0121':    '#10b981',
+  'IE0141':    '#f59e0b',
+  'MATH102':   '#ef4444',
+  'PHYS104':   '#ec4899',
+  'PHYS106':   '#84cc16',
+}
+
+// Hardcoded schedule (scraped from myGJU on 2026-03-20)
+const SCHEDULE: CourseSchedule[] = [
+  {
+    courseId: 'ENGL1001', courseName: 'Upper Intermediate English', section: '9',
+    instructor: 'Deema Khasawneh', credits: 3, color: COURSE_COLORS['ENGL1001'],
+    slots: [
+      { day: 'Sun', startTime: '08:30', endTime: '10:00', room: 'H301' },
+      { day: 'Tue', startTime: '08:30', endTime: '10:00', room: 'H301' },
+    ]
+  },
+  {
+    courseId: 'GERL102B2', courseName: 'German II B2-TRACK', section: '4',
+    instructor: 'Abdo Nasr', credits: 3, color: COURSE_COLORS['GERL102B2'],
+    slots: [
+      { day: 'Sun', startTime: '10:00', endTime: '11:30', room: 'C310' },
+      { day: 'Mon', startTime: '10:00', endTime: '11:30', room: 'C310' },
+      { day: 'Tue', startTime: '10:00', endTime: '11:30', room: 'C310' },
+      { day: 'Wed', startTime: '10:00', endTime: '11:30', room: 'C310' },
+      { day: 'Thu', startTime: '11:30', endTime: '14:30', room: 'C309' },
+    ]
+  },
+  {
+    courseId: 'IE0111', courseName: 'Introduction to IE', section: '1',
+    instructor: 'Abdallah Albashir', credits: 1, color: COURSE_COLORS['IE0111'],
+    slots: [
+      { day: 'Mon', startTime: '14:30', endTime: '16:30', room: 'C210' },
+    ]
+  },
+  {
+    courseId: 'IE0121', courseName: 'Probability and Statistics', section: '2',
+    instructor: 'Sarah Qareish', credits: 3, color: COURSE_COLORS['IE0121'],
+    slots: [
+      { day: 'Mon', startTime: '08:30', endTime: '10:00', room: 'C206' },
+      { day: 'Wed', startTime: '08:30', endTime: '10:00', room: 'C206' },
+    ]
+  },
+  {
+    courseId: 'IE0141', courseName: 'Engineering Workshop', section: '15',
+    instructor: 'Abdallah Albashir', credits: 1, color: COURSE_COLORS['IE0141'],
+    slots: [
+      { day: 'Wed', startTime: '12:30', endTime: '14:30', room: 'C021' },
+    ]
+  },
+  {
+    courseId: 'MATH102', courseName: 'Calculus II', section: '5',
+    instructor: 'Laith El-Hawawsha', credits: 3, color: COURSE_COLORS['MATH102'],
+    slots: [
+      { day: 'Sun', startTime: '11:30', endTime: '13:00', room: 'H303' },
+      { day: 'Tue', startTime: '11:30', endTime: '13:00', room: 'H303' },
+    ]
+  },
+  {
+    courseId: 'PHYS104', courseName: 'Physics II', section: '5',
+    instructor: 'Mahmoud Al-Grram', credits: 3, color: COURSE_COLORS['PHYS104'],
+    slots: [
+      { day: 'Sun', startTime: '13:00', endTime: '14:30', room: 'H306' },
+      { day: 'Tue', startTime: '13:00', endTime: '14:30', room: 'H306' },
+    ]
+  },
+  {
+    courseId: 'PHYS106', courseName: 'General Physics Lab', section: '6',
+    instructor: 'Samir Arabassi', credits: 1, color: COURSE_COLORS['PHYS106'],
+    slots: [
+      { day: 'Mon', startTime: '12:30', endTime: '14:30', room: 'C234' },
+    ]
+  },
+]
+
+function isEnrolledCourse(courseName: string): boolean {
+  const upper = courseName.toUpperCase()
+  return ENROLLED_COURSE_IDS.some(id => upper.includes(id.toUpperCase()))
+}
+
+function getCourseIdFromName(courseName: string): string | null {
+  const upper = courseName.toUpperCase()
+  return ENROLLED_COURSE_IDS.find(id => upper.includes(id.toUpperCase())) || null
 }
 
 async function scrapeMoodle(page: Page): Promise<ScrapeResult> {
@@ -27,7 +116,8 @@ async function scrapeMoodle(page: Page): Promise<ScrapeResult> {
 
   await page.goto('https://e-learning.gju.edu.jo/login/index.php', { waitUntil: 'networkidle' })
 
-  if (!(await isLoggedInToMoodle(page))) {
+  const isLoggedIn = page.url().includes('/my/') || page.url().includes('/dashboard')
+  if (!isLoggedIn) {
     await page.fill('#username', username)
     await page.fill('#password', password)
     await Promise.all([page.click('#loginbtn'), page.waitForLoadState('networkidle')])
@@ -41,29 +131,32 @@ async function scrapeMoodle(page: Page): Promise<ScrapeResult> {
   )
 
   const uniqueCourses = [...new Map(courseLinks.map(c => [c.href, c])).values()]
+  // Filter to only enrolled courses
+  const enrolledCourses = uniqueCourses.filter(c => isEnrolledCourse(c.text))
 
-  for (const course of uniqueCourses) {
-    const subjectId = slugify(course.text || new URL(course.href).searchParams.get('id') || 'unknown')
-    if (!subjectId) continue
+  for (const course of enrolledCourses) {
+    const courseId = getCourseIdFromName(course.text) || slugify(course.text)
+    const scheduleEntry = SCHEDULE.find(s => s.courseId === courseId)
 
     try {
       await page.goto(course.href, { waitUntil: 'networkidle' })
 
-      const courseName = await page.$eval('h1', el => el.textContent?.trim() || '').catch(() => course.text)
-      const instructor = await page.$eval('.teacher a', el => el.textContent?.trim() || '').catch(() => '')
+      const courseName = scheduleEntry?.courseName || await page.$eval('h1', el => el.textContent?.trim() || '').catch(() => course.text)
+      const instructor = scheduleEntry?.instructor || await page.$eval('.teacher a', el => el.textContent?.trim() || '').catch(() => '')
 
       const resourceLinks = await page.$$eval(
-        'a[href*="mod/resource"], a[href*="mod/url"], a[href*="mod/folder"]',
+        'a[href*="mod/resource"], a[href*="mod/url"], a[href*="mod/folder"], a[href*="mod/page"]',
         links => links.map(l => ({ href: (l as HTMLAnchorElement).href, text: l.textContent?.trim() || '' }))
       )
 
       for (const r of resourceLinks) {
+        if (!r.href || !r.text) continue
         const url = r.href
-        const ext = url.split('.').pop()?.toLowerCase() || ''
-        const type = ext === 'pdf' ? 'pdf' : ext === 'docx' || ext === 'doc' ? 'doc' : 'file'
+        const ext = url.split('.').pop()?.toLowerCase().split('?')[0] || ''
+        const type = ext === 'pdf' ? 'pdf' : ext === 'docx' || ext === 'doc' ? 'doc' : url.includes('mod/url') ? 'link' : 'file'
         resources.push({
-          id: `${subjectId}-${Buffer.from(url).toString('base64').slice(0, 8)}`,
-          subjectId,
+          id: `${courseId}-${Buffer.from(url).toString('base64').slice(0, 8)}`,
+          subjectId: courseId,
           name: r.text,
           type,
           url
@@ -76,101 +169,53 @@ async function scrapeMoodle(page: Page): Promise<ScrapeResult> {
       )
 
       for (const a of assignLinks) {
+        if (!a.href) continue
         try {
           await page.goto(a.href, { waitUntil: 'networkidle' })
           const title = await page.$eval('h2', el => el.textContent?.trim() || a.text).catch(() => a.text)
           const dueDateText = await page.$eval(
-            '.submissionstatustable td:last-child, .generaltable td:last-child',
+            '.submissionstatustable td:last-child',
             el => el.textContent?.trim() || ''
           ).catch(() => '')
-
           const dueDate = dueDateText ? new Date(dueDateText).toISOString() : new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString()
           const submitted = await page.$('.submissionstatussubmitted').then(() => true).catch(() => false)
-
           assignments.push({
-            id: `${subjectId}-assign-${assignments.length}`,
-            subjectId,
+            id: `${courseId}-assign-${assignments.length}`,
+            subjectId: courseId,
             title,
             dueDate,
             submitted
           })
           await page.goto(course.href, { waitUntil: 'networkidle' })
-        } catch {
-          // Skip assignment if scraping fails
-        }
+        } catch { /* skip */ }
       }
 
       subjects.push({
-        id: subjectId,
+        id: courseId,
         name: courseName,
         instructor,
         source: 'moodle',
         resourceCount: resourceLinks.length,
         assignmentCount: assignLinks.length
       })
-    } catch {
-      // Skip course if scraping fails
-    }
+    } catch { /* skip course */ }
   }
 
   return { subjects, resources, assignments }
 }
 
 async function scrapeMyGJU(page: Page): Promise<ScrapeResult> {
-  const username = process.env.GJU_USERNAME!
-  const password = process.env.GJU_PASSWORD!
-  const subjects: Subject[] = []
-  const resources: Resource[] = []
-  const assignments: Assignment[] = []
-
-  try {
-    await page.goto('https://mygju.gju.edu.jo/faces/index.xhtml', { waitUntil: 'networkidle' })
-
-    const usernameField = await page.$('input[type="text"], input[id*="username"], input[id*="user"]')
-    const passwordField = await page.$('input[type="password"]')
-
-    if (usernameField && passwordField) {
-      await usernameField.fill(username)
-      await passwordField.fill(password)
-      const submitBtn = await page.$('input[type="submit"], button[type="submit"], .login-button')
-      if (submitBtn) {
-        await Promise.all([
-          submitBtn.click(),
-          page.waitForLoadState('networkidle').catch(() => {})
-        ])
-      }
-    }
-
-    const scheduleLink = await page.$('a[href*="schedule"], a[href*="Schedule"], a[href*="courses"]')
-    if (scheduleLink) {
-      await Promise.all([
-        scheduleLink.click(),
-        page.waitForLoadState('networkidle').catch(() => {})
-      ])
-    }
-
-    const rows = await page.$$('table tr, .schedule-row, .course-row')
-    for (const row of rows) {
-      const text = await row.textContent()
-      if (text && text.trim().length > 3) {
-        const name = text.trim().split('\n')[0].trim()
-        if (name && name.length > 2) {
-          subjects.push({
-            id: slugify(name),
-            name,
-            instructor: '',
-            source: 'mygju',
-            resourceCount: 0,
-            assignmentCount: 0
-          })
-        }
-      }
-    }
-  } catch {
-    console.warn('myGJU scraping failed, continuing with Moodle data only')
-  }
-
-  return { subjects, resources, assignments }
+  // myGJU is used for schedule (hardcoded) and subject confirmation
+  // Return enrolled subjects from schedule as subjects with mygju source
+  const subjects: Subject[] = SCHEDULE.map(s => ({
+    id: s.courseId,
+    name: s.courseName,
+    instructor: s.instructor,
+    source: 'mygju' as const,
+    resourceCount: 0,
+    assignmentCount: 0
+  }))
+  return { subjects, resources: [], assignments: [] }
 }
 
 export async function scrapeAll(): Promise<ScrapedData> {
@@ -183,9 +228,7 @@ export async function scrapeAll(): Promise<ScrapedData> {
   if (savedCookies && savedCookies.length > 0) {
     try {
       await context.addCookies(savedCookies as Parameters<typeof context.addCookies>[0])
-    } catch {
-      // Invalid cookies format, ignore
-    }
+    } catch { /* ignore */ }
   }
 
   const page = await context.newPage()
@@ -198,7 +241,11 @@ export async function scrapeAll(): Promise<ScrapedData> {
     writeCookies(cookies)
 
     const merged = mergeScrapedData(moodle, mygju)
-    const result: ScrapedData = { ...merged, scrapedAt: new Date().toISOString() }
+    const result: ScrapedData = {
+      ...merged,
+      scrapedAt: new Date().toISOString(),
+      schedule: SCHEDULE
+    }
     writeScrapedData(result)
     return result
   } catch (err) {
