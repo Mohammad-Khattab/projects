@@ -219,3 +219,8 @@ input:focus, textarea:focus, select:focus {
   gap: 16px;
   margin-top: 24px;
 }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
