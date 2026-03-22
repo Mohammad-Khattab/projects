@@ -173,9 +173,9 @@ If any step fails, the entire transaction rolls back. This ensures no partial st
 | @@unique([requesterId, addresseeId]) | | |
 
 **Friendship state machine:**
-- `POST /api/friends` — requester sends request → status = `pending`. Before inserting, server checks for an existing row in either direction `(A→B)` or `(B→A)`. If one exists with status `pending` or `accepted`, returns 409. If one exists with status `declined`, the old row is deleted and a new `pending` row is created (allows retry after decline).
-- `PUT /api/friends/[id]` with `action: 'accept'` — addressee only → status = `accepted`. Requester calling this returns 403.
-- `PUT /api/friends/[id]` with `action: 'decline'` — addressee only → status = `declined`. The declined row is kept in the DB; it blocks duplicate requests until the requester retries (which deletes it).
+- `POST /api/friends` — requester sends request → status = `pending`. Before inserting, server checks for an existing row in either direction `(A→B)` or `(B→A)`. If one exists with status `pending` or `accepted`, returns 409. If one exists with status `declined`, the old row is deleted and a new `pending` row is created with the **current caller as requester** (i.e., the new row direction reflects who is sending the new request, regardless of who sent the original). Declined rows are not returned in `GET /api/friends` — only `accepted` and `pending` rows are exposed.
+- `PUT /api/friends/[id]` with `action: 'accept'` — addressee only → status = `accepted`. Requester calling `accept` returns 403 `"Only the recipient can accept a friend request"`.
+- `PUT /api/friends/[id]` with `action: 'decline'` — addressee only → status = `declined`. Requester calling `decline` returns 403 `"Only the recipient can decline a friend request — use DELETE to cancel your own request"`. The declined row is kept in the DB; it blocks duplicate requests until the requester retries (which deletes it).
 - `DELETE /api/friends/[id]` — either party can remove an `accepted` friendship, or the requester can cancel their own `pending` request. The addressee cannot delete a `pending` request (they must use `decline`). Attempting an unauthorized delete returns 403.
 - Authorization: only the requester or addressee of a friendship row may act on it. Any other authenticated user gets 403. A non-existent `[id]` returns 404 before any authorization check (i.e., 404 takes precedence over 403 — do not leak existence via a 403 for non-existent rows).
 
@@ -189,14 +189,14 @@ If any step fails, the entire transaction rolls back. This ensures no partial st
 - `levelId` must be 1, 2, or 3 — 400 `"Invalid level"` if not
 - `score` must be a non-negative integer — 400 `"Invalid score"` if not
 
-**Lamps earning:** lamps are awarded server-side the first time a level+map combo is completed (i.e., when `completed` flips from `false` to `true`). Awards: Easy = 5 lamps, Medium = 15 lamps, Hard = 30 lamps. Re-completing an already-completed level+map combo earns no lamps. `POST /api/user/progress` response includes the updated `lamps` balance: `{ data: { mapId, levelId, completed, score, lamps } }`.
+**Lamps earning:** lamps are awarded server-side the first time a level+map combo is completed (when `completed` flips `false → true`). Awards: Easy = 5 lamps, Medium = 15 lamps, Hard = 30 lamps. The score upsert and lamps credit must execute in a single **Prisma transaction**. Re-submitting to an already-completed level+map combo earns no lamps — response returns the current state: `{ completed: true, score: <highest>, lamps: <unchanged> }`. `POST /api/user/progress` always includes `lamps` in the response: `{ data: { mapId, levelId, completed, score, lamps } }`.
 
 **Progress upsert rules:**
 - Client sends only `{ mapId, levelId, score }` — no `completed` field in the request body
 - `completed`: determined server-side as `score >= level.target`. Can only transition `false → true`, never `true → false`
 - `score`: server keeps the highest score seen across all runs. If `newScore > existingScore`, update; otherwise keep existing. Row is created on first submission.
 
-**`PUT /api/user/profile`:** `username` field is required — missing or empty body returns 400 `"Username is required"`. If the username is already taken by another user, returns 409.
+**`PUT /api/user/profile`:** `username` field is required — missing or empty body returns 400 `"Username is required"`. If the username is already taken by another user, returns 409. The `PUT` response intentionally omits `skinsOwned` (requires a separate `UserSkin` query); clients that need the full profile including owned skins should call `GET /api/user/profile`. The JWT is never re-issued on profile update — `username` is not in the JWT payload and is always fetched from the DB on demand.
 
 **`GET /api/user/progress`:** returns all `UserProgress` rows scoped to the JWT `userId`. The user ID is always taken from the verified JWT — there is no `?userId=` query param. Only the authenticated user's own records are returned.
 
@@ -226,8 +226,8 @@ If any step fails, the entire transaction rolls back. This ensures no partial st
 ### Auth
 | Method | Route | Body | Response |
 |--------|-------|------|----------|
-| POST | `/api/auth/register` | `{ email, username, password }` | `{ data: { id, email, username, lamps } }` |
-| POST | `/api/auth/login` | `{ email, password }` | `{ data: { id, email, username, lamps } }` |
+| POST | `/api/auth/register` | `{ email, username, password }` | `{ data: { id, email, username, lamps, activeSkinId } }` |
+| POST | `/api/auth/login` | `{ email, password }` | `{ data: { id, email, username, lamps, activeSkinId } }` |
 | POST | `/api/auth/logout` | — | `{ data: { ok: true } }` + clears cookie |
 
 ### Game Data (public)
@@ -249,7 +249,12 @@ If any step fails, the entire transaction rolls back. This ensures no partial st
 
 **`PUT /api/user/skin` validation:** verifies `skinId` is present in body (400 if missing), skin exists in DB (404 `"Skin not found"` if not), and user owns the skin via `UserSkin` row (403 `"Skin not owned"` if not). Updates `activeSkinId` on success.
 
-**`POST /api/user/purchase` validation:** verifies skin exists (404 if not), user does not already own it (409 `"Already owned"` — applies to all skins), `skin.isFree = false` (400 `"This skin is free — it is granted automatically at registration"` if free), and `user.lamps >= skin.price` (400 `"Insufficient lamps"` if not). Deducts lamps and inserts `UserSkin` row atomically in a Prisma transaction. Note: the `default` skin is the only `isFree = true` skin; any additional free skins added in the future will be auto-granted at a different point in the flow, not via this endpoint.
+**`POST /api/user/purchase` validation** (checks run in this exact order):
+1. Skin exists → 404 `"Skin not found"` if not
+2. User already owns it → 409 `"Already owned"` if so (this fires before the free check — since `default` is always auto-granted at registration, it will always hit this branch first)
+3. Skin is free (`isFree = true`) → 400 `"This skin is free and granted automatically at registration"` (only reachable for future free skins)
+4. Insufficient lamps → 400 `"Insufficient lamps"` if `user.lamps < skin.price`
+5. Deduct lamps and insert `UserSkin` atomically in a Prisma transaction
 
 **`POST /api/user/progress` — per-run score model:** the client submits the score for a single completed run. The server keeps the highest score across all runs for that map+level combo.
 
