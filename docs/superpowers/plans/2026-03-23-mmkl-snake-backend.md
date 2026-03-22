@@ -78,7 +78,7 @@ mmkl-snake/
 
 ```bash
 cd "C:\Claude Code Test 1"
-npx create-next-app@latest mmkl-snake --typescript --app --no-src-dir --no-tailwind --no-eslint --import-alias "@/*" --use-npm
+npx create-next-app@latest mmkl-snake --typescript --app --no-tailwind --no-eslint --import-alias "@/*" --use-npm
 ```
 
 Then move `src` directory inside manually if not created by default (Next.js 14 prompts for it). Verify `mmkl-snake/src/app/` exists.
@@ -624,7 +624,7 @@ Expected: all 3 tests PASS
 Create `mmkl-snake/src/__tests__/lib/middleware.test.ts`:
 
 ```typescript
-import { requireAuth } from '@/lib/middleware'
+import { requireAuth, unauthorized } from '@/lib/middleware'
 import { signJwt } from '@/lib/auth'
 
 function makeRequest(cookie?: string): Request {
@@ -2118,7 +2118,15 @@ npx jest --verbose
 
 Expected: all tests PASS, 0 failures
 
-- [ ] **Step 2: Start the dev server**
+- [ ] **Step 2: Seed the database first**
+
+```bash
+npm run db:seed
+```
+
+Expected: `Seeded 20 skins`, `Seeded 9 maps`, `Seeded 3 levels`
+
+- [ ] **Step 3: Start the dev server**
 
 ```bash
 npm run dev
@@ -2126,23 +2134,15 @@ npm run dev
 
 Expected: server starts on `http://localhost:3002`
 
-- [ ] **Step 3: Smoke-test the health check**
-
-Open `http://localhost:3002/api/game/maps` in browser or run:
+- [ ] **Step 4: Smoke-test the API**
 
 ```bash
+curl http://localhost:3002/api/health
 curl http://localhost:3002/api/game/maps
 ```
 
-Expected: JSON array of 9 maps (after seeding)
-
-- [ ] **Step 4: Seed the database**
-
-```bash
-npm run db:seed
-```
-
-Expected: `Seeded 20 skins`, `Seeded 9 maps`, `Seeded 3 levels`
+Expected first: `{"data":{"status":"ok","app":"mmkl-snake"}}`
+Expected second: JSON array of 9 maps
 
 - [ ] **Step 5: Final commit**
 
