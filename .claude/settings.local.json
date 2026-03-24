@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(npm install:*)",
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "Bash(ls -t \"C:\\\\Users\\\\m7md5\\\\Downloads\"/*.pdf)",
+      "Bash(claude doctor:*)"
+    ]
+  }
+}

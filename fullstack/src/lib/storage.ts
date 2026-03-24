@@ -59,3 +59,28 @@ export function writeCookies(cookies: object[]): void {
   const file = path.join(getDataDir(), 'cookies.json')
   fs.writeFileSync(file, JSON.stringify(cookies, null, 2), 'utf-8')
 }
+
+export function readTeamsCookies(): object[] | null {
+  try {
+    const file = path.join(getDataDir(), 'teams-cookies.json')
+    const raw = fs.readFileSync(file, 'utf-8')
+    return JSON.parse(raw) as object[]
+  } catch {
+    return null
+  }
+}
+
+export function writeTeamsCookies(cookies: object[]): void {
+  ensureDataDir()
+  const file = path.join(getDataDir(), 'teams-cookies.json')
+  fs.writeFileSync(file, JSON.stringify(cookies, null, 2), 'utf-8')
+}
+
+export function teamsConnected(): boolean {
+  try {
+    const file = path.join(getDataDir(), 'teams-cookies.json')
+    return fs.existsSync(file)
+  } catch {
+    return false
+  }
+}

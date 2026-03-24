@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Color Direction</title>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #080808; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #f0f0f0; padding: 48px; }
+
+h2 { font-size: 26px; font-weight: 700; letter-spacing: -1px; margin-bottom: 6px; }
+.sub { color: rgba(255,255,255,0.4); font-size: 14px; margin-bottom: 40px; }
+
+.palette-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+.palette-card {
+  border-radius: 16px; overflow: hidden; cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform 0.3s ease, border-color 0.2s;
+}
+.palette-card:hover { transform: translateY(-4px); }
+.palette-card.selected { border-color: #fff !important; }
+
+.palette-preview {
+  height: 160px; position: relative; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.mini-nav {
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 32px; display: flex; align-items: center;
+  padding: 0 16px; gap: 8px;
+  background: rgba(0,0,0,0.5); backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.mini-dot { width: 24px; height: 4px; border-radius: 2px; }
+.mini-logo { font-size: 11px; font-weight: 700; letter-spacing: -0.5px; margin-right: auto; }
+.mini-pill { padding: 2px 8px; border-radius: 100px; font-size: 8px; }
+
+.mini-cards { display: flex; gap: 8px; padding: 0 16px; position: absolute; bottom: 12px; left: 0; right: 0; }
+.mini-card { flex: 1; height: 50px; border-radius: 8px; border: 1px solid; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+
+.palette-info { padding: 16px 18px; background: #0f0f0f; }
+.palette-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.palette-desc { font-size: 11px; color: rgba(255,255,255,0.4); line-height: 1.5; }
+
+/* A - Ice Chrome */
+.a-bg { background: linear-gradient(135deg, #080c10 0%, #0a1520 100%); }
+.a-glow { position: absolute; width: 200px; height: 200px; background: radial-gradient(circle, rgba(0,200,255,0.15) 0%, transparent 70%); border-radius: 50%; top: -60px; right: -40px; }
+.a-dot { background: #00c8ff; }
+.a-logo { color: #00c8ff; }
+.a-pill { background: rgba(0,200,255,0.12); border: 1px solid rgba(0,200,255,0.3); color: #00c8ff; }
+.a-card { background: rgba(0,200,255,0.06); border-color: rgba(0,200,255,0.15) !important; }
+
+/* B - Warm Ember */
+.b-bg { background: linear-gradient(135deg, #0c0a08 0%, #1a1008 100%); }
+.b-glow { position: absolute; width: 200px; height: 200px; background: radial-gradient(circle, rgba(255,140,30,0.12) 0%, transparent 70%); border-radius: 50%; top: -60px; right: -40px; }
+.b-dot { background: #ff8c1e; }
+.b-logo { color: #ff8c1e; }
+.b-pill { background: rgba(255,140,30,0.12); border: 1px solid rgba(255,140,30,0.3); color: #ff8c1e; }
+.b-card { background: rgba(255,140,30,0.06); border-color: rgba(255,140,30,0.15) !important; }
+
+/* C - Acid / Volt */
+.c-bg { background: linear-gradient(135deg, #080b06 0%, #0c1208 100%); }
+.c-glow { position: absolute; width: 200px; height: 200px; background: radial-gradient(circle, rgba(180,255,0,0.12) 0%, transparent 70%); border-radius: 50%; top: -60px; right: -40px; }
+.c-dot { background: #b4ff00; }
+.c-logo { color: #b4ff00; }
+.c-pill { background: rgba(180,255,0,0.1); border: 1px solid rgba(180,255,0,0.3); color: #b4ff00; }
+.c-card { background: rgba(180,255,0,0.05); border-color: rgba(180,255,0,0.15) !important; }
+
+/* D - Bone / Monochrome */
+.d-bg { background: linear-gradient(135deg, #0a0a0a 0%, #111 100%); }
+.d-glow { position: absolute; width: 200px; height: 200px; background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%); border-radius: 50%; top: -60px; right: -40px; }
+.d-dot { background: rgba(255,255,255,0.8); }
+.d-logo { color: rgba(255,255,255,0.9); }
+.d-pill { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.6); }
+.d-card { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1) !important; }
+
+/* E - Rose / Crimson */
+.e-bg { background: linear-gradient(135deg, #0c0808 0%, #180c0c 100%); }
+.e-glow { position: absolute; width: 200px; height: 200px; background: radial-gradient(circle, rgba(255,60,80,0.12) 0%, transparent 70%); border-radius: 50%; top: -60px; right: -40px; }
+.e-dot { background: #ff3c50; }
+.e-logo { color: #ff3c50; }
+.e-pill { background: rgba(255,60,80,0.1); border: 1px solid rgba(255,60,80,0.3); color: #ff3c50; }
+.e-card { background: rgba(255,60,80,0.05); border-color: rgba(255,60,80,0.12) !important; }
+
+/* F - Mint / Matrix */
+.f-bg { background: linear-gradient(135deg, #060c0a 0%, #081410 100%); }
+.f-glow { position: absolute; width: 200px; height: 200px; background: radial-gradient(circle, rgba(0,255,160,0.1) 0%, transparent 70%); border-radius: 50%; top: -60px; right: -40px; }
+.f-dot { background: #00ffa0; }
+.f-logo { color: #00ffa0; }
+.f-pill { background: rgba(0,255,160,0.08); border: 1px solid rgba(0,255,160,0.25); color: #00ffa0; }
+.f-card { background: rgba(0,255,160,0.04); border-color: rgba(0,255,160,0.12) !important; }
+
+.selected-label {
+  margin-top: 24px; padding: 12px 20px;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px; font-size: 13px; color: rgba(255,255,255,0.5);
+  display: none;
+}
+</style>
+</head>
+<body>
+
+<h2>Pick your color direction</h2>
+<p class="sub">Each option keeps the Draftly dark aesthetic — only the accent changes.</p>
+
+<div class="palette-grid" id="grid">
+
+  <!-- A: Ice Chrome -->
+  <div class="palette-card" onclick="pick(this,'ice-chrome')" data-choice="ice-chrome" style="border-color:rgba(0,200,255,0.15);">
+    <div class="palette-preview a-bg">
+      <div class="a-glow"></div>
+      <div class="mini-nav">
+        <div class="mini-logo a-logo">MMKL</div>
+        <div class="mini-dot a-dot" style="opacity:0.6;"></div>
+        <div class="mini-pill a-pill">active</div>
+      </div>
+      <div class="mini-cards">
+        <div class="mini-card a-card">🎮</div>
+        <div class="mini-card a-card">📚</div>
+        <div class="mini-card a-card">🛠️</div>
+      </div>
+    </div>
+    <div class="palette-info">
+      <div class="palette-name" style="color:#00c8ff;">Ice Chrome</div>
+      <div class="palette-desc">Electric cyan/blue glow on deep navy-black. Cold, sharp, futuristic — like a HUD.</div>
+    </div>
+  </div>
+
+  <!-- B: Ember -->
+  <div class="palette-card" onclick="pick(this,'ember')" data-choice="ember" style="border-color:rgba(255,140,30,0.15);">
+    <div class="palette-preview b-bg">
+      <div class="b-glow"></div>
+      <div class="mini-nav">
+        <div class="mini-logo b-logo">MMKL</div>
+        <div class="mini-dot b-dot" style="opacity:0.6;"></div>
+        <div class="mini-pill b-pill">active</div>
+      </div>
+      <div class="mini-cards">
+        <div class="mini-card b-card">🎮</div>
+        <div class="mini-card b-card">📚</div>
+        <div class="mini-card b-card">🛠️</div>
+      </div>
+    </div>
+    <div class="palette-info">
+      <div class="palette-name" style="color:#ff8c1e;">Ember</div>
+      <div class="palette-desc">Warm amber/copper glow on dark charcoal. Rare, premium — feels handcrafted.</div>
+    </div>
+  </div>
+
+  <!-- C: Acid / Volt -->
+  <div class="palette-card" onclick="pick(this,'volt')" data-choice="volt" style="border-color:rgba(180,255,0,0.15);">
+    <div class="palette-preview c-bg">
+      <div class="c-glow"></div>
+      <div class="mini-nav">
+        <div class="mini-logo c-logo">MMKL</div>
+        <div class="mini-dot c-dot" style="opacity:0.6;"></div>
+        <div class="mini-pill c-pill">active</div>
+      </div>
+      <div class="mini-cards">
+        <div class="mini-card c-card">🎮</div>
+        <div class="mini-card c-card">📚</div>
+        <div class="mini-card c-card">🛠️</div>
+      </div>
+    </div>
+    <div class="palette-info">
+      <div class="palette-name" style="color:#b4ff00;">Volt</div>
+      <div class="palette-desc">Acid green / electric lime on near-black. Bold, gaming energy — like a pro keyboard.</div>
+    </div>
+  </div>
+
+  <!-- D: Bone/Mono -->
+  <div class="palette-card" onclick="pick(this,'bone')" data-choice="bone" style="border-color:rgba(255,255,255,0.1);">
+    <div class="palette-preview d-bg">
+      <div class="d-glow"></div>
+      <div class="mini-nav">
+        <div class="mini-logo d-logo">MMKL</div>
+        <div class="mini-dot d-dot" style="opacity:0.6;"></div>
+        <div class="mini-pill d-pill">active</div>
+      </div>
+      <div class="mini-cards">
+        <div class="mini-card d-card">🎮</div>
+        <div class="mini-card d-card">📚</div>
+        <div class="mini-card d-card">🛠️</div>
+      </div>
+    </div>
+    <div class="palette-info">
+      <div class="palette-name" style="color:rgba(255,255,255,0.8);">Bone / Mono</div>
+      <div class="palette-desc">Pure white-on-black monochrome. No color noise. Ultra-minimal, editorial luxury.</div>
+    </div>
+  </div>
+
+  <!-- E: Crimson -->
+  <div class="palette-card" onclick="pick(this,'crimson')" data-choice="crimson" style="border-color:rgba(255,60,80,0.15);">
+    <div class="palette-preview e-bg">
+      <div class="e-glow"></div>
+      <div class="mini-nav">
+        <div class="mini-logo e-logo">MMKL</div>
+        <div class="mini-dot e-dot" style="opacity:0.6;"></div>
+        <div class="mini-pill e-pill">active</div>
+      </div>
+      <div class="mini-cards">
+        <div class="mini-card e-card">🎮</div>
+        <div class="mini-card e-card">📚</div>
+        <div class="mini-card e-card">🛠️</div>
+      </div>
+    </div>
+    <div class="palette-info">
+      <div class="palette-name" style="color:#ff3c50;">Crimson</div>
+      <div class="palette-desc">Deep red glow on dark red-black. Dramatic, intense — aggressive gaming energy.</div>
+    </div>
+  </div>
+
+  <!-- F: Mint -->
+  <div class="palette-card" onclick="pick(this,'mint')" data-choice="mint" style="border-color:rgba(0,255,160,0.12);">
+    <div class="palette-preview f-bg">
+      <div class="f-glow"></div>
+      <div class="mini-nav">
+        <div class="mini-logo f-logo">MMKL</div>
+        <div class="mini-dot f-dot" style="opacity:0.6;"></div>
+        <div class="mini-pill f-pill">active</div>
+      </div>
+      <div class="mini-cards">
+        <div class="mini-card f-card">🎮</div>
+        <div class="mini-card f-card">📚</div>
+        <div class="mini-card f-card">🛠️</div>
+      </div>
+    </div>
+    <div class="palette-info">
+      <div class="palette-name" style="color:#00ffa0;">Mint</div>
+      <div class="palette-desc">Electric mint/green on deep forest-black. Fresh, Matrix-coded, distinct.</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="selected-label" id="sel-label"></div>
+
+<script>
+function pick(el, choice) {
+  document.querySelectorAll('.palette-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  const label = document.getElementById('sel-label');
+  label.style.display = 'block';
+  label.textContent = 'Selected: ' + choice + ' — type your choice in the terminal or just click.';
+  if (window.__recordChoice) window.__recordChoice(choice);
+}
+</script>
+
+</body>
+</html>

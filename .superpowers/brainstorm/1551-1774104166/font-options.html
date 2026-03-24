@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Font Options</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;700;800&family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=DM+Sans:wght@300;400;500;700&family=Unbounded:wght@400;700;800;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #060606;
+  color: #f0f0f0;
+  padding: 48px;
+  font-family: -apple-system, sans-serif;
+}
+
+h2 { font-size: 20px; font-weight: 600; margin-bottom: 6px; letter-spacing: -0.5px; }
+.sub { color: rgba(255,255,255,0.4); font-size: 13px; margin-bottom: 36px; }
+
+.font-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+.font-card {
+  border-radius: 14px;
+  border: 2px solid rgba(255,255,255,0.07);
+  background: rgba(255,255,255,0.03);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.3s ease, border-color 0.2s;
+}
+.font-card:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.18); }
+.font-card.selected { border-color: rgba(255,255,255,0.7) !important; }
+
+.font-preview {
+  background:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-color: #080808;
+  padding: 28px 28px 24px;
+  position: relative;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.font-preview::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(255,255,255,0.05) 0%, transparent 70%);
+}
+
+.preview-eyebrow {
+  font-size: 9px; letter-spacing: 5px; text-transform: uppercase;
+  color: rgba(255,255,255,0.35); margin-bottom: 10px;
+  font-family: inherit;
+}
+
+.preview-title {
+  font-size: 52px;
+  font-weight: 800;
+  letter-spacing: -2.5px;
+  line-height: 0.9;
+  color: #fff;
+  position: relative;
+  z-index: 1;
+}
+
+.preview-sub {
+  margin-top: 12px;
+  font-size: 14px;
+  color: rgba(255,255,255,0.4);
+  font-weight: 400;
+  letter-spacing: 0.2px;
+  position: relative;
+  z-index: 1;
+}
+
+.font-info { padding: 14px 18px 16px; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.font-name { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+.font-desc { font-size: 11px; color: rgba(255,255,255,0.38); line-height: 1.5; }
+.font-tag { font-size: 9px; padding: 3px 8px; border-radius: 100px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.45); white-space: nowrap; flex-shrink: 0; letter-spacing: 0.5px; }
+
+/* Fonts */
+.f-space-grotesk { font-family: 'Space Grotesk', sans-serif; }
+.f-syne { font-family: 'Syne', sans-serif; }
+.f-outfit { font-family: 'Outfit', sans-serif; }
+.f-jakarta { font-family: 'Plus Jakarta Sans', sans-serif; }
+.f-unbounded { font-family: 'Unbounded', sans-serif; letter-spacing: -3px; font-size: 42px !important; }
+.f-dm { font-family: 'DM Sans', sans-serif; }
+</style>
+</head>
+<body>
+
+<h2>Pick a title font</h2>
+<p class="sub">Each preview shows "MMKL" + "Everything We've Built." — pick what feels right</p>
+
+<div class="font-grid" id="grid">
+
+  <!-- Space Grotesk -->
+  <div class="font-card" onclick="pick(this,'space-grotesk')" data-choice="space-grotesk">
+    <div class="font-preview">
+      <div class="preview-eyebrow f-space-grotesk">MMKL Dashboard</div>
+      <div class="preview-title f-space-grotesk">Everything<br>We've Built.</div>
+      <div class="preview-sub f-space-grotesk">Games · Projects · Tools — one place.</div>
+    </div>
+    <div class="font-info">
+      <div>
+        <div class="font-name">Space Grotesk</div>
+        <div class="font-desc">Geometric with subtle quirks. Used in tech products and dark UIs. Has character without being loud.</div>
+      </div>
+      <div class="font-tag">Recommended</div>
+    </div>
+  </div>
+
+  <!-- Syne -->
+  <div class="font-card" onclick="pick(this,'syne')" data-choice="syne">
+    <div class="font-preview">
+      <div class="preview-eyebrow f-syne">MMKL Dashboard</div>
+      <div class="preview-title f-syne">Everything<br>We've Built.</div>
+      <div class="preview-sub f-syne">Games · Projects · Tools — one place.</div>
+    </div>
+    <div class="font-info">
+      <div>
+        <div class="font-name">Syne</div>
+        <div class="font-desc">Editorial and distinctly geometric. Very bold presence. Feels like a design studio or gallery site.</div>
+      </div>
+      <div class="font-tag">Bold / Artsy</div>
+    </div>
+  </div>
+
+  <!-- Outfit -->
+  <div class="font-card" onclick="pick(this,'outfit')" data-choice="outfit">
+    <div class="font-preview">
+      <div class="preview-eyebrow f-outfit">MMKL Dashboard</div>
+      <div class="preview-title f-outfit">Everything<br>We've Built.</div>
+      <div class="preview-sub f-outfit">Games · Projects · Tools — one place.</div>
+    </div>
+    <div class="font-info">
+      <div>
+        <div class="font-name">Outfit</div>
+        <div class="font-desc">Clean and modern geometric. Slightly rounded — polished but not cold. Very readable at all sizes.</div>
+      </div>
+      <div class="font-tag">Clean / Modern</div>
+    </div>
+  </div>
+
+  <!-- Plus Jakarta Sans -->
+  <div class="font-card" onclick="pick(this,'jakarta')" data-choice="jakarta">
+    <div class="font-preview">
+      <div class="preview-eyebrow f-jakarta">MMKL Dashboard</div>
+      <div class="preview-title f-jakarta">Everything<br>We've Built.</div>
+      <div class="preview-sub f-jakarta">Games · Projects · Tools — one place.</div>
+    </div>
+    <div class="font-info">
+      <div>
+        <div class="font-name">Plus Jakarta Sans</div>
+        <div class="font-desc">Premium and modern. Great contrast between weights. Used in SaaS products and high-end portfolios.</div>
+      </div>
+      <div class="font-tag">Premium / SaaS</div>
+    </div>
+  </div>
+
+  <!-- Unbounded -->
+  <div class="font-card" onclick="pick(this,'unbounded')" data-choice="unbounded">
+    <div class="font-preview">
+      <div class="preview-eyebrow f-unbounded" style="font-family:'Unbounded',sans-serif;font-size:8px;letter-spacing:4px;">MMKL Dashboard</div>
+      <div class="preview-title f-unbounded" style="font-family:'Unbounded',sans-serif;">Everything<br>We've Built.</div>
+      <div class="preview-sub f-unbounded" style="font-family:'Unbounded',sans-serif;font-size:11px;">Games · Projects · Tools</div>
+    </div>
+    <div class="font-info">
+      <div>
+        <div class="font-name">Unbounded</div>
+        <div class="font-desc">Wide, squared, aggressive. Very distinctive — used in gaming brands and esports sites.</div>
+      </div>
+      <div class="font-tag">Gaming / Bold</div>
+    </div>
+  </div>
+
+  <!-- DM Sans -->
+  <div class="font-card" onclick="pick(this,'dm-sans')" data-choice="dm-sans">
+    <div class="font-preview">
+      <div class="preview-eyebrow f-dm">MMKL Dashboard</div>
+      <div class="preview-title f-dm">Everything<br>We've Built.</div>
+      <div class="preview-sub f-dm">Games · Projects · Tools — one place.</div>
+    </div>
+    <div class="font-info">
+      <div>
+        <div class="font-name">DM Sans</div>
+        <div class="font-desc">Humanist and neutral. No-fuss, very clean. Lets the layout do the talking — refined and understated.</div>
+      </div>
+      <div class="font-tag">Minimal / Neutral</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function pick(el, choice) {
+  document.querySelectorAll('.font-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  if (window.__recordChoice) window.__recordChoice(choice);
+}
+</script>
+
+</body>
+</html>

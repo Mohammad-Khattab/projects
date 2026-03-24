@@ -1,0 +1,117 @@
+{
+  "lamps": 5282,
+  "equippedSkin": "dark_pulse",
+  "ownedSkins": [
+    "classic_neon",
+    "abyssal_blue",
+    "sakura",
+    "dark_pulse",
+    "glitch_matrix",
+    "titanium",
+    "crimson_blood",
+    "arctic_cyan",
+    "amethyst",
+    "sunflare_gold",
+    "obsidian",
+    "toxic_yellow",
+    "desert_storm",
+    "phantom_white",
+    "lava_core",
+    "rgb_chroma",
+    "supernova",
+    "cyber_vibe",
+    "emerald_pulse"
+  ],
+  "maps": {
+    "ocean": {
+      "easy": false,
+      "medium": false,
+      "hard": false,
+      "highScores": {
+        "easy": 999,
+        "medium": 0,
+        "hard": 0
+      }
+    },
+    "desert": {
+      "easy": true,
+      "medium": false,
+      "hard": false,
+      "highScores": {
+        "easy": 0,
+        "medium": 0,
+        "hard": 0
+      }
+    },
+    "jungle": {
+      "easy": false,
+      "medium": false,
+      "hard": false,
+      "highScores": {
+        "easy": 40,
+        "medium": 0,
+        "hard": 0
+      }
+    },
+    "volcano": {
+      "easy": true,
+      "medium": false,
+      "hard": false,
+      "highScores": {
+        "easy": 200,
+        "medium": 0,
+        "hard": 0
+      }
+    },
+    "tundra": {
+      "easy": true,
+      "medium": false,
+      "hard": false,
+      "highScores": {
+        "easy": 0,
+        "medium": 0,
+        "hard": 0
+      }
+    },
+    "cyber": {
+      "easy": true,
+      "medium": false,
+      "hard": false,
+      "highScores": {
+        "easy": 130,
+        "medium": 0,
+        "hard": 0
+      }
+    },
+    "swamp": {
+      "easy": true,
+      "medium": true,
+      "hard": false,
+      "highScores": {
+        "easy": 100,
+        "medium": 40,
+        "hard": 0
+      }
+    },
+    "lunar": {
+      "easy": true,
+      "medium": false,
+      "hard": false,
+      "highScores": {
+        "easy": 80,
+        "medium": 0,
+        "hard": 0
+      }
+    },
+    "graveyard": {
+      "easy": true,
+      "medium": false,
+      "hard": false,
+      "highScores": {
+        "easy": 0,
+        "medium": 0,
+        "hard": 0
+      }
+    }
+  }
+}

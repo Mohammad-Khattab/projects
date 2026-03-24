@@ -1,0 +1,113 @@
+<h2>How should the app cards look floating over the shader?</h2>
+<p class="subtitle">The shader glows behind everything — pick the card style that fits best</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:radial-gradient(ellipse at 30% 40%,rgba(255,100,20,0.4) 0%,transparent 60%),radial-gradient(ellipse at 75% 65%,rgba(180,60,0,0.3) 0%,transparent 55%),#0d0008;height:180px;position:relative;overflow:hidden;border-radius:8px 8px 0 0;padding:8px;">
+      <!-- Nav -->
+      <div style="height:28px;background:rgba(0,0,0,0.25);backdrop-filter:blur(12px);border-radius:6px;margin-bottom:8px;display:flex;align-items:center;padding:0 10px;gap:6px;border:1px solid rgba(255,150,50,0.15);">
+        <span style="font-size:9px;font-weight:bold;color:rgba(255,200,100,0.95);font-family:monospace;letter-spacing:1px;">MKLL</span>
+        <span style="font-size:7px;color:rgba(255,160,60,0.5);">Mo Khattab Lamba Land</span>
+        <span style="flex:1"></span>
+        <span style="font-size:8px;color:rgba(255,255,255,0.3);">🔍 + ⚙</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">
+        <div style="height:52px;background:rgba(255,255,255,0.06);backdrop-filter:blur(16px);border:1px solid rgba(255,160,60,0.2);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;">
+          <span style="font-size:16px;">🎮</span>
+          <span style="font-size:7px;color:rgba(255,255,255,0.6);">XO Game</span>
+        </div>
+        <div style="height:52px;background:rgba(255,255,255,0.06);backdrop-filter:blur(16px);border:1px solid rgba(255,180,40,0.2);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;">
+          <span style="font-size:16px;">🐍</span>
+          <span style="font-size:7px;color:rgba(255,255,255,0.6);">Snake</span>
+        </div>
+        <div style="height:52px;background:rgba(255,255,255,0.06);backdrop-filter:blur(16px);border:1px solid rgba(255,160,60,0.2);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;">
+          <span style="font-size:16px;">📚</span>
+          <span style="font-size:7px;color:rgba(255,255,255,0.6);">Study Hub</span>
+        </div>
+        <div style="height:52px;background:rgba(255,255,255,0.06);backdrop-filter:blur(16px);border:1px solid rgba(255,160,60,0.2);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;">
+          <span style="font-size:16px;">🌐</span>
+          <span style="font-size:7px;color:rgba(255,255,255,0.6);">Web</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Glassmorphism</h3>
+      <p>Frosted-glass cards with blur + low opacity. The shader visibly bleeds through each card. Translucent, premium feel.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:radial-gradient(ellipse at 30% 40%,rgba(255,100,20,0.4) 0%,transparent 60%),radial-gradient(ellipse at 75% 65%,rgba(180,60,0,0.3) 0%,transparent 55%),#0d0008;height:180px;position:relative;overflow:hidden;border-radius:8px 8px 0 0;padding:8px;">
+      <!-- Nav -->
+      <div style="height:28px;background:rgba(0,0,0,0.25);backdrop-filter:blur(12px);border-radius:6px;margin-bottom:8px;display:flex;align-items:center;padding:0 10px;gap:6px;border:1px solid rgba(255,150,50,0.15);">
+        <span style="font-size:9px;font-weight:bold;color:rgba(255,200,100,0.95);font-family:monospace;letter-spacing:1px;">MKLL</span>
+        <span style="font-size:7px;color:rgba(255,160,60,0.5);">Mo Khattab Lamba Land</span>
+        <span style="flex:1"></span>
+        <span style="font-size:8px;color:rgba(255,255,255,0.3);">🔍 + ⚙</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">
+        <div style="height:52px;background:rgba(30,10,5,0.92);border:1px solid rgba(255,130,30,0.5);border-radius:8px;box-shadow:0 0 16px rgba(255,100,0,0.2),inset 0 1px 0 rgba(255,180,60,0.1);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;">
+          <span style="font-size:16px;">🎮</span>
+          <span style="font-size:7px;color:rgba(255,200,100,0.8);">XO Game</span>
+        </div>
+        <div style="height:52px;background:rgba(30,10,5,0.92);border:1px solid rgba(255,180,40,0.45);border-radius:8px;box-shadow:0 0 16px rgba(255,160,0,0.18),inset 0 1px 0 rgba(255,180,60,0.1);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;">
+          <span style="font-size:16px;">🐍</span>
+          <span style="font-size:7px;color:rgba(255,200,100,0.8);">Snake</span>
+        </div>
+        <div style="height:52px;background:rgba(30,10,5,0.92);border:1px solid rgba(255,130,30,0.5);border-radius:8px;box-shadow:0 0 16px rgba(255,100,0,0.2),inset 0 1px 0 rgba(255,180,60,0.1);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;">
+          <span style="font-size:16px;">📚</span>
+          <span style="font-size:7px;color:rgba(255,200,100,0.8);">Study Hub</span>
+        </div>
+        <div style="height:52px;background:rgba(30,10,5,0.92);border:1px solid rgba(255,130,30,0.5);border-radius:8px;box-shadow:0 0 16px rgba(255,100,0,0.2),inset 0 1px 0 rgba(255,180,60,0.1);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;">
+          <span style="font-size:16px;">🌐</span>
+          <span style="font-size:7px;color:rgba(255,200,100,0.8);">Web</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Ember Dark + Glow Borders</h3>
+      <p>Solid dark cards with glowing amber/orange borders and inner-top highlight. Cards pop against the shader like embers.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:radial-gradient(ellipse at 30% 40%,rgba(255,100,20,0.4) 0%,transparent 60%),radial-gradient(ellipse at 75% 65%,rgba(180,60,0,0.3) 0%,transparent 55%),#0d0008;height:180px;position:relative;overflow:hidden;border-radius:8px 8px 0 0;padding:8px;">
+      <!-- Nav -->
+      <div style="height:28px;background:rgba(0,0,0,0.25);backdrop-filter:blur(12px);border-radius:6px;margin-bottom:8px;display:flex;align-items:center;padding:0 10px;gap:6px;border:1px solid rgba(255,150,50,0.15);">
+        <span style="font-size:9px;font-weight:bold;color:rgba(255,200,100,0.95);font-family:monospace;letter-spacing:1px;">MKLL</span>
+        <span style="font-size:7px;color:rgba(255,160,60,0.5);">Mo Khattab Lamba Land</span>
+        <span style="flex:1"></span>
+        <span style="font-size:8px;color:rgba(255,255,255,0.3);">🔍 + ⚙</span>
+      </div>
+      <!-- Large icon-forward cards -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">
+        <div style="height:72px;background:rgba(255,255,255,0.04);backdrop-filter:blur(8px);border:1px solid rgba(255,140,40,0.15);border-top:2px solid rgba(255,180,60,0.6);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;">
+          <span style="font-size:22px;">🎮</span>
+          <span style="font-size:7px;color:rgba(255,180,80,0.9);font-weight:600;">XO Game</span>
+          <span style="font-size:6px;color:rgba(255,255,255,0.3);">Games</span>
+        </div>
+        <div style="height:72px;background:rgba(255,255,255,0.04);backdrop-filter:blur(8px);border:1px solid rgba(255,140,40,0.15);border-top:2px solid rgba(255,160,30,0.5);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;">
+          <span style="font-size:22px;">🐍</span>
+          <span style="font-size:7px;color:rgba(255,180,80,0.9);font-weight:600;">Snake</span>
+          <span style="font-size:6px;color:rgba(255,255,255,0.3);">Games</span>
+        </div>
+        <div style="height:72px;background:rgba(255,255,255,0.04);backdrop-filter:blur(8px);border:1px solid rgba(255,140,40,0.15);border-top:2px solid rgba(255,200,60,0.5);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;">
+          <span style="font-size:22px;">📚</span>
+          <span style="font-size:7px;color:rgba(255,180,80,0.9);font-weight:600;">Study Hub</span>
+          <span style="font-size:6px;color:rgba(255,255,255,0.3);">Tools</span>
+        </div>
+        <div style="height:72px;background:rgba(255,255,255,0.04);backdrop-filter:blur(8px);border:1px solid rgba(255,140,40,0.15);border-top:2px solid rgba(255,180,60,0.6);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;">
+          <span style="font-size:22px;">🌐</span>
+          <span style="font-size:7px;color:rgba(255,180,80,0.9);font-weight:600;">Web</span>
+          <span style="font-size:6px;color:rgba(255,255,255,0.3);">Tools</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Icon-Forward + Amber Top Bar</h3>
+      <p>Taller cards with a bigger icon, amber accent top-border per card, and a visible category label below. Cleaner, more organized.</p>
+    </div>
+  </div>
+
+</div>

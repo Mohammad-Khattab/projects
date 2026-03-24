@@ -1,0 +1,135 @@
+/* ===== Game Screen ===== */
+#game-screen {
+  display: none;
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: #060e06;
+  z-index: 200;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Inter', sans-serif;
+}
+
+/* HUD */
+#game-hud {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 560px;
+  padding: 10px 4px;
+  color: #fff;
+}
+.hud-label { font-size: 11px; color: #6fff54; text-transform: uppercase; letter-spacing: 1px; }
+.hud-val   { font-size: 22px; font-weight: 800; font-family: 'Space Grotesk', sans-serif; }
+.hud-lamps-val { color: #ffea00; }
+#hud-map-name { font-size: 14px; font-weight: 700; color: #6fff54; letter-spacing: 1px; text-transform: uppercase; }
+#hud-diff     { font-size: 11px; color: #8b8e96; }
+
+/* Canvas wrapper */
+#canvas-wrapper {
+  position: relative;
+  border: 2px solid rgba(111,255,84,0.3);
+  box-shadow: 0 0 40px rgba(111,255,84,0.1), inset 0 0 30px rgba(0,0,0,0.6);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+#game-canvas { display: block; }
+
+/* Toast */
+#game-toast {
+  position: absolute;
+  top: 12px; left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.75);
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 13px; font-weight: 700;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s, transform 0.3s;
+  white-space: nowrap;
+  z-index: 10;
+}
+
+/* Escape hint */
+#esc-hint {
+  margin-top: 10px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.25);
+}
+
+/* Death Screen */
+#death-screen {
+  display: none;
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(12px);
+  z-index: 300;
+  align-items: center;
+  justify-content: center;
+}
+#death-box {
+  background: linear-gradient(180deg, #16181d, #0d0f12);
+  border: 1px solid #6fff54;
+  box-shadow: 0 0 40px rgba(111,255,84,0.2);
+  border-radius: 12px;
+  padding: 50px 60px;
+  text-align: center;
+  animation: popIn 0.4s cubic-bezier(0.16,1,0.3,1);
+}
+@keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+#death-title { font-size: 48px; font-weight: 800; color: #fff; margin-bottom: 8px; }
+#death-title span { color: #6fff54; }
+.death-stat { margin: 6px 0; font-size: 18px; color: #8b8e96; }
+.death-stat strong { color: #fff; }
+.death-stat .lamp-val { color: #ffea00; font-weight: 800; }
+.death-btns { display: flex; gap: 14px; margin-top: 30px; justify-content: center; }
+.death-btn {
+  padding: 13px 30px; border: none; border-radius: 6px;
+  font-family: 'Inter', sans-serif; font-weight: 800; font-size: 14px;
+  text-transform: uppercase; letter-spacing: 1px; cursor: pointer;
+  transition: all 0.2s;
+}
+.death-btn.primary { background: #6fff54; color: #000; box-shadow: 0 0 20px rgba(111,255,84,0.4); }
+.death-btn.primary:hover { background: #82ff6b; transform: translateY(-2px); }
+.death-btn.secondary { background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.1); }
+.death-btn.secondary:hover { background: rgba(255,255,255,0.14); transform: translateY(-2px); }
+
+/* Difficulty Picker Modal */
+#diff-modal {
+  display: none;
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(16px);
+  z-index: 150;
+  align-items: center;
+  justify-content: center;
+}
+#diff-box {
+  background: linear-gradient(180deg, #16181d, #0d0f12);
+  border: 1px solid rgba(111,255,84,0.5);
+  box-shadow: 0 0 40px rgba(111,255,84,0.15);
+  border-radius: 12px;
+  padding: 40px 50px;
+  text-align: center;
+  min-width: 360px;
+  animation: popIn 0.4s cubic-bezier(0.16,1,0.3,1);
+}
+#diff-map-title { font-size: 28px; font-weight: 800; color: #6fff54; margin-bottom: 6px; text-transform: uppercase; }
+#diff-map-desc  { font-size: 13px; color: #8b8e96; margin-bottom: 28px; }
+.diff-btns { display: flex; flex-direction: column; gap: 12px; }
+.diff-btn {
+  padding: 14px 20px; border: 1px solid; border-radius: 8px;
+  font-family: 'Inter', sans-serif; font-weight: 700; font-size: 15px;
+  cursor: pointer; transition: all 0.2s; display: flex;
+  align-items: center; justify-content: space-between;
+}
+.diff-btn.easy   { background: rgba(111,255,84,0.08); border-color: #6fff54; color: #6fff54; }
+.diff-btn.medium { background: rgba(255,165,0,0.08);  border-color: #ffa500; color: #ffa500; }
+.diff-btn.hard   { background: rgba(255,60,60,0.08);  border-color: #ff3c3c; color: #ff3c3c; }
+.diff-btn.locked { opacity: 0.35; pointer-events: none; cursor: not-allowed; }
+.diff-btn:not(.locked):hover { transform: translateX(6px); }
+.diff-badge { font-size: 11px; font-weight: 600; opacity: 0.7; }
+.diff-close { margin-top: 20px; background: none; border: none; color: #666; cursor: pointer; font-size: 13px; transition: 0.2s; }
+.diff-close:hover { color: #fff; }

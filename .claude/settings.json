@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx playwright:*)",
+      "Bash(Start-Process 'opera' 'http://localhost:3001')",
+      "Bash(powershell.exe -Command \"Start-Process ''opera'' ''http://localhost:3001''\")",
+      "mcp__playwright__browser_take_screenshot",
+      "Bash(ipconfig)",
+      "Bash(npm run:*)",
+      "WebSearch",
+      "Bash(uvx --refresh voice-mode --help)",
+      "Bash(uvx --python 3.12 voice-mode --help)"
+    ]
+  }
+}

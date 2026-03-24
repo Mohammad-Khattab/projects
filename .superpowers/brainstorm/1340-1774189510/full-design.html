@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Snake — Neon Cyberpunk 3D Design</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0a0a0f;
+    color: #c8c8d8;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    font-size: 14px;
+    padding: 32px 24px 60px;
+  }
+  h1 { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .lead { color: #6868a0; font-size: 13px; margin-bottom: 40px; }
+  h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; color: #5858a0; margin-bottom: 16px; margin-top: 40px; }
+  .screens { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  @media (max-width: 900px) { .screens { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 600px) { .screens { grid-template-columns: 1fr; } }
+  .screen-wrap { display: flex; flex-direction: column; gap: 10px; }
+  .screen-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: #5858a0; }
+  .screen {
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #1a1a2e;
+    position: relative;
+  }
+  /* scanlines on all screens */
+  .screen::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,0.06) 0px, rgba(0,0,0,0.06) 1px, transparent 1px, transparent 3px);
+    pointer-events: none;
+    z-index: 10;
+  }
+  .desc { font-size: 12px; color: #5858a0; line-height: 1.5; }
+  .desc strong { color: #8888c0; }
+
+  /* architecture section */
+  .arch-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 8px; }
+  @media (max-width: 600px) { .arch-grid { grid-template-columns: 1fr; } }
+  .arch-card {
+    background: #0d0d1a;
+    border: 1px solid #1a1a2e;
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .arch-card h4 { font-size: 12px; font-weight: 700; color: #9090d0; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.1em; }
+  .arch-card p { font-size: 12px; color: #5858a0; line-height: 1.5; }
+
+  /* SPLASH */
+  .splash-bg {
+    background: #000;
+    height: 200px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .splash-grid {
+    position: absolute;
+    bottom: -10px; left: -10px; right: -10px; height: 120px;
+    background-image: linear-gradient(rgba(0,255,200,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,200,0.15) 1px, transparent 1px);
+    background-size: 20px 20px;
+    transform: perspective(200px) rotateX(58deg);
+    transform-origin: bottom;
+  }
+  .splash-horizon {
+    position: absolute;
+    bottom: 44px; left: 0; right: 0; height: 1.5px;
+    background: linear-gradient(90deg, transparent, #00ffe8, #ff00c8, #00ffe8, transparent);
+    box-shadow: 0 0 12px #00ffe8, 0 0 30px #ff00c8;
+  }
+  .splash-title {
+    font-size: 36px; font-weight: 900; letter-spacing: 0.2em;
+    color: #00ffe8;
+    text-shadow: 0 0 20px #00ffe8, 0 0 50px rgba(0,255,200,0.4);
+    position: relative; z-index: 2;
+    text-transform: uppercase;
+  }
+  .splash-sub {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.3em; text-transform: uppercase;
+    color: rgba(0,255,200,0.5);
+    position: relative; z-index: 2;
+    animation: blink 1.4s ease-in-out infinite;
+  }
+  /* 3D snake on splash */
+  .splash-snake { position: absolute; top: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 4px; z-index: 3; }
+  .splash-seg {
+    width: 14px; height: 14px; border-radius: 3px;
+    background: linear-gradient(135deg, #00ffe8, #00b0d0);
+    box-shadow: 0 0 8px #00ffe8, 0 4px 0 #004d48;
+  }
+
+  /* HOME */
+  .home-bg {
+    background: #000;
+    height: 200px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .home-grid {
+    position: absolute;
+    bottom: -10px; left: -10px; right: -10px; height: 100px;
+    background-image: linear-gradient(rgba(0,255,200,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,200,0.12) 1px, transparent 1px);
+    background-size: 18px 18px;
+    transform: perspective(180px) rotateX(58deg);
+    transform-origin: bottom;
+  }
+  .home-card {
+    position: relative; z-index: 2;
+    background: rgba(0,255,200,0.04);
+    border: 1px solid rgba(0,255,200,0.2);
+    border-radius: 10px;
+    padding: 14px 16px;
+    width: 180px;
+    box-shadow: 0 0 24px rgba(0,255,200,0.08);
+  }
+  .home-card-title { font-size: 10px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(0,255,200,0.5); margin-bottom: 10px; }
+  .home-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 10px; }
+  .home-row-label { color: rgba(255,255,255,0.4); }
+  .home-swatches { display: flex; gap: 4px; }
+  .swatch-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .home-btn {
+    width: 100%; padding: 7px; border-radius: 6px; text-align: center;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+    background: #00ffe8; color: #000; margin-top: 4px;
+    text-transform: uppercase;
+    box-shadow: 0 0 12px rgba(0,255,200,0.4);
+  }
+
+  /* MAP SELECT */
+  .map-bg {
+    background: #000;
+    height: 200px;
+    position: relative;
+    overflow: hidden;
+    padding: 12px;
+  }
+  .map-grid-header { font-size: 9px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(0,255,200,0.4); margin-bottom: 8px; }
+  .map-mini-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+  .map-mini-card {
+    border-radius: 5px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.06);
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .map-mini-thumb {
+    height: 38px;
+    position: relative;
+    overflow: hidden;
+  }
+  .map-mini-name {
+    font-size: 8px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 4px 5px;
+    background: #0d0d14;
+  }
+
+  /* LEVEL SELECT */
+  .level-bg {
+    background: #000;
+    height: 200px;
+    overflow: hidden;
+    padding: 12px;
+  }
+  .level-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .level-map-badge {
+    font-size: 8px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 10px;
+    background: rgba(0,255,200,0.1);
+    color: #00ffe8;
+    border: 1px solid rgba(0,255,200,0.25);
+  }
+  .level-title { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.5); letter-spacing: 0.1em; text-transform: uppercase; }
+  .level-row {
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(0,255,200,0.03);
+    border: 1px solid rgba(0,255,200,0.12);
+    border-radius: 6px;
+    padding: 7px 10px;
+    margin-bottom: 5px;
+    box-shadow: 0 0 8px rgba(0,255,200,0.04);
+  }
+  .level-row.active { border-color: rgba(0,255,200,0.4); box-shadow: 0 0 12px rgba(0,255,200,0.15); }
+  .level-num-text { font-size: 11px; font-weight: 800; color: #fff; }
+  .level-sub { font-size: 8px; color: rgba(255,255,255,0.3); margin-top: 1px; }
+  .speed-pill {
+    font-size: 8px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 10px;
+  }
+
+  /* GAME */
+  .game-bg {
+    background: #000;
+    height: 200px;
+    position: relative;
+    overflow: hidden;
+  }
+  .game-hud {
+    position: absolute; top: 0; left: 0; right: 0;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 10px;
+    background: rgba(0,0,0,0.6);
+    border-bottom: 1px solid rgba(0,255,200,0.15);
+    z-index: 5;
+  }
+  .hud-stat { display: flex; flex-direction: column; gap: 1px; }
+  .hud-l { font-size: 7px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: rgba(0,255,200,0.4); }
+  .hud-v { font-size: 13px; font-weight: 800; color: #00ffe8; text-shadow: 0 0 10px #00ffe8; font-family: monospace; }
+  .hud-pause {
+    font-size: 8px; padding: 4px 8px; border-radius: 4px;
+    background: rgba(0,255,200,0.08); border: 1px solid rgba(0,255,200,0.2);
+    color: rgba(0,255,200,0.6); font-weight: 700; letter-spacing: 0.08em;
+  }
+  .game-board {
+    position: absolute;
+    top: 34px; left: 50%; transform: translateX(-50%);
+    width: 155px; height: 155px;
+    perspective: 400px;
+  }
+  .game-board-inner {
+    width: 100%; height: 100%;
+    background: rgba(0,255,200,0.02);
+    border: 1px solid rgba(0,255,200,0.12);
+    border-radius: 6px;
+    position: relative;
+    transform: rotateX(12deg) rotateY(-5deg);
+    box-shadow: 0 0 40px rgba(0,255,200,0.06), 0 16px 48px rgba(0,0,0,0.6);
+    overflow: hidden;
+  }
+  .board-grid-lines {
+    position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(0,255,200,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,200,0.07) 1px, transparent 1px);
+    background-size: 14px 14px;
+    border-radius: 5px;
+  }
+  .game-snake { position: absolute; top: 20px; left: 18px; }
+  .game-seg { position: relative; display: inline-block; }
+  .seg-top { width: 16px; height: 16px; border-radius: 3px; }
+  .seg-side { position: absolute; bottom: -4px; left: 0; right: 0; height: 4px; border-radius: 0 0 2px 2px; }
+  .seg-right { position: absolute; top: 0; right: -3px; width: 3px; height: 16px; border-radius: 0 2px 2px 0; }
+  .snake-row { display: flex; gap: 2px; margin-bottom: 2px; }
+  .food-3d { position: absolute; top: 24px; right: 20px; width: 13px; height: 13px; border-radius: 50%; }
+
+  /* GAME OVER */
+  .over-bg {
+    background: #000;
+    height: 200px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .over-grid {
+    position: absolute;
+    bottom: -10px; left: -10px; right: -10px; height: 100px;
+    background-image: linear-gradient(rgba(255,0,80,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(255,0,80,0.12) 1px, transparent 1px);
+    background-size: 18px 18px;
+    transform: perspective(180px) rotateX(58deg);
+    transform-origin: bottom;
+  }
+  .over-title { font-size: 22px; font-weight: 900; letter-spacing: 0.15em; text-transform: uppercase; color: #ff0050; text-shadow: 0 0 20px #ff0050, 0 0 50px rgba(255,0,80,0.4); position: relative; z-index: 2; }
+  .over-score-label { font-size: 9px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,255,255,0.3); position: relative; z-index: 2; }
+  .over-score { font-size: 28px; font-weight: 900; font-family: monospace; color: #fff; text-shadow: 0 0 20px rgba(255,255,255,0.3); position: relative; z-index: 2; }
+  /* scattered blocks for explosion */
+  .scatter { position: absolute; z-index: 1; }
+
+  @keyframes blink { 0%,100%{opacity:0.3} 50%{opacity:1} }
+</style>
+</head>
+<body>
+
+<h1>Snake — Neon Cyberpunk 3D</h1>
+<p class="lead">Full screen-by-screen design overview. All screens. Three.js WebGL game canvas. Each map has its own neon theme.</p>
+
+<h2>Architecture</h2>
+<div class="arch-grid">
+  <div class="arch-card">
+    <h4>Renderer</h4>
+    <p>Three.js r165 loaded from CDN. Game canvas replaced with a WebGL renderer. Snake segments = BoxGeometry with MeshStandardMaterial + emissive. Food = IcosahedronGeometry with a PointLight attached. Grid floor = PlaneGeometry with custom ShaderMaterial.</p>
+  </div>
+  <div class="arch-card">
+    <h4>Camera</h4>
+    <p>PerspectiveCamera slightly tilted (~12° pitch, -5° yaw) above the board — not flat top-down. Camera subtly shakes on food eaten. All gameplay logic unchanged — only the render layer changes.</p>
+  </div>
+  <div class="arch-card">
+    <h4>UI screens</h4>
+    <p>Splash, Home, Map Select, Level Select, and Game Over are pure CSS + HTML — reimagined with neon glassmorphic panels, perspective grid floors, and scanline overlays. No Three.js needed for menus.</p>
+  </div>
+  <div class="arch-card">
+    <h4>Map themes</h4>
+    <p>A JS theme object maps each of the 9 maps to a primary + secondary neon color. On map selection, CSS variables + Three.js material colors update instantly. No page reload.</p>
+  </div>
+</div>
+
+<h2>Screen Designs</h2>
+<div class="screens">
+
+  <!-- 1. SPLASH -->
+  <div class="screen-wrap">
+    <div class="screen-label">1 — Splash</div>
+    <div class="screen">
+      <div class="splash-bg">
+        <div class="splash-grid"></div>
+        <div class="splash-horizon"></div>
+        <div class="splash-snake">
+          <div class="splash-seg" style="opacity:1;"></div>
+          <div class="splash-seg" style="opacity:0.85;"></div>
+          <div class="splash-seg" style="opacity:0.7;"></div>
+          <div class="splash-seg" style="opacity:0.55;"></div>
+          <div class="splash-seg" style="opacity:0.4;"></div>
+        </div>
+        <div class="splash-title">SNAKE</div>
+        <div class="splash-sub">tap to begin</div>
+      </div>
+    </div>
+    <div class="desc">Neon grid floor receding to infinity. Animated 3D snake crawls across behind the title. <strong>SNAKE</strong> glows in map-default cyan. Blinking "tap to begin" prompt.</div>
+  </div>
+
+  <!-- 2. HOME -->
+  <div class="screen-wrap">
+    <div class="screen-label">2 — Home / Settings</div>
+    <div class="screen">
+      <div class="home-bg">
+        <div class="home-grid"></div>
+        <div style="position:absolute;bottom:44px;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,#00ffe8,#ff00c8,transparent);box-shadow:0 0 10px #00ffe8;"></div>
+        <div class="home-card">
+          <div class="home-card-title">Settings</div>
+          <div class="home-row">
+            <span class="home-row-label">Snake color</span>
+            <div class="home-swatches">
+              <div class="swatch-dot" style="background:#00ffe8;box-shadow:0 0 5px #00ffe8;"></div>
+              <div class="swatch-dot" style="background:#ff00c8;box-shadow:0 0 5px #ff00c8;"></div>
+              <div class="swatch-dot" style="background:#ffee00;"></div>
+              <div class="swatch-dot" style="background:#ff4400;"></div>
+            </div>
+          </div>
+          <div class="home-row">
+            <span class="home-row-label">Theme</span>
+            <span style="font-size:9px;color:rgba(0,255,200,0.6);border:1px solid rgba(0,255,200,0.2);padding:2px 6px;border-radius:4px;">Dark</span>
+          </div>
+          <div class="home-btn">Play</div>
+        </div>
+      </div>
+    </div>
+    <div class="desc">Glassmorphic settings card floats over the neon grid. Snake color swatches glow. Play button pulses with neon bloom.</div>
+  </div>
+
+  <!-- 3. MAP SELECT -->
+  <div class="screen-wrap">
+    <div class="screen-label">3 — Map Select</div>
+    <div class="screen">
+      <div class="map-bg">
+        <div class="map-grid-header">Choose your world</div>
+        <div class="map-mini-grid">
+          <!-- Ocean -->
+          <div class="map-mini-card" style="border-color:rgba(0,200,255,0.35);">
+            <div class="map-mini-thumb" style="background:#000814;">
+              <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(0,180,255,0.2) 1px,transparent 1px),linear-gradient(90deg,rgba(0,180,255,0.2) 1px,transparent 1px);background-size:12px 12px;transform:perspective(100px) rotateX(55deg) translateY(8px);transform-origin:bottom;"></div>
+              <div style="position:absolute;bottom:10px;left:0;right:0;height:1px;background:#00c8ff;box-shadow:0 0 6px #00c8ff;"></div>
+            </div>
+            <div class="map-mini-name" style="color:#00c8ff;">Ocean</div>
+          </div>
+          <!-- Space -->
+          <div class="map-mini-card">
+            <div class="map-mini-thumb" style="background:#04000e;">
+              <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(140,0,255,0.2) 1px,transparent 1px),linear-gradient(90deg,rgba(140,0,255,0.2) 1px,transparent 1px);background-size:12px 12px;transform:perspective(100px) rotateX(55deg) translateY(8px);transform-origin:bottom;"></div>
+              <div style="position:absolute;bottom:10px;left:0;right:0;height:1px;background:#cc00ff;box-shadow:0 0 6px #cc00ff;"></div>
+            </div>
+            <div class="map-mini-name" style="color:#cc00ff;">Space</div>
+          </div>
+          <!-- Lava -->
+          <div class="map-mini-card">
+            <div class="map-mini-thumb" style="background:#0e0000;">
+              <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,60,0,0.2) 1px,transparent 1px),linear-gradient(90deg,rgba(255,60,0,0.2) 1px,transparent 1px);background-size:12px 12px;transform:perspective(100px) rotateX(55deg) translateY(8px);transform-origin:bottom;"></div>
+              <div style="position:absolute;bottom:10px;left:0;right:0;height:1px;background:#ff3c00;box-shadow:0 0 6px #ff3c00;"></div>
+            </div>
+            <div class="map-mini-name" style="color:#ff5500;">Lava</div>
+          </div>
+          <!-- City -->
+          <div class="map-mini-card">
+            <div class="map-mini-thumb" style="background:#04040c;">
+              <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,220,0,0.18) 1px,transparent 1px),linear-gradient(90deg,rgba(255,220,0,0.18) 1px,transparent 1px);background-size:12px 12px;transform:perspective(100px) rotateX(55deg) translateY(8px);transform-origin:bottom;"></div>
+              <div style="position:absolute;bottom:10px;left:0;right:0;height:1px;background:#ffdd00;box-shadow:0 0 6px #ffdd00;"></div>
+            </div>
+            <div class="map-mini-name" style="color:#ffee44;">City</div>
+          </div>
+          <!-- Desert -->
+          <div class="map-mini-card">
+            <div class="map-mini-thumb" style="background:#0c0500;">
+              <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,165,0,0.2) 1px,transparent 1px),linear-gradient(90deg,rgba(255,165,0,0.2) 1px,transparent 1px);background-size:12px 12px;transform:perspective(100px) rotateX(55deg) translateY(8px);transform-origin:bottom;"></div>
+              <div style="position:absolute;bottom:10px;left:0;right:0;height:1px;background:#ffaa00;box-shadow:0 0 6px #ffaa00;"></div>
+            </div>
+            <div class="map-mini-name" style="color:#ffbb22;">Desert</div>
+          </div>
+          <!-- Arctic -->
+          <div class="map-mini-card">
+            <div class="map-mini-thumb" style="background:#000a10;">
+              <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(100,220,255,0.2) 1px,transparent 1px),linear-gradient(90deg,rgba(100,220,255,0.2) 1px,transparent 1px);background-size:12px 12px;transform:perspective(100px) rotateX(55deg) translateY(8px);transform-origin:bottom;"></div>
+              <div style="position:absolute;bottom:10px;left:0;right:0;height:1px;background:#88eeff;box-shadow:0 0 6px #88eeff;"></div>
+            </div>
+            <div class="map-mini-name" style="color:#aaffff;">Arctic</div>
+          </div>
+        </div>
+        <!-- scroll hint -->
+        <div style="margin-top:6px;text-align:center;font-size:8px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(0,255,200,0.25);">+3 more maps ↓</div>
+      </div>
+    </div>
+    <div class="desc">Each card is a mini neon world. <strong>Hover</strong> lifts the card with 3D tilt + glow border in its color. <strong>Selected</strong> map pulses.</div>
+  </div>
+
+  <!-- 4. LEVEL SELECT -->
+  <div class="screen-wrap">
+    <div class="screen-label">4 — Level Select</div>
+    <div class="screen">
+      <div class="level-bg">
+        <div class="level-header">
+          <div class="level-map-badge">Ocean</div>
+          <div class="level-title">Select level</div>
+        </div>
+        <!-- Level rows -->
+        <div class="level-row active">
+          <div>
+            <div class="level-num-text" style="color:#00c8ff;text-shadow:0 0 8px #00c8ff;">Level 1</div>
+            <div class="level-sub">Eat 5 · Score 500</div>
+          </div>
+          <div class="speed-pill" style="background:rgba(0,200,100,.12);color:#00c864;">Slow</div>
+        </div>
+        <div class="level-row">
+          <div>
+            <div class="level-num-text">Level 2</div>
+            <div class="level-sub">Eat 8 · Score 800</div>
+          </div>
+          <div class="speed-pill" style="background:rgba(50,140,255,.12);color:#328cff;">Med-Slow</div>
+        </div>
+        <div class="level-row">
+          <div>
+            <div class="level-num-text">Level 3</div>
+            <div class="level-sub">Eat 12 · Score 1200</div>
+          </div>
+          <div class="speed-pill" style="background:rgba(255,200,0,.12);color:#ffc800;">Medium</div>
+        </div>
+        <div class="level-row">
+          <div>
+            <div class="level-num-text">Level 4</div>
+            <div class="level-sub">Eat 16 · Score 1600</div>
+          </div>
+          <div class="speed-pill" style="background:rgba(255,80,80,.12);color:#ff5050;">Fast</div>
+        </div>
+      </div>
+    </div>
+    <div class="desc">Map badge in top-left shows which world you're in. Active level row glows in map's neon color. Speed badges unchanged — keep existing colors.</div>
+  </div>
+
+  <!-- 5. GAME -->
+  <div class="screen-wrap">
+    <div class="screen-label">5 — Game (Three.js)</div>
+    <div class="screen">
+      <div class="game-bg">
+        <!-- Deep bg -->
+        <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 40% 30%, #04001a 0%, #000 80%);"></div>
+        <!-- HUD -->
+        <div class="game-hud">
+          <div class="hud-stat">
+            <div class="hud-l">Score</div>
+            <div class="hud-v">0840</div>
+          </div>
+          <div class="hud-stat" style="text-align:center;">
+            <div class="hud-l">Level</div>
+            <div class="hud-v">3</div>
+          </div>
+          <div class="hud-stat" style="text-align:right;">
+            <div class="hud-l">Target</div>
+            <div class="hud-v">12</div>
+          </div>
+        </div>
+        <!-- 3D game board mockup -->
+        <div class="game-board">
+          <div class="game-board-inner">
+            <div class="board-grid-lines"></div>
+            <!-- Snake segments (head + 4 body) -->
+            <!-- Row 1: going right -->
+            <div style="position:absolute;top:22px;left:14px;display:flex;gap:2px;">
+              <!-- head -->
+              <div style="position:relative;width:16px;height:16px;">
+                <div style="position:absolute;inset:0;background:linear-gradient(135deg,#00ffe8,#00c8c8);border-radius:3px;box-shadow:0 0 10px #00ffe8;"></div>
+                <div style="position:absolute;bottom:-4px;left:0;right:0;height:4px;background:#006660;border-radius:0 0 2px 2px;"></div>
+                <div style="position:absolute;top:0;right:-3px;width:3px;height:16px;background:#004d48;border-radius:0 2px 2px 0;"></div>
+              </div>
+              <div style="position:relative;width:16px;height:16px;">
+                <div style="position:absolute;inset:0;background:linear-gradient(135deg,#00d8c8,#00a8a8);border-radius:3px;box-shadow:0 0 7px #00ffe8;"></div>
+                <div style="position:absolute;bottom:-4px;left:0;right:0;height:4px;background:#005550;border-radius:0 0 2px 2px;"></div>
+                <div style="position:absolute;top:0;right:-3px;width:3px;height:16px;background:#003d38;border-radius:0 2px 2px 0;"></div>
+              </div>
+              <div style="position:relative;width:16px;height:16px;">
+                <div style="position:absolute;inset:0;background:linear-gradient(135deg,#00b8a8,#008888);border-radius:3px;box-shadow:0 0 5px #00ffe8;"></div>
+                <div style="position:absolute;bottom:-4px;left:0;right:0;height:4px;background:#003d38;border-radius:0 0 2px 2px;"></div>
+                <div style="position:absolute;top:0;right:-3px;width:3px;height:16px;background:#002d28;border-radius:0 2px 2px 0;"></div>
+              </div>
+            </div>
+            <!-- Turn going down -->
+            <div style="position:absolute;top:40px;left:14px;">
+              <div style="position:relative;width:16px;height:16px;">
+                <div style="position:absolute;inset:0;background:linear-gradient(135deg,#009888,#006868);border-radius:3px;"></div>
+                <div style="position:absolute;bottom:-4px;left:0;right:0;height:4px;background:#002d28;border-radius:0 0 2px 2px;"></div>
+              </div>
+            </div>
+            <!-- Food -->
+            <div style="position:absolute;top:26px;right:18px;width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#ff80e8,#ff00c8 60%,#aa0088);box-shadow:0 0 14px #ff00c8,0 0 28px rgba(255,0,200,0.4);"></div>
+            <!-- ambient glow from food -->
+            <div style="position:absolute;top:18px;right:12px;width:28px;height:28px;border-radius:50%;background:radial-gradient(circle,rgba(255,0,200,0.12) 0%,transparent 70%);filter:blur(4px);pointer-events:none;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="desc">Three.js WebGL board with slight camera tilt. Extruded snake blocks with <strong>top/side/bottom faces</strong>. Food is a glowing sphere with attached PointLight that casts light on nearby segments. Grid lines glow in map color.</div>
+  </div>
+
+  <!-- 6. GAME OVER -->
+  <div class="screen-wrap">
+    <div class="screen-label">6 — Game Over / Level Win</div>
+    <div class="screen">
+      <div class="over-bg">
+        <div class="over-grid"></div>
+        <div style="position:absolute;bottom:44px;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,#ff0050,rgba(255,0,80,0.5),transparent);box-shadow:0 0 10px #ff0050;"></div>
+        <!-- Scattered explosion blocks -->
+        <div class="scatter" style="top:60px;left:20px;width:10px;height:10px;border-radius:2px;background:#00ffe8;box-shadow:0 0 8px #00ffe8;opacity:0.7;transform:rotate(24deg);"></div>
+        <div class="scatter" style="top:50px;right:28px;width:8px;height:8px;border-radius:2px;background:#00ffe8;box-shadow:0 0 6px #00ffe8;opacity:0.5;transform:rotate(-18deg);"></div>
+        <div class="scatter" style="top:75px;left:44px;width:6px;height:6px;border-radius:2px;background:#00d0c0;opacity:0.4;transform:rotate(45deg);"></div>
+        <div class="scatter" style="top:55px;right:56px;width:9px;height:9px;border-radius:2px;background:#00b8a8;opacity:0.6;transform:rotate(-30deg);"></div>
+        <div class="over-title">GAME OVER</div>
+        <div class="over-score-label">Final Score</div>
+        <div class="over-score">0840</div>
+        <div style="display:flex;gap:8px;position:relative;z-index:2;margin-top:4px;">
+          <div style="font-size:9px;padding:5px 12px;border-radius:5px;background:rgba(0,255,200,0.1);border:1px solid rgba(0,255,200,0.25);color:#00ffe8;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;">Retry</div>
+          <div style="font-size:9px;padding:5px 12px;border-radius:5px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);font-weight:700;letter-spacing:0.1em;text-transform:uppercase;">Menu</div>
+        </div>
+      </div>
+    </div>
+    <div class="desc">Three.js: snake segments <strong>explode outward</strong> into scattered blocks on death. Grid turns red. Score slams onto screen. "Level Complete" variant uses green with sparks flying up.</div>
+  </div>
+
+</div>
+
+<h2>What stays the same</h2>
+<div class="arch-grid">
+  <div class="arch-card">
+    <h4>All gameplay logic</h4>
+    <p>Snake movement, collision, levels, scoring, maps, walls — zero changes. The JavaScript game loop is untouched.</p>
+  </div>
+  <div class="arch-card">
+    <h4>All 9 maps & levels</h4>
+    <p>Every map and level configuration is preserved. Only the visual rendering of the board changes.</p>
+  </div>
+</div>
+
+</body>
+</html>

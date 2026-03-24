@@ -23,6 +23,8 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [teamsConnected, setTeamsConnected] = useState(false)
+  const [teamsConnecting, setTeamsConnecting] = useState(false)
 
   const loadCached = useCallback(async () => {
     setLoading(true)
@@ -30,6 +32,7 @@ export default function DashboardPage() {
       const res = await fetch('/api/scrape')
       const json = await res.json()
       setData(json.data)
+      setTeamsConnected(json.teamsConnected ?? false)
     } catch {
       setError('Failed to load data')
     } finally {
@@ -52,6 +55,32 @@ export default function DashboardPage() {
     }
   }, [])
 
+  const connectTeams = useCallback(async () => {
+    setTeamsConnecting(true)
+    setError(null)
+    try {
+      // Opens a visible browser window — user completes MFA manually
+      const res = await fetch('/api/teams-auth', { method: 'POST' })
+      const json = await res.json()
+      if (json.ok) {
+        setTeamsConnected(true)
+        // Auto-refresh to pull Teams resources
+        await refresh()
+      } else {
+        setError(`Teams connection failed: ${json.error}`)
+      }
+    } catch (err) {
+      setError(`Teams connection failed: ${String(err)}`)
+    } finally {
+      setTeamsConnecting(false)
+    }
+  }, [refresh])
+
+  const disconnectTeams = useCallback(async () => {
+    await fetch('/api/teams-auth', { method: 'DELETE' })
+    setTeamsConnected(false)
+  }, [])
+
   useEffect(() => { loadCached() }, [loadCached])
 
   const dueThisWeek = data?.assignments.filter(a => {
@@ -65,32 +94,103 @@ export default function DashboardPage() {
       <NavBar
         scrapedAt={data?.scrapedAt}
         onRefresh={refresh}
-        refreshing={refreshing}
+        refreshing={refreshing || loading}
+        refreshingText={loading && !refreshing ? 'Loading your courses…' : undefined}
       />
 
       <main className="page-container" style={{ paddingTop: 32, paddingBottom: 48 }}>
-        <div style={{ marginBottom: 8 }}>
-          <h1 style={{ fontSize: 26, fontWeight: 700, letterSpacing: '-0.02em' }}>
-            Semester 2 — 2025/2026
-          </h1>
-          <p style={{ color: 'var(--text-secondary)', marginTop: 6, fontSize: 14 }}>
-            {data ? (
-              <>
-                {data.subjects.length} subjects
-                {dueThisWeek > 0 && (
-                  <span style={{ color: 'var(--alert-warning)', marginLeft: 12 }}>
-                    · {dueThisWeek} assignment{dueThisWeek !== 1 ? 's' : ''} due this week
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 8, flexWrap: 'wrap', gap: 12 }}>
+          <div>
+            <h1 style={{ fontSize: 26, fontWeight: 700, letterSpacing: '-0.02em' }}>
+              Semester 2 — 2025/2026
+            </h1>
+            <p style={{ color: 'var(--text-secondary)', marginTop: 6, fontSize: 14 }}>
+              {data ? (
+                <>
+                  {data.subjects.length} subjects
+                  {dueThisWeek > 0 && (
+                    <span style={{ color: 'var(--alert-warning)', marginLeft: 12 }}>
+                      · {dueThisWeek} assignment{dueThisWeek !== 1 ? 's' : ''} due this week
+                    </span>
+                  )}
+                  {data.stale && (
+                    <span style={{ color: 'var(--text-muted)', marginLeft: 12 }}>
+                      · (cached — click Refresh to update)
+                    </span>
+                  )}
+                </>
+              ) : loading ? 'Loading...' : 'No data — click Refresh to scrape your portals'}
+            </p>
+          </div>
+
+          {/* Teams connection button */}
+          {!loading && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              {teamsConnected ? (
+                <>
+                  <span style={{
+                    fontSize: 12,
+                    color: 'var(--alert-ok)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 5
+                  }}>
+                    <span style={{
+                      width: 7, height: 7, borderRadius: '50%',
+                      background: 'var(--alert-ok)',
+                      display: 'inline-block',
+                      boxShadow: '0 0 6px var(--alert-ok)'
+                    }} />
+                    Teams connected
                   </span>
-                )}
-                {data.stale && (
-                  <span style={{ color: 'var(--text-muted)', marginLeft: 12 }}>
-                    · (cached — click Refresh to update)
-                  </span>
-                )}
-              </>
-            ) : loading ? 'Loading...' : 'No data — click Refresh to scrape your portals'}
-          </p>
+                  <button
+                    className="btn btn-ghost"
+                    style={{ fontSize: 11, padding: '4px 10px' }}
+                    onClick={disconnectTeams}
+                  >
+                    Disconnect
+                  </button>
+                </>
+              ) : (
+                <button
+                  className="btn btn-secondary"
+                  style={{ fontSize: 12, padding: '6px 14px', display: 'flex', alignItems: 'center', gap: 6 }}
+                  onClick={connectTeams}
+                  disabled={teamsConnecting}
+                >
+                  {teamsConnecting
+                    ? <><span className="spinner" style={{ width: 12, height: 12 }} /> Connecting Teams…</>
+                    : <>
+                        <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor" style={{ opacity: 0.8 }}>
+                          <path d="M16.25 6.25a2.25 2.25 0 1 0 0-4.5 2.25 2.25 0 0 0 0 4.5ZM13 10a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm2.5 6c0-2.485-2.015-4.5-4.5-4.5H9c-2.485 0-4.5 2.015-4.5 4.5v.5h11v-.5Z"/>
+                        </svg>
+                        Connect Teams
+                      </>
+                  }
+                </button>
+              )}
+            </div>
+          )}
         </div>
+
+        {/* Teams connecting info banner */}
+        {teamsConnecting && (
+          <div style={{
+            background: 'rgba(99,102,241,0.08)',
+            border: '1px solid rgba(99,102,241,0.25)',
+            borderRadius: 'var(--radius-sm)',
+            padding: '12px 16px',
+            color: 'var(--text-secondary)',
+            marginTop: 12,
+            fontSize: 13,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10
+          }}>
+            <span className="spinner" style={{ width: 14, height: 14, flexShrink: 0 }} />
+            A browser window has opened — complete the Microsoft sign-in and MFA, then return here. This may take up to 3 minutes.
+          </div>
+        )}
 
         {error && (
           <div style={{

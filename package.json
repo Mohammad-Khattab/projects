@@ -3,15 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "workspaces": [
-    "frontend",
-    "backend",
     "fullstack"
   ],
   "scripts": {
-    "dev:frontend": "npm -w frontend run dev",
-    "dev:backend": "npm -w backend run dev",
+    "dev": "npm run dev:fullstack",
     "dev:fullstack": "npm -w fullstack run dev",
-    "dev": "npm run dev:frontend & npm run dev:backend & npm run dev:fullstack",
     "build": "npm -ws run build",
     "lint": "npm -ws run lint"
   },

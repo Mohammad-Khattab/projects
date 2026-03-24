@@ -41,27 +41,46 @@ export default function SubjectPage() {
     router.replace(`/subject/${id}?tab=${tab}`, { scroll: false })
   }
 
-  const handleGenerateNotes = useCallback(async (resource: Resource, mode: 'notes' | 'slides') => {
-    setGeneratingId(resource.id)
+  const handleGenerateNotes = useCallback(async (
+    resourceOrResources: Resource | Resource[],
+    mode: 'notes' | 'slides',
+    chapterName?: string
+  ) => {
+    const isChapter = Array.isArray(resourceOrResources)
+    const generatingKey = isChapter ? `chapter:${chapterName ?? 'group'}` : (resourceOrResources as Resource).id
+    setGeneratingId(generatingKey)
     setGeneratedContent(null)
     try {
+      const body = isChapter
+        ? {
+            resources: (resourceOrResources as Resource[]).map(r => ({ url: r.url, name: r.name })),
+            subjectName: subject?.name || id,
+            mode,
+            chapterName
+          }
+        : {
+            resourceUrl: (resourceOrResources as Resource).url,
+            resourceName: (resourceOrResources as Resource).name,
+            subjectName: subject?.name || id,
+            mode
+          }
+
       const res = await fetch('/api/ai/notes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          resourceUrl: resource.url,
-          resourceName: resource.name,
-          subjectName: subject?.name || id,
-          mode
-        })
+        body: JSON.stringify(body)
       })
       const json = await res.json()
+      if (json.error) {
+        alert(`AI notes error: ${json.error}`)
+        return
+      }
       if (json.content) {
         setGeneratedContent(json.content)
         setActiveTab('notes')
       }
     } catch {
-      alert('Failed to generate notes. Check Claude API key.')
+      alert('Failed to generate notes. Make sure Claude Code CLI is installed and running.')
     } finally {
       setGeneratingId(undefined)
     }

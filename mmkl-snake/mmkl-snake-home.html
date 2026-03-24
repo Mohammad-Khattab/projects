@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MMKL Snake</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,600;0,800;1,600;1,800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<style>
+  :root {
+    --green: #6fff54; --green-glow: rgba(111,255,84,0.4);
+    --purple: #b46bfa; --cyan: #6df0f5;
+    --bg-dark: #0a0b0e; --panel-bg: rgba(22,23,28,0.6);
+    --panel-border: rgba(255,255,255,0.05); --text-muted: #8b8e96;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body,html { width:100%; height:100%; background:var(--bg-dark); font-family:'Inter',sans-serif; color:#fff; overflow:hidden; }
+  #canvas-container { position:absolute; top:0; left:0; width:100%; height:100%; z-index:1; }
+  .vignette { position:absolute; top:0; left:0; width:100%; height:100%; background:radial-gradient(circle at center,transparent 30%,rgba(5,6,10,0.85) 100%); pointer-events:none; z-index:2; }
+  #ui-layer { position:relative; z-index:10; width:100%; height:100%; display:flex; flex-direction:column; justify-content:space-between; padding:30px; pointer-events:none; }
+
+  /* Top bar */
+  .top-bar { display:flex; justify-content:space-between; align-items:flex-start; }
+  .logo { font-size:24px; font-weight:800; color:var(--green); letter-spacing:2px; text-shadow:0 0 15px var(--green-glow); }
+  .top-icons { display:flex; gap:15px; pointer-events:auto; }
+  .icon-btn { min-width:40px; height:40px; padding:0 12px; background:var(--panel-bg); border:1px solid var(--panel-border); backdrop-filter:blur(10px); border-radius:6px; display:flex; gap:8px; justify-content:center; align-items:center; color:#fff; font-size:16px; cursor:pointer; transition:all 0.3s; }
+  .icon-btn:hover { background:rgba(255,255,255,0.1); transform:translateY(-2px); border-color:rgba(255,255,255,0.15); }
+  .icon-btn.icon-only { padding:0; width:40px; }
+  .btn-text { font-size:13px; font-weight:600; font-family:'Space Grotesk',sans-serif; white-space:nowrap; }
+  .lamp-icon { color:#ffea00; filter:drop-shadow(0 0 5px rgba(255,234,0,0.8)); font-size:18px; }
+  .login-btn { border-color:rgba(111,255,84,0.3); }
+  .login-btn:hover { border-color:var(--green); box-shadow:0 0 10px var(--green-glow); }
+
+  /* Cards */
+  .cards-container { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); display:flex; gap:20px; pointer-events:auto; }
+  .card { width:260px; height:200px; background:linear-gradient(180deg,rgba(30,32,40,0.8) 0%,rgba(20,22,28,0.9) 100%); border:1px solid var(--panel-border); border-radius:8px; backdrop-filter:blur(12px); padding:30px 25px; display:flex; flex-direction:column; justify-content:flex-end; position:relative; overflow:hidden; transition:transform 0.3s,border-color 0.3s,box-shadow 0.3s; cursor:pointer; }
+  .card:hover { transform:translateY(-5px); border-color:rgba(255,255,255,0.15); box-shadow:0 10px 30px rgba(0,0,0,0.5); }
+  .card-icon { position:absolute; top:25px; right:25px; font-size:40px; color:rgba(255,255,255,0.05); }
+  .card:hover .card-icon { color:rgba(255,255,255,0.1); }
+  .card-subtitle { font-size:10px; text-transform:uppercase; letter-spacing:1px; font-weight:600; margin-bottom:6px; }
+  .card-title { font-size:24px; font-weight:800; margin-bottom:20px; letter-spacing:-0.5px; }
+  .card-btn { width:100%; padding:12px 0; border:none; border-radius:4px; font-family:'Inter',sans-serif; font-weight:700; font-size:13px; text-align:center; cursor:pointer; text-transform:uppercase; letter-spacing:1px; transition:all 0.2s; }
+  .card-free .card-subtitle { color:var(--green); }
+  .card-free .card-btn { background:var(--green); color:#000; box-shadow:0 0 15px var(--green-glow); }
+  .card-free .card-btn:hover { background:#82ff6b; }
+  .card-campaign .card-subtitle { color:var(--purple); }
+  .card-campaign .card-btn { background:var(--purple); color:#000; box-shadow:0 0 15px rgba(180,107,250,0.4); }
+  .card-campaign .card-btn:hover { background:#c285ff; }
+  .card-shop .card-subtitle { color:var(--cyan); }
+  .card-shop .card-btn { background:var(--cyan); color:#000; box-shadow:0 0 15px rgba(109,240,245,0.4); }
+  .card-shop .card-btn:hover { background:#8af4f8; }
+
+  /* Center title */
+  .center-content { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; width:100%; margin-top:-140px; }
+  .main-title { display:flex; flex-direction:column; align-items:center; line-height:0.85; }
+  .title-ascend { font-size:100px; font-weight:800; text-transform:uppercase; letter-spacing:-2px; color:#fff; }
+  .title-online { font-size:96px; font-weight:800; font-style:italic; color:var(--green); text-transform:uppercase; letter-spacing:-3px; text-shadow:0 0 30px rgba(111,255,84,0.5); }
+
+  /* Footer nav */
+  .footer-nav { position:absolute; bottom:0; left:0; width:100%; height:70px; background:rgba(10,11,14,0.8); backdrop-filter:blur(15px); border-top:1px solid var(--panel-border); display:flex; justify-content:center; pointer-events:auto; }
+  .nav-item { width:200px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; color:#666; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; cursor:pointer; transition:all 0.3s; }
+  .nav-item i { font-size:18px; }
+  .nav-item:hover { color:#fff; }
+  .nav-item.active { background:var(--green); color:#000; }
+
+  /* ── Overlay screens ── */
+  .overlay-screen { position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg-dark); z-index:100; display:none; flex-direction:column; overflow:hidden; }
+  .overlay-screen.active { display:flex; animation:fadeSlideUp 0.25s ease; }
+  @keyframes fadeSlideUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+  .screen-header { display:flex; align-items:center; gap:20px; padding:22px 40px; border-bottom:1px solid var(--panel-border); background:rgba(10,11,14,0.9); backdrop-filter:blur(10px); flex-shrink:0; }
+  .back-btn { width:36px; height:36px; background:var(--panel-bg); border:1px solid var(--panel-border); border-radius:6px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:14px; color:#fff; transition:all 0.2s; flex-shrink:0; }
+  .back-btn:hover { background:rgba(255,255,255,0.1); }
+  .screen-title { font-size:24px; font-weight:800; text-transform:uppercase; letter-spacing:2px; }
+  .screen-subtitle { font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-top:2px; }
+  .screen-body { padding:36px 40px; flex:1; overflow-y:auto; }
+  .screen-body::-webkit-scrollbar { width:4px; }
+  .screen-body::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:2px; }
+
+  /* Map grid (shared by freeplay & levels) */
+  .map-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:16px; }
+  .map-card { background:var(--panel-bg); border:1px solid var(--panel-border); border-radius:8px; padding:26px 22px; cursor:pointer; transition:all 0.2s; position:relative; overflow:hidden; }
+  .map-card:hover { transform:translateY(-3px); border-color:rgba(255,255,255,0.12); box-shadow:0 8px 25px rgba(0,0,0,0.4); }
+  .map-card-accent { position:absolute; top:0; left:0; width:4px; height:100%; border-radius:2px 0 0 2px; }
+  .map-icon { font-size:30px; margin-bottom:12px; }
+  .map-name { font-size:16px; font-weight:800; margin-bottom:3px; text-transform:uppercase; letter-spacing:0.5px; }
+  .map-desc { font-size:11px; color:var(--text-muted); margin-bottom:12px; }
+  .map-progress-pips { display:flex; gap:6px; }
+  .pip { width:28px; height:4px; border-radius:2px; background:rgba(255,255,255,0.08); }
+  .pip.done { background:var(--green); box-shadow:0 0 5px var(--green-glow); }
+  .map-complete-count { font-size:10px; color:var(--text-muted); margin-top:7px; }
+
+  /* Level detail */
+  .level-detail-back { display:flex; align-items:center; gap:10px; color:var(--text-muted); font-size:13px; font-weight:600; cursor:pointer; margin-bottom:22px; width:fit-content; }
+  .level-detail-back:hover { color:#fff; }
+  .level-detail-title { font-size:30px; font-weight:800; text-transform:uppercase; letter-spacing:2px; margin-bottom:4px; }
+  .level-detail-sub { font-size:12px; color:var(--text-muted); margin-bottom:28px; }
+  .level-rows { display:flex; flex-direction:column; gap:12px; max-width:600px; }
+  .level-row { background:var(--panel-bg); border:1px solid var(--panel-border); border-radius:8px; padding:18px 22px; display:flex; align-items:center; justify-content:space-between; gap:16px; }
+  .level-row.locked { opacity:0.4; }
+  .level-row.completed { border-color:rgba(111,255,84,0.15); }
+  .level-row-name { font-size:15px; font-weight:800; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px; }
+  .level-row-meta { font-size:11px; color:var(--text-muted); display:flex; gap:16px; align-items:center; }
+  .level-row-right { display:flex; align-items:center; gap:12px; flex-shrink:0; }
+  .reward-chip { display:flex; align-items:center; gap:4px; font-size:12px; color:#ffea00; font-weight:700; white-space:nowrap; }
+  .level-status { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; padding:3px 8px; border-radius:3px; white-space:nowrap; }
+  .level-status.done { background:rgba(111,255,84,0.15); color:var(--green); }
+  .level-status.available { background:rgba(255,255,255,0.05); color:var(--text-muted); }
+  .level-status.locked-st { color:#444; }
+  .level-play-btn { padding:8px 20px; border:none; border-radius:5px; font-weight:800; font-size:12px; text-transform:uppercase; letter-spacing:1px; cursor:pointer; transition:all 0.2s; white-space:nowrap; }
+  .play-available { background:var(--green); color:#000; box-shadow:0 0 12px var(--green-glow); }
+  .play-available:hover { background:#82ff6b; }
+  .play-completed { background:rgba(111,255,84,0.15); color:var(--green); border:1px solid rgba(111,255,84,0.25); }
+  .play-completed:hover { background:rgba(111,255,84,0.25); }
+  .play-locked { background:rgba(255,255,255,0.04); color:#444; cursor:not-allowed; }
+
+  /* Skin shop */
+  .skin-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:14px; }
+  .skin-card { background:var(--panel-bg); border:1px solid var(--panel-border); border-radius:8px; padding:18px 14px 14px; text-align:center; transition:all 0.2s; position:relative; }
+  .skin-card:hover { transform:translateY(-2px); border-color:rgba(255,255,255,0.12); }
+  .skin-card.is-active { border-color:var(--green); box-shadow:0 0 18px rgba(111,255,84,0.15); }
+  .skin-card.is-owned { border-color:rgba(111,255,84,0.12); }
+  .skin-preview { width:100%; height:50px; border-radius:6px; margin:0 auto 10px; }
+  .skin-name { font-size:12px; font-weight:800; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px; }
+  .skin-trail { font-size:10px; color:var(--text-muted); margin-bottom:8px; }
+  .skin-rarity { display:inline-block; font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:1px; padding:2px 7px; border-radius:3px; margin-bottom:10px; }
+  .rarity-free    { background:rgba(111,255,84,0.15); color:var(--green); }
+  .rarity-common  { background:rgba(180,180,180,0.12); color:#aaa; }
+  .rarity-rare    { background:rgba(68,136,255,0.15); color:#4488ff; }
+  .rarity-epic    { background:rgba(180,68,255,0.15); color:#cc44ff; }
+  .rarity-legendary { background:rgba(255,170,0,0.15); color:#ffaa00; }
+  .skin-cost { font-size:11px; color:#ffea00; font-weight:700; display:flex; align-items:center; justify-content:center; gap:4px; margin-bottom:10px; }
+  .skin-cost.free-cost { color:var(--green); }
+  .skin-action { width:100%; padding:8px 0; border:none; border-radius:4px; font-weight:800; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; cursor:pointer; transition:all 0.2s; }
+  .skin-equip { background:var(--green); color:#000; }
+  .skin-equip:hover { background:#82ff6b; }
+  .skin-equipped { background:rgba(111,255,84,0.12); color:var(--green); border:1px solid rgba(111,255,84,0.25); cursor:default; }
+  .skin-buy { background:rgba(255,234,0,0.12); color:#ffea00; border:1px solid rgba(255,234,0,0.25); }
+  .skin-buy:hover { background:rgba(255,234,0,0.22); }
+  .skin-locked-btn { background:rgba(255,255,255,0.04); color:#444; cursor:not-allowed; }
+  .equipped-badge { position:absolute; top:7px; right:7px; background:var(--green); color:#000; font-size:8px; font-weight:800; padding:2px 5px; border-radius:2px; text-transform:uppercase; }
+  .lamps-header { display:flex; align-items:center; gap:8px; font-size:13px; color:#ffea00; font-weight:700; margin-left:auto; }
+
+  /* Modal */
+  .modal-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); backdrop-filter:blur(6px); z-index:200; display:none; align-items:center; justify-content:center; }
+  .modal-overlay.active { display:flex; }
+  .modal-box { background:#10111a; border:1px solid rgba(255,255,255,0.09); border-radius:12px; padding:36px; width:100%; max-width:420px; animation:fadeIn 0.2s ease; position:relative; margin:20px; }
+  @keyframes fadeIn { from{opacity:0;transform:scale(0.96)} to{opacity:1;transform:scale(1)} }
+  .modal-close { position:absolute; top:13px; right:13px; width:29px; height:29px; background:transparent; border:none; color:var(--text-muted); font-size:15px; cursor:pointer; border-radius:4px; transition:all 0.2s; display:flex; align-items:center; justify-content:center; }
+  .modal-close:hover { background:rgba(255,255,255,0.06); color:#fff; }
+  .modal-title { font-size:21px; font-weight:800; margin-bottom:4px; }
+  .modal-subtitle { font-size:13px; color:var(--text-muted); margin-bottom:26px; }
+
+  /* Auth tabs */
+  .auth-tabs { display:flex; border-bottom:1px solid var(--panel-border); margin-bottom:22px; }
+  .auth-tab { flex:1; text-align:center; padding:11px; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px; cursor:pointer; color:var(--text-muted); transition:all 0.2s; border-bottom:2px solid transparent; margin-bottom:-1px; }
+  .auth-tab.active { color:var(--green); border-color:var(--green); }
+
+  /* Form */
+  .form-group { margin-bottom:16px; }
+  .form-label { font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:7px; display:block; font-weight:700; }
+  .form-input { width:100%; padding:11px 13px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:6px; color:#fff; font-size:14px; font-family:'Inter',sans-serif; transition:all 0.2s; outline:none; }
+  .form-input:focus { border-color:rgba(111,255,84,0.4); background:rgba(255,255,255,0.07); box-shadow:0 0 0 3px rgba(111,255,84,0.05); }
+  .form-error { font-size:12px; color:#ff4747; margin-top:8px; display:none; }
+  .form-error.visible { display:block; }
+  .submit-btn { width:100%; padding:13px; background:var(--green); color:#000; border:none; border-radius:6px; font-weight:800; font-size:14px; text-transform:uppercase; letter-spacing:1px; cursor:pointer; transition:all 0.2s; box-shadow:0 0 20px rgba(111,255,84,0.25); margin-top:5px; }
+  .submit-btn:hover { background:#82ff6b; transform:translateY(-1px); }
+
+  /* Friends */
+  .friends-list { display:flex; flex-direction:column; gap:10px; margin-bottom:18px; max-height:280px; overflow-y:auto; }
+  .friend-item { display:flex; align-items:center; gap:12px; padding:10px 13px; background:rgba(255,255,255,0.03); border-radius:6px; border:1px solid var(--panel-border); }
+  .friend-avatar { width:32px; height:32px; border-radius:50%; background:var(--green); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; color:#000; flex-shrink:0; }
+  .friend-name { font-size:13px; font-weight:700; }
+  .empty-friends { font-size:13px; color:var(--text-muted); text-align:center; padding:26px 0; }
+  .add-friend-row { display:flex; gap:10px; }
+  .add-friend-row .form-input { flex:1; }
+  .add-btn { padding:11px 16px; background:var(--green); color:#000; border:none; border-radius:6px; font-weight:800; font-size:13px; cursor:pointer; white-space:nowrap; transition:all 0.2s; }
+  .add-btn:hover { background:#82ff6b; }
+
+  /* Toast */
+  .toast { position:fixed; bottom:90px; left:50%; transform:translateX(-50%); background:#1a1b24; border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:12px 20px; font-size:13px; font-weight:700; z-index:999; opacity:0; transition:all 0.3s; pointer-events:none; white-space:nowrap; max-width:90vw; }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(-5px); }
+  .toast.success { border-color:rgba(111,255,84,0.35); color:var(--green); }
+  .toast.error   { border-color:rgba(255,71,71,0.35); color:#ff4747; }
+  .toast.info    { border-color:rgba(109,240,245,0.35); color:var(--cyan); }
+  .toast.warn    { border-color:rgba(255,234,0,0.35); color:#ffea00; }
+</style>
+</head>
+<body>
+
+<div id="canvas-container"></div>
+<div class="vignette"></div>
+
+<!-- HOME UI -->
+<div id="ui-layer">
+  <div class="top-bar">
+    <div class="logo">MMKL SNAKE</div>
+    <div class="top-icons">
+      <div class="icon-btn" id="btn-lamps"><i class="fa-solid fa-lightbulb lamp-icon"></i><span class="btn-text" id="lamps-display">0</span></div>
+      <div class="icon-btn" id="btn-store"><i class="fa-solid fa-store"></i><span class="btn-text">Store</span></div>
+      <div class="icon-btn icon-only" id="btn-friends"><i class="fa-solid fa-user-group"></i></div>
+      <div class="icon-btn login-btn" id="btn-login"><i class="fa-solid fa-right-to-bracket" id="login-icon"></i><span class="btn-text" id="login-label">Login</span></div>
+      <div class="icon-btn icon-only" id="btn-help"><i class="fa-solid fa-question"></i></div>
+      <div class="icon-btn icon-only"><i class="fa-solid fa-gear"></i></div>
+    </div>
+  </div>
+
+  <div class="center-content">
+    <div class="main-title">
+      <div class="title-ascend">MMKL</div>
+      <div class="title-online">SNAKE</div>
+    </div>
+  </div>
+
+  <div class="cards-container">
+    <div class="card card-free" id="card-freeplay">
+      <i class="fa-solid fa-play card-icon"></i>
+      <div>
+        <div class="card-subtitle">Quick Start</div>
+        <div class="card-title">FREE PLAY</div>
+        <button class="card-btn" id="btn-launch">Launch</button>
+      </div>
+    </div>
+    <div class="card card-campaign" id="card-levels">
+      <i class="fa-solid fa-list-ol card-icon"></i>
+      <div>
+        <div class="card-subtitle">Campaign</div>
+        <div class="card-title">LEVELS</div>
+        <button class="card-btn" id="btn-progress">Progress</button>
+      </div>
+    </div>
+    <div class="card card-shop" id="card-themes">
+      <i class="fa-solid fa-palette card-icon"></i>
+      <div>
+        <div class="card-subtitle">Skin Shop</div>
+        <div class="card-title">THEMES</div>
+        <button class="card-btn" id="btn-customise">Customise</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-nav">
+    <div class="nav-item active" id="nav-freeplay" data-nav="freeplay"><i class="fa-solid fa-play"></i>Free Play</div>
+    <div class="nav-item" id="nav-levels" data-nav="levels"><i class="fa-solid fa-list-ol"></i>Levels</div>
+    <div class="nav-item" id="nav-themes" data-nav="themes"><i class="fa-solid fa-palette"></i>Themes</div>
+  </div>
+</div>
+
+<!-- FREE PLAY MAP SELECT -->
+<div id="screen-freeplay" class="overlay-screen">
+  <div class="screen-header">
+    <div class="back-btn" id="freeplay-back"><i class="fa-solid fa-arrow-left"></i></div>
+    <div>
+      <div class="screen-title">Free Play</div>
+      <div class="screen-subtitle">Choose a map and start playing</div>
+    </div>
+  </div>
+  <div class="screen-body" id="freeplay-body"></div>
+</div>
+
+<!-- CAMPAIGN LEVELS -->
+<div id="screen-levels" class="overlay-screen">
+  <div class="screen-header">
+    <div class="back-btn" id="levels-back"><i class="fa-solid fa-arrow-left"></i></div>
+    <div>
+      <div class="screen-title">Campaign</div>
+      <div class="screen-subtitle" id="levels-subtitle">Select a map to begin</div>
+    </div>
+  </div>
+  <div class="screen-body" id="levels-body"></div>
+</div>
+
+<!-- THEMES / SKIN SHOP -->
+<div id="screen-themes" class="overlay-screen">
+  <div class="screen-header">
+    <div class="back-btn" id="themes-back"><i class="fa-solid fa-arrow-left"></i></div>
+    <div style="flex:1">
+      <div class="screen-title">Skin Shop</div>
+      <div class="screen-subtitle">Buy and equip snake skins</div>
+    </div>
+    <div class="lamps-header"><i class="fa-solid fa-lightbulb"></i><span id="themes-lamps">0</span> Lamps</div>
+  </div>
+  <div class="screen-body" id="themes-body"></div>
+</div>
+
+<!-- LOGIN MODAL -->
+<div id="modal-login" class="modal-overlay">
+  <div class="modal-box">
+    <button class="modal-close" id="login-close"><i class="fa-solid fa-xmark"></i></button>
+    <div class="modal-title" id="auth-title">Welcome Back</div>
+    <div class="modal-subtitle" id="auth-subtitle">Sign in to save your progress and skins</div>
+    <div class="auth-tabs">
+      <div class="auth-tab active" id="tab-login" data-tab="login">Login</div>
+      <div class="auth-tab" id="tab-register" data-tab="register">Register</div>
+    </div>
+    <div id="form-login">
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" id="login-email" placeholder="you@example.com" autocomplete="email"></div>
+      <div class="form-group"><label class="form-label">Password</label><input class="form-input" type="password" id="login-password" placeholder="••••••••" autocomplete="current-password"></div>
+      <div class="form-error" id="login-error">Invalid email or password.</div>
+      <button class="submit-btn" id="login-submit">Login</button>
+    </div>
+    <div id="form-register" style="display:none">
+      <div class="form-group"><label class="form-label">Username</label><input class="form-input" type="text" id="reg-username" placeholder="SnakeMaster42" autocomplete="username"></div>
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" id="reg-email" placeholder="you@example.com" autocomplete="email"></div>
+      <div class="form-group"><label class="form-label">Password</label><input class="form-input" type="password" id="reg-password" placeholder="Min 6 characters" autocomplete="new-password"></div>
+      <div class="form-error" id="reg-error">Please fill in all fields.</div>
+      <button class="submit-btn" id="reg-submit">Create Account</button>
+    </div>
+  </div>
+</div>
+
+<!-- FRIENDS MODAL -->
+<div id="modal-friends" class="modal-overlay">
+  <div class="modal-box">
+    <button class="modal-close" id="friends-close"><i class="fa-solid fa-xmark"></i></button>
+    <div class="modal-title">Friends</div>
+    <div class="modal-subtitle">Add friends and challenge them</div>
+    <div class="friends-list" id="friends-list"></div>
+    <div class="add-friend-row">
+      <input class="form-input" type="text" id="friend-input" placeholder="Enter username">
+      <button class="add-btn" id="add-friend-btn">Add</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<!-- 3D SCENE -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+  let scene, camera, renderer, snakeGroup, snakeMesh, snakeHead;
+  let snakeMat, headMat; // exposed for skin updates
+  let time = 0;
+  const numPoints = 80;
+  const points = [];
+  const trees = [];
+
+  function init() {
+    const container = document.getElementById('canvas-container');
+    scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x0a0b0e, 0.015);
+    camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 5, 25); camera.lookAt(0, 0, 0);
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    container.appendChild(renderer.domElement);
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.3));
+    const cL = new THREE.PointLight(0x00ffff, 2, 50); cL.position.set(-10, 10, 10); scene.add(cL);
+    const gL = new THREE.PointLight(0x6fff54, 2, 50); gL.position.set(10, -5, 5); scene.add(gL);
+    const bL = new THREE.DirectionalLight(0x0055ff, 1.5); bL.position.set(0, 20, -10); scene.add(bL);
+
+    createForest();
+    snakeGroup = new THREE.Group();
+
+    const scaleTex = createScaleTexture();
+    snakeMat = new THREE.MeshStandardMaterial({ color: 0x8eff71, emissive: new THREE.Color('#8eff71'), emissiveIntensity: 0.28, roughness: 0.3, metalness: 0.4, map: scaleTex });
+    headMat  = new THREE.MeshStandardMaterial({ color: 0x4cd420, emissive: new THREE.Color('#4cd420'), emissiveIntensity: 0.55, roughness: 0.2, metalness: 0.5, map: scaleTex });
+
+    const scaleGeom = new THREE.SphereGeometry(3.0, 32, 16);
+    snakeMesh = new THREE.InstancedMesh(scaleGeom, snakeMat, numPoints);
+    snakeMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    snakeGroup.add(snakeMesh);
+    for (let i = 0; i < numPoints; i++) points.push(new THREE.Vector3());
+
+    const headGeom = new THREE.SphereGeometry(3.6, 32, 24);
+    headGeom.scale(1.1, 0.9, 1.3); headGeom.translate(0, 0, 1.5);
+    snakeHead = new THREE.Mesh(headGeom, headMat);
+
+    const eyeG = new THREE.SphereGeometry(0.8, 16, 16);
+    const eyeM = new THREE.MeshBasicMaterial({ color: 0x010101 });
+    const pupilG = new THREE.SphereGeometry(0.25, 8, 8);
+    const pupilM = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    [[1.8, 1.2, 4.5], [-1.8, 1.2, 4.5]].forEach(([x, y, z]) => {
+      const eye = new THREE.Mesh(eyeG, eyeM); eye.position.set(x, y, z);
+      const pupil = new THREE.Mesh(pupilG, pupilM); pupil.position.set(x > 0 ? 0.4 : -0.4, 0.4, 0.6);
+      eye.add(pupil); snakeHead.add(eye);
+    });
+
+    const tG = new THREE.Group(); const tM = new THREE.MeshBasicMaterial({ color: 0xff3333 });
+    const tb = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 1.5), tM); tb.rotation.x = Math.PI / 2; tb.position.set(0, -0.5, 5.8);
+    const fl = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.1, 0.8), tM); fl.rotation.x = Math.PI / 2; fl.rotation.y = -Math.PI / 5; fl.position.set(0.25, -0.5, 6.7);
+    const fr = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.1, 0.8), tM); fr.rotation.x = Math.PI / 2; fr.rotation.y = Math.PI / 5; fr.position.set(-0.25, -0.5, 6.7);
+    tG.add(tb); tG.add(fl); tG.add(fr); snakeHead.add(tG);
+
+    scene.add(snakeHead); scene.add(snakeGroup);
+    window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
+    animate();
+  }
+
+  function createScaleTexture() {
+    const c = document.createElement('canvas'); c.width = 512; c.height = 512; const ctx = c.getContext('2d');
+    ctx.fillStyle = '#5ac94f'; ctx.fillRect(0, 0, 512, 512);
+    ctx.fillStyle = '#30802c'; ctx.strokeStyle = '#1e5c1a'; ctx.lineWidth = 4;
+    for (let x = 0; x <= 512; x += 128) { ctx.beginPath(); ctx.moveTo(x+64,20); ctx.lineTo(x+104,60); ctx.lineTo(x+64,100); ctx.lineTo(x+24,60); ctx.closePath(); ctx.fill(); ctx.stroke(); }
+    const tex = new THREE.CanvasTexture(c); tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.ClampToEdgeWrapping;
+    return tex;
+  }
+
+  function createForest() {
+    const trunkG = new THREE.CylinderGeometry(0.4, 0.6, 2.5, 7);
+    const trunkM = new THREE.MeshStandardMaterial({ color: 0x1a120c, roughness: 1.0 });
+    const leavesG = new THREE.ConeGeometry(2.5, 6, 7); leavesG.translate(0, 3, 0);
+    const leavesM = new THREE.MeshStandardMaterial({ color: 0x05260c, roughness: 0.9 });
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(300, 300), new THREE.MeshStandardMaterial({ color: 0x020d04, roughness: 1.0 }));
+    ground.rotation.x = -Math.PI / 2; ground.position.y = -8; scene.add(ground);
+    for (let i = 0; i < 150; i++) {
+      let x = (Math.random() - 0.5) * 160, z = (Math.random() - 0.5) * 160 - 20;
+      if (Math.abs(x) < 30 && Math.abs(z + 15) < 30) continue;
+      const g = new THREE.Group(); g.position.set(x, -8, z);
+      const trunk = new THREE.Mesh(trunkG, trunkM); trunk.position.y = 1.25; g.add(trunk);
+      const leaves = new THREE.Mesh(leavesG, leavesM); leaves.position.y = 2.5; leaves.rotation.y = Math.random() * Math.PI;
+      const s = 0.6 + Math.random() * 0.9; g.scale.set(s, s, s); g.add(leaves); scene.add(g);
+      trees.push({ group: g, leaves, baseX: x, windOffset: Math.random() * 100, swayMultiplier: 0.05 + Math.random() * 0.06 });
+    }
+    window.gridHelper = new THREE.GridHelper(350, 70, 0x003311, 0x001105); window.gridHelper.position.y = -7.9; scene.add(window.gridHelper);
+    const pG = new THREE.BufferGeometry(); const cnt = 600;
+    const pPos = new Float32Array(cnt * 3); const pSpd = new Float32Array(cnt);
+    for (let i = 0; i < cnt; i++) { pPos[i*3]=(Math.random()-0.5)*300; pPos[i*3+1]=Math.random()*30-8; pPos[i*3+2]=(Math.random()-0.5)*200-30; pSpd[i]=0.02+Math.random()*0.04; }
+    pG.setAttribute('position', new THREE.BufferAttribute(pPos, 3)); pG.setAttribute('speed', new THREE.BufferAttribute(pSpd, 1));
+    window.fireflies = new THREE.Points(pG, new THREE.PointsMaterial({ color: 0x6fff54, size: 0.5, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending }));
+    scene.add(window.fireflies);
+  }
+
+  function getPathPos(t) { return new THREE.Vector3(Math.sin(t*0.5)*22, Math.sin(t*1.0)*10, Math.cos(t*0.5)*15-15); }
+
+  function animate() {
+    requestAnimationFrame(animate); time += 0.012;
+    const dummy = new THREE.Object3D();
+    for (let i = 0; i < numPoints; i++) {
+      const st = time - i * 0.035; const pt = getPathPos(st);
+      if (i === 0) points[0].copy(pt);
+      dummy.position.copy(pt); dummy.lookAt(getPathPos(st + 0.1));
+      const scl = Math.max(0.01, 1.0 - Math.pow(i/(numPoints-1), 1.6));
+      dummy.scale.set(scl, scl, scl); dummy.updateMatrix(); snakeMesh.setMatrixAt(i, dummy.matrix);
+    }
+    snakeMesh.instanceMatrix.needsUpdate = true;
+    if (snakeHead) { snakeHead.position.copy(getPathPos(time)); snakeHead.lookAt(getPathPos(time+0.1)); }
+
+    const gs = 0.15;
+    if (window.fireflies) {
+      const pos = window.fireflies.geometry.attributes.position.array;
+      const spd = window.fireflies.geometry.attributes.speed.array;
+      for (let i = 0; i < pos.length; i += 3) {
+        pos[i+1] += spd[i/3] + Math.sin(time*2+pos[i])*0.01; if (pos[i+1] > 25) pos[i+1] = -8;
+        pos[i+2] += gs * 0.7; if (pos[i+2] > 30) pos[i+2] -= 230;
+      }
+      window.fireflies.geometry.attributes.position.needsUpdate = true;
+    }
+    if (window.gridHelper) { window.gridHelper.position.z += gs; if (window.gridHelper.position.z > 5) window.gridHelper.position.z -= 5; }
+    for (const tree of trees) {
+      tree.group.position.z += gs;
+      if (tree.group.position.z > 30) { tree.group.position.z -= 190; tree.group.position.x = (Math.random()-0.5)*160; if (Math.abs(tree.group.position.x) < 30) tree.group.position.x += 40; }
+      const gust = Math.sin(time*1.5+tree.windOffset)*tree.swayMultiplier + Math.sin(time*3.5+tree.baseX*0.1)*(tree.swayMultiplier*0.5);
+      tree.leaves.rotation.z = gust; tree.leaves.rotation.x = gust * 0.5;
+    }
+    renderer.render(scene, camera);
+  }
+
+  // Called by app logic when a skin is equipped
+  function applySnakeSkin(skin) {
+    if (!snakeMat || !headMat) return;
+    const head  = new THREE.Color(skin.colors[0]);
+    const body  = new THREE.Color(skin.colors[Math.floor(skin.colors.length / 2)]);
+    const glow  = new THREE.Color(skin.glow);
+    snakeMat.color.set(body); snakeMat.emissive.set(glow); snakeMat.emissiveIntensity = 0.28; snakeMat.needsUpdate = true;
+    headMat.color.set(head);  headMat.emissive.set(glow);  headMat.emissiveIntensity = 0.55;  headMat.needsUpdate = true;
+    // Update the firefly color to match
+    if (window.fireflies) window.fireflies.material.color.set(glow);
+  }
+
+  init();
+</script>
+
+<!-- APP LOGIC -->
+<script>
+// ── Data ──────────────────────────────────────────────────────────
+const MAPS = [
+  { id:'ocean',  name:'Ocean Depths',   icon:'🌊', color:'#00b4d8', desc:'Navigate the deep sea currents' },
+  { id:'earth',  name:'Earth Jungle',   icon:'🌿', color:'#4aff50', desc:'Dense foliage, hidden paths' },
+  { id:'moon',   name:'Lunar Surface',  icon:'🌙', color:'#c0c0d0', desc:'Low gravity, high chaos' },
+  { id:'space',  name:'Deep Space',     icon:'⭐', color:'#6e6eff', desc:'Zero-gravity void expanse' },
+  { id:'desert', name:'Sand Dunes',     icon:'🏜️', color:'#ffaa00', desc:'Endless shifting sands' },
+  { id:'arctic', name:'Arctic Tundra',  icon:'❄️', color:'#80e8ff', desc:'Frozen wasteland, slick ice' },
+  { id:'lava',   name:'Lava Fields',    icon:'🌋', color:'#ff4400', desc:'Rivers of molten rock' },
+  { id:'city',   name:'Neon City',      icon:'🏙️', color:'#c47fff', desc:'Urban maze, neon lights' },
+  { id:'jungle', name:'Ancient Jungle', icon:'🌴', color:'#00ff88', desc:'Hidden temples, ancient traps' },
+];
+
+const CAMPAIGN_LEVELS = [
+  { id:1, name:'Easy',   target:5,  speed:'Slow',   reward:5  },
+  { id:2, name:'Medium', target:20, speed:'Normal', reward:15 },
+  { id:3, name:'Hard',   target:45, speed:'Fast',   reward:30 },
+];
+
+const SKINS = [
+  { id:'default',   name:'Default',    price:0,   rarity:'free',      trail:'No Trail',       colors:['#8eff71','#4cd420','#1a8000'],          glow:'#8eff71' },
+  { id:'ocean',     name:'Ocean',      price:25,  rarity:'common',    trail:'Water Ripple',   colors:['#00e5ff','#0096c7','#023e8a'],          glow:'#00e5ff' },
+  { id:'phantom',   name:'Phantom',    price:30,  rarity:'common',    trail:'Smoke Wisps',    colors:['#d966ff','#9900cc','#3d0066'],          glow:'#cc44ff' },
+  { id:'venom',     name:'Venom',      price:30,  rarity:'common',    trail:'Toxic Drip',     colors:['#c8ff00','#7aad00','#1f3d00'],          glow:'#c8ff00' },
+  { id:'inferno',   name:'Inferno',    price:40,  rarity:'common',    trail:'Fire Sparks',    colors:['#ff9f00','#ff4500','#7a0000'],          glow:'#ff6600' },
+  { id:'arctic',    name:'Arctic',     price:40,  rarity:'common',    trail:'Frost Crystals', colors:['#e0f7ff','#5ccfff','#006f99'],          glow:'#80e8ff' },
+  { id:'neon_candy',name:'Neon Candy', price:45,  rarity:'rare',      trail:'Rainbow Sparks', colors:['#ff79c6','#bd93f9','#50fa7b'],          glow:'#ff79c6' },
+  { id:'toxic',     name:'Toxic',      price:45,  rarity:'rare',      trail:'Acid Bubbles',   colors:['#aaff00','#55cc00','#004400'],          glow:'#aaff00' },
+  { id:'thunder',   name:'Thunder',    price:50,  rarity:'rare',      trail:'Lightning Arc',  colors:['#fff500','#c800ff','#3d0066'],          glow:'#fff500' },
+  { id:'void',      name:'Void Walker',price:55,  rarity:'rare',      trail:'Dark Matter',    colors:['#ffffff','#888888','#222222'],          glow:'#aaaaaa' },
+  { id:'solar',     name:'Solar',      price:55,  rarity:'rare',      trail:'Light Orbs',     colors:['#ffe566','#ffaa00','#cc5500'],          glow:'#ffcc00' },
+  { id:'rose_gold', name:'Rose Gold',  price:60,  rarity:'rare',      trail:'Petal Drift',    colors:['#ffb3c6','#ff6b9d','#9b2256'],          glow:'#ff6b9d' },
+  { id:'magma',     name:'Magma',      price:65,  rarity:'rare',      trail:'Lava Drips',     colors:['#ff8c00','#cc2200','#330000'],          glow:'#ff4400' },
+  { id:'shadow',    name:'Shadow',     price:65,  rarity:'rare',      trail:'Shadow Streak',  colors:['#9b59b6','#2c1654','#0a0010'],          glow:'#6c3483' },
+  { id:'cyber',     name:'Cyber',      price:75,  rarity:'epic',      trail:'Digital Glitch', colors:['#00ffea','#ff6b00','#001a20'],          glow:'#00ffea' },
+  { id:'matrix',    name:'Matrix',     price:80,  rarity:'epic',      trail:'Data Rain',      colors:['#00ff41','#00aa2b','#002208'],          glow:'#00ff41' },
+  { id:'crimson',   name:'Crimson',    price:80,  rarity:'epic',      trail:'Blood Streaks',  colors:['#ff1a2e','#aa0011','#330006'],          glow:'#ff1a2e' },
+  { id:'aurora',    name:'Aurora',     price:90,  rarity:'epic',      trail:'Light Waves',    colors:['#00ffaa','#00aaff','#aa00ff'],          glow:'#00ffaa' },
+  { id:'galaxy',    name:'Galaxy',     price:120, rarity:'legendary', trail:'Star Nebula',    colors:['#ff6ef7','#6e6eff','#0033ff'],          glow:'#aa66ff' },
+  { id:'prism',     name:'Prism',      price:150, rarity:'legendary', trail:'Spectrum Burst', colors:['#ff0080','#ffaa00','#00ffaa','#0080ff'], glow:'#ffffff' },
+];
+
+const RARITY_LABEL = { free:'Free', common:'Common', rare:'Rare', epic:'Epic', legendary:'Legendary' };
+
+// ── State ─────────────────────────────────────────────────────────
+const STORAGE_KEY = 'mmkl-snake-user';
+
+function defaultUser(email, username) {
+  return { email, username, lamps:50, activeSkin:'default', ownedSkins:['default'], progress:{}, friends:[] };
+}
+function loadUser() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch { return null; } }
+function saveUser(u) { localStorage.setItem(STORAGE_KEY, JSON.stringify(u)); }
+
+let currentUser = loadUser();
+
+// ── Toast ──────────────────────────────────────────────────────────
+let _toastT;
+function showToast(msg, type='info') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = 'toast ' + type + ' show';
+  clearTimeout(_toastT); _toastT = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// ── Nav ────────────────────────────────────────────────────────────
+function refreshNav() {
+  const u = currentUser;
+  document.getElementById('lamps-display').textContent = u ? u.lamps.toLocaleString() : '0';
+  document.getElementById('login-label').textContent = u ? u.username : 'Login';
+  document.getElementById('login-icon').className = u ? 'fa-solid fa-user' : 'fa-solid fa-right-to-bracket';
+}
+
+function progressKey(mapId, lvId) { return mapId + '-' + lvId; }
+
+// ── Screens ────────────────────────────────────────────────────────
+function showScreen(name) {
+  ['screen-freeplay','screen-levels','screen-themes'].forEach(id => document.getElementById(id).classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+
+  if (name === 'freeplay')  { document.getElementById('screen-freeplay').classList.add('active'); document.getElementById('nav-freeplay').classList.add('active'); renderFreeplayScreen(); }
+  else if (name === 'levels') { document.getElementById('screen-levels').classList.add('active');  document.getElementById('nav-levels').classList.add('active');  renderLevelsScreen(); }
+  else if (name === 'themes') { document.getElementById('screen-themes').classList.add('active');  document.getElementById('nav-themes').classList.add('active');  renderThemesScreen(); }
+  else { document.getElementById('nav-freeplay').classList.add('active'); }
+}
+
+function openModal(id)  { document.getElementById(id).classList.add('active'); }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+// ── Free Play map select ───────────────────────────────────────────
+function renderFreeplayScreen() {
+  document.getElementById('freeplay-body').innerHTML = '<div class="map-grid">' + MAPS.map(map => `
+    <div class="map-card" onclick="launchFreePlay('${map.id}')">
+      <div class="map-card-accent" style="background:${map.color}"></div>
+      <div class="map-icon">${map.icon}</div>
+      <div class="map-name" style="color:${map.color}">${map.name}</div>
+      <div class="map-desc">${map.desc}</div>
+      <div style="margin-top:14px"><button class="level-play-btn play-available" style="padding:8px 18px;font-size:11px">Play ▶</button></div>
+    </div>`).join('') + '</div>';
+}
+
+function launchFreePlay(mapId) {
+  // Set the map in the snake game's localStorage key so it starts on that map
+  localStorage.setItem('sn3d_map', JSON.stringify(mapId));
+  window.location.href = '/games/snake-3d/snake-3d.html';
+}
+
+// ── Campaign levels ────────────────────────────────────────────────
+function renderLevelsScreen() {
+  document.getElementById('levels-subtitle').textContent = 'Choose a map — 9 worlds to conquer';
+  document.getElementById('levels-body').innerHTML = '<div class="map-grid">' + MAPS.map(map => {
+    const pips = CAMPAIGN_LEVELS.map(lv => {
+      const done = currentUser && currentUser.progress[progressKey(map.id, lv.id)]?.completed;
+      return `<div class="pip${done?' done':''}"></div>`;
+    }).join('');
+    const doneCount = CAMPAIGN_LEVELS.filter(lv => currentUser?.progress[progressKey(map.id, lv.id)]?.completed).length;
+    return `<div class="map-card" onclick="openMapDetail('${map.id}')">
+      <div class="map-card-accent" style="background:${map.color}"></div>
+      <div class="map-icon">${map.icon}</div>
+      <div class="map-name">${map.name}</div>
+      <div class="map-desc">${map.desc}</div>
+      <div class="map-progress-pips">${pips}</div>
+      <div class="map-complete-count" style="color:${map.color}">${doneCount}/3 completed</div>
+    </div>`;
+  }).join('') + '</div>';
+}
+
+function openMapDetail(mapId) {
+  const map = MAPS.find(m => m.id === mapId);
+  document.getElementById('levels-subtitle').textContent = map.name + ' · ' + map.desc;
+  const rows = CAMPAIGN_LEVELS.map((lv, idx) => {
+    const key = progressKey(mapId, lv.id);
+    const done = currentUser?.progress[key]?.completed;
+    const prevDone = idx === 0 || currentUser?.progress[progressKey(mapId, CAMPAIGN_LEVELS[idx-1].id)]?.completed;
+    const locked = !prevDone;
+    let statusHtml, btnHtml;
+    if (locked) {
+      statusHtml = '<span class="level-status locked-st"><i class="fa-solid fa-lock" style="font-size:9px"></i> Locked</span>';
+      btnHtml = '<button class="level-play-btn play-locked" disabled>Play</button>';
+    } else if (done) {
+      statusHtml = '<span class="level-status done">✓ Done</span>';
+      btnHtml = `<button class="level-play-btn play-completed" onclick="playLevel('${mapId}',${lv.id})">Replay</button>`;
+    } else {
+      statusHtml = '<span class="level-status available">Available</span>';
+      btnHtml = `<button class="level-play-btn play-available" onclick="playLevel('${mapId}',${lv.id})">Play</button>`;
+    }
+    return `<div class="level-row ${locked?'locked':done?'completed':''}">
+      <div>
+        <div class="level-row-name" style="color:${locked?'#555':map.color}">${lv.name}</div>
+        <div class="level-row-meta">
+          <span><i class="fa-solid fa-bullseye" style="font-size:9px"></i> ${lv.target} food</span>
+          <span><i class="fa-solid fa-gauge" style="font-size:9px"></i> ${lv.speed}</span>
+        </div>
+      </div>
+      <div class="level-row-right">
+        <div class="reward-chip"><i class="fa-solid fa-lightbulb" style="font-size:9px"></i> +${lv.reward}</div>
+        ${statusHtml} ${btnHtml}
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('levels-body').innerHTML = `
+    <div class="level-detail-back" onclick="renderLevelsScreen()"><i class="fa-solid fa-arrow-left"></i> All Maps</div>
+    <div class="level-detail-title" style="color:${map.color}">${map.icon} ${map.name}</div>
+    <div class="level-detail-sub">${map.desc}</div>
+    <div class="level-rows">${rows}</div>`;
+}
+
+function playLevel(mapId, levelId) {
+  if (!currentUser) { showToast('Login to save your progress', 'warn'); openModal('modal-login'); return; }
+  const map = MAPS.find(m => m.id === mapId);
+  const lv = CAMPAIGN_LEVELS.find(l => l.id === levelId);
+  showToast(`Launching ${map.name} — ${lv.name}…`, 'info');
+  setTimeout(() => {
+    const key = progressKey(mapId, levelId);
+    if (!currentUser.progress[key]?.completed) {
+      currentUser.progress[key] = { completed:true, score:lv.target };
+      currentUser.lamps += lv.reward;
+      saveUser(currentUser); refreshNav();
+      showToast(`+${lv.reward} lamps earned! Level complete.`, 'success');
+    }
+    openMapDetail(mapId);
+  }, 1200);
+}
+
+// ── Themes / skin shop ─────────────────────────────────────────────
+function skinGradient(skin) {
+  const c = skin.colors;
+  if (c.length === 2) return `linear-gradient(135deg,${c[0]},${c[1]})`;
+  if (c.length >= 3) return `linear-gradient(135deg,${c[0]},${c[Math.floor(c.length/2)]},${c[c.length-1]})`;
+  return c[0];
+}
+
+function renderThemesScreen() {
+  const u = currentUser;
+  document.getElementById('themes-lamps').textContent = u ? u.lamps.toLocaleString() : '0';
+  document.getElementById('themes-body').innerHTML = '<div class="skin-grid">' + SKINS.map(skin => {
+    const owned   = u ? u.ownedSkins.includes(skin.id) : skin.price === 0;
+    const equipped = u ? u.activeSkin === skin.id : skin.id === 'default';
+    const badge = equipped ? '<span class="equipped-badge">On</span>' : '';
+    let actionBtn;
+    if (equipped)       actionBtn = '<button class="skin-action skin-equipped" disabled>Equipped</button>';
+    else if (owned)     actionBtn = `<button class="skin-action skin-equip" onclick="equipSkin('${skin.id}')">Equip</button>`;
+    else if (!u)        actionBtn = `<button class="skin-action skin-locked-btn" onclick="showToast('Login to buy skins','warn')">Login to buy</button>`;
+    else                actionBtn = `<button class="skin-action skin-buy" onclick="buySkin('${skin.id}')">Buy</button>`;
+
+    const costHtml = skin.price === 0
+      ? '<div class="skin-cost free-cost"><i class="fa-solid fa-gift"></i> Free</div>'
+      : `<div class="skin-cost"><i class="fa-solid fa-lightbulb" style="font-size:9px"></i> ${skin.price}</div>`;
+
+    return `<div class="skin-card ${equipped?'is-active':owned?'is-owned':''}">
+      ${badge}
+      <div class="skin-preview" style="background:${skinGradient(skin)};box-shadow:0 0 16px ${skin.glow}44"></div>
+      <div class="skin-name">${skin.name}</div>
+      <div class="skin-trail">${skin.trail}</div>
+      <span class="skin-rarity rarity-${skin.rarity}">${RARITY_LABEL[skin.rarity]}</span>
+      ${costHtml}
+      ${actionBtn}
+    </div>`;
+  }).join('') + '</div>';
+}
+
+function equipSkin(skinId) {
+  if (!currentUser) return;
+  currentUser.activeSkin = skinId;
+  saveUser(currentUser);
+  const skin = SKINS.find(s => s.id === skinId);
+  applySnakeSkin(skin); // update the 3D snake on home screen
+  showToast(skin.name + ' equipped!', 'success');
+  renderThemesScreen();
+}
+
+function buySkin(skinId) {
+  if (!currentUser) { openModal('modal-login'); return; }
+  const skin = SKINS.find(s => s.id === skinId);
+  if (currentUser.lamps < skin.price) { showToast('Not enough lamps! Need ' + skin.price + '.', 'error'); return; }
+  currentUser.lamps -= skin.price;
+  currentUser.ownedSkins.push(skinId);
+  currentUser.activeSkin = skinId;
+  saveUser(currentUser); refreshNav();
+  applySnakeSkin(skin);
+  showToast(skin.name + ' purchased & equipped! −' + skin.price + ' lamps', 'success');
+  renderThemesScreen();
+}
+
+// ── Friends ────────────────────────────────────────────────────────
+function renderFriendsList() {
+  const friends = currentUser?.friends || [];
+  document.getElementById('friends-list').innerHTML = friends.length === 0
+    ? '<div class="empty-friends"><i class="fa-solid fa-user-group" style="font-size:22px;margin-bottom:10px;display:block;opacity:0.3"></i>No friends yet</div>'
+    : friends.map(f => `<div class="friend-item"><div class="friend-avatar">${f.charAt(0).toUpperCase()}</div><div><div class="friend-name">${f}</div></div></div>`).join('');
+}
+
+// ── Auth ───────────────────────────────────────────────────────────
+function switchAuthTab(tab) {
+  document.getElementById('tab-login').classList.toggle('active', tab==='login');
+  document.getElementById('tab-register').classList.toggle('active', tab==='register');
+  document.getElementById('form-login').style.display = tab==='login' ? '' : 'none';
+  document.getElementById('form-register').style.display = tab==='register' ? '' : 'none';
+  document.getElementById('auth-title').textContent = tab==='login' ? 'Welcome Back' : 'Create Account';
+  document.getElementById('auth-subtitle').textContent = tab==='login' ? 'Sign in to save your progress and skins' : 'Join MMKL Snake and start your campaign';
+}
+
+function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pw = document.getElementById('login-password').value;
+  const errEl = document.getElementById('login-error');
+  errEl.classList.remove('visible');
+  if (!email || !pw) { errEl.textContent='Please fill in all fields.'; errEl.classList.add('visible'); return; }
+  const stored = localStorage.getItem('mmkl-account-' + email.toLowerCase());
+  if (!stored) { errEl.textContent='No account found. Please register.'; errEl.classList.add('visible'); return; }
+  const account = JSON.parse(stored);
+  if (account.password !== pw) { errEl.textContent='Incorrect password.'; errEl.classList.add('visible'); return; }
+  currentUser = account.user;
+  saveUser(currentUser);
+  closeModal('modal-login'); refreshNav();
+  const skin = SKINS.find(s => s.id === currentUser.activeSkin);
+  if (skin) applySnakeSkin(skin);
+  showToast('Welcome back, ' + currentUser.username + '!', 'success');
+}
+
+function doRegister() {
+  const username = document.getElementById('reg-username').value.trim();
+  const email    = document.getElementById('reg-email').value.trim();
+  const pw       = document.getElementById('reg-password').value;
+  const errEl    = document.getElementById('reg-error');
+  errEl.classList.remove('visible');
+  if (!username || !email || !pw) { errEl.textContent='Please fill in all fields.'; errEl.classList.add('visible'); return; }
+  if (pw.length < 6)  { errEl.textContent='Password must be at least 6 characters.'; errEl.classList.add('visible'); return; }
+  if (!email.includes('@')) { errEl.textContent='Enter a valid email address.'; errEl.classList.add('visible'); return; }
+  const key = 'mmkl-account-' + email.toLowerCase();
+  if (localStorage.getItem(key)) { errEl.textContent='Account already exists. Please login.'; errEl.classList.add('visible'); return; }
+  const user = defaultUser(email, username);
+  localStorage.setItem(key, JSON.stringify({ password:pw, user }));
+  currentUser = user; saveUser(currentUser);
+  closeModal('modal-login'); refreshNav();
+  showToast('Account created! You start with 50 lamps.', 'success');
+}
+
+// ── Event listeners ────────────────────────────────────────────────
+document.getElementById('btn-login').addEventListener('click', () => {
+  if (currentUser) { currentUser=null; localStorage.removeItem(STORAGE_KEY); refreshNav(); applySnakeSkin(SKINS[0]); showToast('Logged out','info'); }
+  else openModal('modal-login');
+});
+document.getElementById('btn-store').addEventListener('click', () => showScreen('themes'));
+document.getElementById('btn-friends').addEventListener('click', () => {
+  if (!currentUser) { showToast('Login to use friends list','warn'); openModal('modal-login'); return; }
+  renderFriendsList(); openModal('modal-friends');
+});
+document.getElementById('btn-help').addEventListener('click', () => showToast('Easy: 5 food · Medium: 20 · Hard: 45 · Earn lamps by completing levels!','info'));
+document.getElementById('btn-lamps').addEventListener('click', () => showToast(currentUser ? 'You have ' + currentUser.lamps + ' lamps — complete levels to earn more!' : 'Login to earn lamps by completing levels','info'));
+
+// Cards
+document.getElementById('btn-launch').addEventListener('click', e => { e.stopPropagation(); showScreen('freeplay'); });
+document.getElementById('card-freeplay').addEventListener('click', () => showScreen('freeplay'));
+document.getElementById('btn-progress').addEventListener('click', e => { e.stopPropagation(); showScreen('levels'); });
+document.getElementById('card-levels').addEventListener('click', () => showScreen('levels'));
+document.getElementById('btn-customise').addEventListener('click', e => { e.stopPropagation(); showScreen('themes'); });
+document.getElementById('card-themes').addEventListener('click', () => showScreen('themes'));
+
+// Footer nav
+document.querySelectorAll('.nav-item').forEach(el => {
+  el.addEventListener('click', () => showScreen(el.dataset.nav));
+});
+
+// Back buttons
+document.getElementById('freeplay-back').addEventListener('click', () => showScreen('home'));
+document.getElementById('levels-back').addEventListener('click',   () => showScreen('home'));
+document.getElementById('themes-back').addEventListener('click',   () => showScreen('home'));
+
+// Modal closes
+document.getElementById('login-close').addEventListener('click',   () => closeModal('modal-login'));
+document.getElementById('friends-close').addEventListener('click', () => closeModal('modal-friends'));
+document.getElementById('modal-login').addEventListener('click',   e => { if (e.target===e.currentTarget) closeModal('modal-login'); });
+document.getElementById('modal-friends').addEventListener('click', e => { if (e.target===e.currentTarget) closeModal('modal-friends'); });
+
+// Auth
+document.getElementById('tab-login').addEventListener('click',    () => switchAuthTab('login'));
+document.getElementById('tab-register').addEventListener('click', () => switchAuthTab('register'));
+document.getElementById('login-submit').addEventListener('click', doLogin);
+document.getElementById('reg-submit').addEventListener('click',   doRegister);
+document.getElementById('login-password').addEventListener('keydown', e => { if (e.key==='Enter') doLogin(); });
+document.getElementById('reg-password').addEventListener('keydown',   e => { if (e.key==='Enter') doRegister(); });
+
+// Add friend
+document.getElementById('add-friend-btn').addEventListener('click', () => {
+  const inp = document.getElementById('friend-input');
+  const name = inp.value.trim(); if (!name) return;
+  if (currentUser.friends.includes(name)) { showToast('Already friends with ' + name,'warn'); return; }
+  currentUser.friends.push(name); saveUser(currentUser); inp.value='';
+  renderFriendsList(); showToast('Friend request sent to ' + name,'success');
+});
+
+// ── Init ───────────────────────────────────────────────────────────
+refreshNav();
+// Apply equipped skin to 3D snake on load
+if (currentUser) {
+  const skin = SKINS.find(s => s.id === currentUser.activeSkin);
+  if (skin) setTimeout(() => applySnakeSkin(skin), 500); // wait for Three.js init
+}
+</script>
+</body>
+</html>

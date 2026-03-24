@@ -1,0 +1,672 @@
+Test Bank for Quiz 1 
+Chapter 23: 
+23.1) A piece of plastic has a net charge of +2.00 μC. How many more protons than electrons do this piece of 
+plastic have? (e = 1.60 × 10-19 C) 
+Answer: 1.25 × 10
+13  
+ 
+Explanation:   
+An object having a positive net charge (+q) means that it has an excess positive charge (protons). The proton’s 
+charge is (e = 1.60 × 10-19 C). The number of protons in a positive charge equals to  
+ 
+푞
+푒
+=
+2.00×10
+−6
+1.6×10−19
+=1.25 ×1013  
+______________________________________________________________________________ 
+23.2) When two point-charges are 2.0 cm apart, each one experiences a 1.0-N electric force due to the other charge. 
+If they are moved to a new separation of 8.0 cm, the electric force on each of them is closest to  
+Answer: 0.063 N 
+Explanation: 
+퐹
+1
+=푘
+푒
+푞
+1
+푞
+2
+0.022
+=1.0 N   (1)         
+퐹
+2
+=푘
+푒
+푞
+1
+푞
+2
+0.082
+=? N    (2)      
+From (1):   푘
+푒
+푞
+1
+푞
+2
+=0.022    →     퐹
+2
+=
+0.02
+2
+0.082
+=0.0625 N 
+_____________________________________________________________________________ 
+23.3) A + 7.00 μC point charge and - 9.00 μC point charge are placed along the 푥-axis at the origin and 푥 = 40 
+cm , respectively. Where must a third positive charge be placed along the 푥-axis so that it experiences zero net 
+electric force?  
+Answer:   - 2.99 m 
+Explanation: 
+The two charges are as shown in the figure.  
+The third positive charge q
+3
+ (that is to be placed along the 푥-axis) will 
+experience two forces; a repulsive force F
+13
+ from the positive charge q
+1
+ (that is at the origin) and an attractive force 
+F
+23
+ from the negative charge q
+2
+ (that is at 푥=0.4 m). The third charge must be placed either to the left side of the 
+positive charge q
+1
+ (at a negative x-position) or to the right side of the negative charge q
+2
+ (at a positive 푥-position 
+that is > 0.4 m) so that the two forces are acting in the opposite directions. For the opposite forces exerted by both 
+charges on the third charge to be equal in magnitude (zero net force), the location should be closer to the smaller 
+----------------Page (0) Break----------------
+charge (because the force between each pair of charges is directly proportional to the product of their magnitude 
+and  inversely  proportional  to  the  distance  between  them  squared). Thus,  we 
+assume this situation and solve for 푥.  
+ 
+퐹
+13
+=퐹
+23
+   →    푘
+푒
+푞
+1
+푞
+3
+푥2
+=푘
+푒
+푞
+2
+푞
+3
+(푥+0.4)2
+   →    
+푞
+1
+푥2
+=
+푞
+2
+(푥+0.4)2
+    
+  →   푞
+1
+(푥+0.4)2=푞
+2
+푥2   →     √푞
+1
+(푥+0.4)=푥√푞
+2
+      →    푥√푞
+1
++0.4√푞
+1
+=푥√푞
+2
+ 
+→   푥(√푞
+2
+− √푞
+1
+)=0.4√푞
+1
+   →    푥=
+0.4
+√
+푞
+1
+√
+푞
+2
+−
+√
+푞
+1
+      
+ →    푥=2.99 m  (in the negative direction, to the left of the origin) 
+___________________________________________________________________________ 
+23.4) Three charges 푞
+1
+=25 푛C, 푞
+2
+=15 푛C, and 푞
+3
+=35 푛C are in the xy-plane, as 
+shown. If 푎=2.0 푐m. Find the magnitude of the net electric force on 푞
+2
+. 
+(k
+e
+=1/4πε
+0
+=9×109 N∙m2/C2)                                                           
+Answer: 0.015 N 
+Explanation:  
+There are two forces exerted by the charges 푞
+1
+ and 푞
+3
+ on 푞
+2
+ (as shown). They are given by: 
+퐹
+12
+=푘
+푒
+푞
+1
+푞
+2
+푎2
+=9×109
+25×10
+−9
+×15×10
+−9
+(2.0×10−2)2
+=0.0084 N 
+ 퐹
+32
+=푘
+푒
+푞
+3
+푞
+2
+푎2
+=9×109
+35×10
+−9
+×15×10
+−9
+(2.0×10−2)2
+=0.012 N 
+퐹
+12
+ and 퐹
+32
+ are the x and y components of the net force on 푞
+2
+, respectively. That is: 퐹
+12
+=
+퐹
+푥
+ and 퐹
+32
+=퐹
+푦
+. The magnitude of the net force on 푞
+2
+ is given by: 
+퐹=√퐹
+푥
+2
++퐹
+푦
+2
+=0.015 N 
+______________________________________________________________________ 
+23.5) The charge in the middle is Q=−3.1 nC. For what charge q
+1
+ will charge 
+q
+2
+ be in static equilibrium? 
+Answer: 12.4 nC 
+----------------Page (1) Break----------------
+Explanation: 
+ 
+ 
+ 
+_____________________________________________________________________________ 
+23.6) A point charge Q = −12 μC, and two other charges, q
+1
+ and q
+2
+, are placed as 
+shown. The x and y components of the electric force on charge Q are F
+x
+=+0.050 N 
+and F
+y
+=-0.065 N. (k
+e
+=1/4πε
+0
+=9×109 N∙m2/C2) The charges q
+1
+ and q
+2 
+are  
+Answer:    푞
+1
+= + 6.0 μC    and      푞
+2
+= − 14.0 μC     
+Explanation:  
+q
+1
+ must be a positive charge so that it attracts the negative charge Q at the origin 
+with the force F
+x
+ in the positive x-direction (to the right). The magnitude of this force is given by:       퐹
+푥
+=푘
+푒
+푞
+1
+푄
+3.62
+    
+ Then q
+1
+ is:     푞
+1
+=
+퐹
+푥
+(3.6
+2
+)
+푘
+푒
+푄
+=
+0.050×3.6
+2
+9×109×12×10−6
+=6.0×10−6 C   (+) 
+q
+2
+ must be a negative charge so that it attracts the negative charge Q at the origin with the force F
+y
+ in the negative 
+y-direction (downward). The magnitude of this force is given by:       퐹
+푦
+=푘
+푒
+푞
+2
+푄
+4.82
+    
+ Then q
+2
+ is:     푞
+2
+=
+퐹
+푦
+(4.8
+2
+)
+푘
+푒
+푄
+=
+0.065×4.8
+2
+9×109×12×10−6
+=14.0×10−6 C   (−) 
+___________________________________________________________________ 
+ 
+ 
+ 
+ 
+ 
+----------------Page (2) Break----------------
+23.7) Two-point charges, Q
+1
+ =−1.0 μC and Q
+2
+ = + 4.0 μC, are placed as shown in the 
+figure. (k
+e
+=1/4πε
+0
+=9×109 N∙m2/C2) The y component of the electric field, at the origin O, 
+is 
+Answer: - 6.0 × 103 N/C 
+Explanation: 
+__________________________________________________________________________ 
+23.8) A thin, uniformly charged rod has a length of L = 5 cm and carries a total charge of Q = 2×10−6 C. Determine 
+the magnitude of the electric field at a point located 2 cm from one end of the rod along its axis. Assume that the 
+rod is oriented horizontally and that the point lies outside the rod. 
+ 
+Answer: ퟏ.ퟐퟗ×ퟏퟎퟕ N/C 
+ 
+Explanation: 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+_____________________________________________________________________________ 
+----------------Page (3) Break----------------
+23.9) A ring with a radius of a=3 cm carries a uniformly distributed positive charge Q = 3×10−6 C. Determine the 
+magnitude of the electric field at a point along the axis of the ring that is 5 cm from its center. Assume the Coulomb 
+constant is k=9.0×109 N. 
+Answer: ퟔퟖ.ퟏ×ퟏퟎퟓ N/C 
+Explanation: 
+ 
+ 
+ 
+ 
+ 
+ 
+____________________________________________________________________ 
+23.10) A point charge and a charged rod are placed along the x-axis, as shown in the figure, where 푞=−5 푛C , 푄 =
++18 푛C, 푙=50 푐m. Find the magnitude and direction of the net electric field due to this charge configuration a 
+point P if 푎=30 푐m, and 푟=20 푐m. 
+Answer:  1.8 kN/C, to the right. 
+Explanation: 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+__________________________________________________________________________  
+1 
+----------------Page (4) Break----------------
+23.11) In the figure, a ring 0.71 m in radius carries a charge of + 580 nC uniformly distributed over it. A point charge 
+Q is placed at the center of the ring. The electric field is equal to zero at point P, which is on the axis of the ring, 
+and 0.73 m from its center. The point charge Q is closest to 
+Answer: -214 nC  
+Explanation: 
+______________________________________________________________________ 
+23.12) A proton is placed in an electric field of intensity 700 N/C. What are the magnitude and direction of the 
+acceleration of this proton due to this field? (m
+proton
+ = 1.67 × 10-27 kg, e = 1.60 × 10-19 C) 
+Answer: 6.71× 10
+10
+ m/s2 in the same direction of the electric field  
+Explanation: 
+푎=
+푞퐸
+푚
+=
+1.6×10
+−19
+×700
+1.67×10−27
+=671×108=6.71 ×1010 m/s2, since the charge is positive 푎⃗ and 퐸
+⃗⃗
+ are in the same 
+direction. 
+_______________________________________________________________________________ 
+23.13) An object with a 5.0 μC charge accelerates at 0.0050 m/s2 due to an electric field. If the object has a mass of 
+2.0 mg. What is the magnitude of the electric field?     
+Answer: 2.0 N/C 
+Explanation:  
+푎=
+푞퐸
+푚
+    →   퐸=
+푚푎
+푞
+=
+2×10
+−3
+×0.005
+5×10−6
+=2.0 N/C  
+_____________________________________________________________________________ 
+----------------Page (5) Break----------------
+23.14) A positively charged particle with a mass of 2 mg and a charge of 20×10⁻⁶ C is in equilibrium within a 
+uniform electric field. Determine the magnitude and direction of the electric field (E) acting on the particle. 
+Answer: 0.98 N/C, upwards 
+Explanation: 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+____________________________________________________________________ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+----------------Page (6) Break----------------
+Chapter 24: 
+24.1) Determine the net electric flux through surface A of 
+a cylinder with a radius of 2.0 cm that is placed in a 
+uniform electric field of 2000 N/C, as shown in figure.  
+Answer: -2.5 N.m2/C 
+Explanation: 
+ 
+ 
+ 
+ 
+ 
+ 
+__________________________________________________________________________ 
+24.2) A cube of side length 푙=0.5 m, as shown in the figure, is in a region where the electric field vector is given 
+by 퐸
+⃗⃗
+=(3.0 푖̂+7.0 푗̂) N/C. Find the electric flux through the shaded face of this cube. 
+Answer: 1.8 N.m2/C 
+Explanation:  
+                                              
+________________________________________________________________________ 
+24.3) Given the electric field vector E = 4i+j−2k and the area vector A = 3i+2j+k, determine the angle between 
+them. 
+Answer:    ퟒퟓ.ퟔ° 
+Explanation: 
+ 
+=−2.50 N.m2/C 
+6 
+----------------Page (7) Break----------------
+24.4) The electric field vector in a region in space varies with 푥 and is given by 퐸
+⃗⃗
+=(3.0푥 푖̂+6.0 푗̂+ 푘
+̂
+) N/C, 
+where 푥 is in meters. A circular surface of radius 0.20 m is positioned parallel to the yz-plane at 푥=0.40 m. The 
+electric flux through the circular surface is 
+Answer: 0.15 N.m2/C 
+Explanation: 
+ 
+ 
+ 
+ 
+____________________________________________________________________________ 
+24.5) A right circular cone has a base with a radius of r = 2 cm and is placed in a uniform 
+electric field of magnitude E = 400 N/C. The cone is oriented such that its central axis is 
+parallel to the electric field lines. Find the electric flux through surface # 2. 
+Answer: +ퟎ.ퟓ N.m2/C 
+Explanation: 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+________________________________________________________________________ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+= 0.50 
+----------------Page (8) Break----------------
+24.6) Assume the magnitude of the electric field on each face of the cube of edge L=1.00 m in the figure  
+shown is uniform and the directions of the fields on each face are as indicated. Find  
+(a) the net electric flux through the cube and  
+(b) the net charge inside the cube.  
+(c) Could the net charge be a single point charge? 
+ 
+Solution 
+(a)  The area of each face is A = 1.00 m
+2
+.  
+                    For the left face, the angle between the electric field and the normal is 0°:  
+                                                                                                                                      
+                              For the right face, the angle between the electric field and the normal is 180°:  
+                                                                                                                                            
+                              For the top face, the angle between the electric field and the normal is 180°:  
+                                                                                                                                          
+                              For the bottom face, the angle between the electric field and the normal is 0°:  
+                                                                                                                                           
+                              For the front face, the angle between the electric field and the normal is 0°:  
+                                                                                                                                        
+                              For the back face, the angle between the electric field and the normal is 0°:  
+                                                                                                                                        
+                              The total flux is then 
+----------------Page (9) Break----------------
+                                                                                                                                            
+                    (b)                                                                                                                             
+(c)                                                                                           
+________________________________________________________________________ 
+24.7) An infinite line has a uniform charge per unit length of 50.0 푛C/m passes through the axis of a sphere. If the 
+electric flux through the sphere’s surface is 1200 N.m2/C, what is the length of the rod enclosed in the sphere. (ε
+0
+ = 
+8.85 × 10-12 C2/N∙m2) 
+Answer: 0.2 m 
+Explanation: 
+ 
+_____________________________________________________________________________ 
+24.8) Why is the following situation impossible? A solid copper sphere of radius 15.0 cm is in electrostatic 
+equilibrium and carries a charge of 40.0 nC. The figure shows the magnitude of the electric field as a function of 
+radial position r measured from the center of the sphere. 
+ 
+Solution: 
+Let’s calculate the electric field just outside the surface: 
+                                                                                                                                            
+This should be the value of the electric field at the peak of the curve in the figure. We see, however, that the peak 
+in the figure occurs at about 6.5 kN/C. Therefore, it is not possible that this  figure represents the electric field for 
+the given situation. 
+______________________________________________________________________________ 
+----------------Page (10) Break----------------
+24.9) Charge of uniform surface density (0.2 nC/m2) is distributed over the entire xy plane. Find the magnitude of 
+the electric flux through a spherical surface centered at the origin with a diameter of 1.5 m.  
+Answer: 39.9 N.m2/C 
+Explanation: 
+ 
+ 
+ 
+________________________________________________________________________ 
+ 
+24.10) An insulating solid sphere of radius R=3 cm is uniformly charged with a total positive charge Q = 3×10−6 C. 
+Determine the magnitude of the electric field at a point located 1 cm from the center of the sphere. (k
+e
+=1/4πε
+0
+=9×109 
+N∙m2/C2)      
+Answer: ퟏ×ퟏퟎퟕ N/C 
+Explanation: 
+ 
+ 
+ 
+_____________________________________________________________________ 
+24.11) At a distance of 4.3 cm from the center of a very long uniformly charged wire, the electric field has magnitude 
+2000 N/C and is directed toward the wire. What is the charge on a 1.0 cm length of wire near the center? 
+(k
+e
+=1/4πε
+0
+=9×109 N∙m2/C2)                                                           
+Answer: - 0.048 nC       
+Explanation: 
+ 
+ 
+ 
+ 
+ 
+ 
+___________________________________________________________________________ 
+----------------Page (11) Break----------------
+24.12) A very large sheet of a conductor carries a uniform charge density of 4.00 pC/mm2 on its surfaces. What is 
+the electric field strength 3.00 mm outside the surface of the conductor? (ε
+0
+ = 8.85 × 10-12 C2/N∙m2)  
+Answer: 4.52 × 105 N/C  
+Explanation: 
+The electric field near a uniformly charged conductor surface is equal to 
+퐸=
+휎
+휀
+0
+=
+4.00×10
+−12
+×(10
+3
+)
+2
+8.85×10−12
+=0.452×106=4.52 ×105 N/C 
+___________________________________________________________________________ 
+24.13) An infinitely long nonconducting cylinder of radius R = 2.00 cm carries a uniform volume charge density of 
+18.0 휇C/m3. Calculate the electric field at a distance r = 1.00 cm from the axis of the cylinder. (ε
+0
+ = 8.85 × 10-12 
+C2/N∙m2)     
+Answer: 10.2 kN/C      [same of problem 33 from the suggested problems] 
+Explanation:  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+___________________________________________________________________________ 
+----------------Page (12) Break----------------

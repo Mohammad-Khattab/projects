@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Snake 3D — Skins & Maps Preview v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #0e0e13; color: #f8f5fd; font-family: 'Space Grotesk', monospace; overflow-x: hidden; }
+.section { padding: 60px 40px; max-width: 1300px; margin: 0 auto; }
+.section-title { font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; color: #8eff71; margin-bottom: 8px; }
+.section-heading { font-size: 36px; font-weight: 900; text-transform: uppercase; letter-spacing: -0.02em; margin-bottom: 8px; }
+.section-sub { font-size: 13px; color: #acaab1; margin-bottom: 40px; }
+.divider { width: 100%; height: 1px; background: rgba(72,71,77,0.3); }
+
+/* SKINS */
+.skins-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+.skin-card {
+  background: #0f0f18; border: 1px solid rgba(72,71,77,0.25);
+  border-radius: 14px; overflow: hidden; transition: border-color 0.2s, transform 0.2s; cursor: pointer;
+}
+.skin-card:hover { transform: translateY(-5px); }
+.skin-preview { height: 150px; position: relative; }
+.skin-canvas { display: block; width: 100%; height: 100%; }
+.skin-info { padding: 14px 16px; border-top: 1px solid rgba(72,71,77,0.2); }
+.skin-name { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
+.skin-trail { font-size: 10px; color: #76747b; margin-top: 2px; letter-spacing: 0.05em; }
+.skin-price { font-size: 11px; color: #acaab1; margin-top: 6px; }
+.skin-price.free { color: #8eff71; }
+
+/* MAPS */
+.maps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.map-card { border-radius: 16px; overflow: hidden; border: 1px solid rgba(72,71,77,0.25); transition: border-color 0.2s, transform 0.2s; cursor: pointer; }
+.map-card:hover { transform: translateY(-5px); }
+.map-preview { height: 200px; }
+.map-canvas { display: block; width: 100%; height: 100%; }
+.map-info { padding: 16px 18px; background: #0f0f18; }
+.map-name { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
+.map-vibe { font-size: 11px; color: #76747b; margin-top: 3px; }
+.map-challenge {
+  margin-top: 10px; padding: 10px 12px;
+  background: rgba(0,0,0,0.4);
+  border-radius: 8px;
+  border-left: 2px solid;
+}
+.map-challenge-label {
+  font-size: 9px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
+  margin-bottom: 4px; opacity: 0.7;
+}
+.map-challenge-name { font-size: 12px; font-weight: 700; margin-bottom: 3px; }
+.map-challenge-desc { font-size: 10px; color: #acaab1; line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<!-- SKINS -->
+<div class="section">
+  <div class="section-title">Snake 3D — Cosmetics</div>
+  <div class="section-heading">Snake Skins</div>
+  <div class="section-sub">Unlock with 🪔 lamps earned in-game. Each skin has a unique color gradient + trail effect.</div>
+  <div class="skins-grid" id="skins-grid"></div>
+</div>
+
+<div class="divider"></div>
+
+<!-- MAPS -->
+<div class="section">
+  <div class="section-title">Snake 3D — Environments</div>
+  <div class="section-heading">Maps</div>
+  <div class="section-sub">All 9 maps from the original game, redesigned for the neon cyberpunk 3D aesthetic.</div>
+  <div class="maps-grid" id="maps-grid"></div>
+</div>
+
+<script>
+// ── SKIN DEFINITIONS ──────────────────────────────────────────────────────────
+const SKINS = [
+  // --- TIER FREE ---
+  { id:'default',    name:'Default',      price:0,   trail:'No Trail',       colors:['#8eff71','#4cd420','#1a8000'],           glow:'#8eff71' },
+  // --- TIER 1 ---
+  { id:'ocean',      name:'Ocean',        price:25,  trail:'Water Ripple',   colors:['#00e5ff','#0096c7','#023e8a'],           glow:'#00e5ff' },
+  { id:'phantom',    name:'Phantom',      price:30,  trail:'Smoke Wisps',    colors:['#d966ff','#9900cc','#3d0066'],           glow:'#cc44ff' },
+  { id:'venom',      name:'Venom',        price:30,  trail:'Toxic Drip',     colors:['#c8ff00','#7aad00','#1f3d00'],           glow:'#c8ff00' },
+  // --- TIER 2 ---
+  { id:'inferno',    name:'Inferno',      price:40,  trail:'Fire Sparks',    colors:['#ff9f00','#ff4500','#7a0000'],           glow:'#ff6600' },
+  { id:'arctic',     name:'Arctic',       price:40,  trail:'Frost Crystals', colors:['#e0f7ff','#5ccfff','#006f99'],           glow:'#80e8ff' },
+  { id:'neon_candy', name:'Neon Candy',   price:45,  trail:'Rainbow Sparks', colors:['#ff79c6','#bd93f9','#50fa7b'],           glow:'#ff79c6' },
+  { id:'toxic',      name:'Toxic',        price:45,  trail:'Acid Bubbles',   colors:['#aaff00','#55cc00','#004400'],           glow:'#aaff00' },
+  { id:'thunder',    name:'Thunder',      price:50,  trail:'Lightning Arc',  colors:['#fff500','#c800ff','#3d0066'],           glow:'#fff500' },
+  // --- TIER 3 ---
+  { id:'void',       name:'Void Walker',  price:55,  trail:'Dark Matter',    colors:['#ffffff','#888888','#222222'],           glow:'#aaaaaa' },
+  { id:'solar',      name:'Solar',        price:55,  trail:'Light Orbs',     colors:['#ffe566','#ffaa00','#cc5500'],           glow:'#ffcc00' },
+  { id:'rose_gold',  name:'Rose Gold',    price:60,  trail:'Petal Drift',    colors:['#ffb3c6','#ff6b9d','#9b2256'],           glow:'#ff6b9d' },
+  { id:'magma',      name:'Magma',        price:65,  trail:'Lava Drips',     colors:['#ff8c00','#cc2200','#330000'],           glow:'#ff4400' },
+  { id:'shadow',     name:'Shadow',       price:65,  trail:'Shadow Streak',  colors:['#9b59b6','#2c1654','#0a0010'],           glow:'#6c3483' },
+  // --- TIER 4 ---
+  { id:'cyber',      name:'Cyber',        price:75,  trail:'Digital Glitch', colors:['#00ffea','#ff6b00','#001a20'],           glow:'#00ffea' },
+  { id:'matrix',     name:'Matrix',       price:80,  trail:'Data Rain',      colors:['#00ff41','#00aa2b','#002208'],           glow:'#00ff41' },
+  { id:'crimson',    name:'Crimson',      price:80,  trail:'Blood Streaks',  colors:['#ff1a2e','#aa0011','#330006'],           glow:'#ff1a2e' },
+  { id:'aurora',     name:'Aurora',       price:90,  trail:'Light Waves',    colors:['#00ffaa','#00aaff','#aa00ff'],           glow:'#00ffaa' },
+  // --- TIER LEGENDARY ---
+  { id:'galaxy',     name:'Galaxy',       price:120, trail:'Star Nebula',    colors:['#ff6ef7','#6e6eff','#0033ff'],           glow:'#aa66ff' },
+  { id:'prism',      name:'Prism',        price:150, trail:'Spectrum Burst', colors:['#ff0080','#ffaa00','#00ffaa','#0080ff'], glow:'#ffffff' },
+];
+
+function drawSkinCanvas(canvas, skin) {
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+
+  // Dark bg with subtle noise
+  ctx.fillStyle = '#080810';
+  ctx.fillRect(0,0,w,h);
+
+  // Subtle grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+  ctx.lineWidth = 0.5;
+  for(let x=0;x<w;x+=18){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();}
+  for(let y=0;y<h;y+=18){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}
+
+  const SEG_W=26, SEG_H=20, GAP=4;
+  const SEGS=5;
+  const totalW = SEGS*SEG_W+(SEGS-1)*GAP;
+  const sx = (w-totalW)/2, cy = h/2;
+
+  // Background glow behind snake
+  const bgGlow = ctx.createRadialGradient(w/2, cy, 0, w/2, cy, w*0.5);
+  bgGlow.addColorStop(0, skin.glow+'22');
+  bgGlow.addColorStop(1, 'transparent');
+  ctx.fillStyle = bgGlow; ctx.fillRect(0,0,w,h);
+
+  // Draw trail first (behind snake)
+  if(skin.trail !== 'No Trail') {
+    const tailEndX = sx + SEGS*(SEG_W+GAP) + 6;
+    for(let t=0;t<8;t++) {
+      const tx = tailEndX + t*12;
+      const alpha = Math.max(0,(8-t)/8*0.75);
+      const size = Math.max(0.5, 4-t*0.4);
+      let col = skin.colors[skin.colors.length-1];
+      if(skin.id==='aurora'||skin.id==='prism') {
+        const hue = t*30; col = `hsl(${hue},100%,60%)`;
+      }
+      ctx.beginPath();
+      ctx.arc(tx, cy + Math.sin(t*0.8)*5, size, 0, Math.PI*2);
+      ctx.fillStyle = col + Math.floor(alpha*255).toString(16).padStart(2,'0');
+      ctx.fill();
+    }
+  }
+
+  // Draw segments
+  for(let i=SEGS-1;i>=0;i--) {
+    const x = sx + i*(SEG_W+GAP);
+    const y = cy - SEG_H/2;
+    const r = i===0?7:4;
+
+    // Pick color: gradient head→tail
+    let color;
+    if(skin.colors.length===2) {
+      const t=i/(SEGS-1);
+      color = lerpColor(skin.colors[0], skin.colors[1], t);
+    } else if(skin.colors.length>=3) {
+      const t=i/(SEGS-1);
+      if(t<0.5) color=lerpColor(skin.colors[0],skin.colors[1],t*2);
+      else color=lerpColor(skin.colors[1],skin.colors[skin.colors.length-1],(t-0.5)*2);
+    } else color=skin.colors[0];
+
+    // Glow around segment
+    const sg = ctx.createRadialGradient(x+SEG_W/2,cy,0,x+SEG_W/2,cy,SEG_W*0.9);
+    sg.addColorStop(0, color+'55'); sg.addColorStop(1,'transparent');
+    ctx.fillStyle=sg; ctx.fillRect(x-SEG_W/2,y-SEG_H/2,SEG_W*2,SEG_H*2);
+
+    // Segment body
+    ctx.beginPath();
+    ctx.roundRect(x,y,SEG_W,SEG_H,r);
+    const grad = ctx.createLinearGradient(x,y,x,y+SEG_H);
+    grad.addColorStop(0, brighten(color,1.3));
+    grad.addColorStop(0.5, color);
+    grad.addColorStop(1, darken(color,0.6));
+    ctx.fillStyle=grad; ctx.fill();
+
+    // Top shine
+    ctx.beginPath();
+    ctx.roundRect(x+3,y+2,SEG_W-6,5,2);
+    ctx.fillStyle='rgba(255,255,255,0.22)'; ctx.fill();
+
+    // Border glow
+    ctx.beginPath();
+    ctx.roundRect(x,y,SEG_W,SEG_H,r);
+    ctx.strokeStyle=color+'88'; ctx.lineWidth=0.8; ctx.stroke();
+  }
+
+  // Eyes on head (leftmost segment)
+  const hx = sx + SEG_W/2;
+  // Eye whites
+  ctx.fillStyle='rgba(0,0,0,0.9)';
+  ctx.beginPath(); ctx.arc(hx-5, cy-4, 3, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(hx-5, cy+4, 3, 0, Math.PI*2); ctx.fill();
+  // Pupils
+  ctx.fillStyle=skin.glow;
+  ctx.beginPath(); ctx.arc(hx-5, cy-4, 1.5, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(hx-5, cy+4, 1.5, 0, Math.PI*2); ctx.fill();
+  // Eye glow
+  const eyeGlow = ctx.createRadialGradient(hx-5,cy,0,hx-5,cy,10);
+  eyeGlow.addColorStop(0,skin.glow+'44'); eyeGlow.addColorStop(1,'transparent');
+  ctx.fillStyle=eyeGlow; ctx.fillRect(hx-15,cy-10,20,20);
+}
+
+function lerpColor(a, b, t) {
+  const ar=parseInt(a.slice(1,3),16), ag=parseInt(a.slice(3,5),16), ab=parseInt(a.slice(5,7),16);
+  const br=parseInt(b.slice(1,3),16), bg=parseInt(b.slice(3,5),16), bb=parseInt(b.slice(5,7),16);
+  const r=Math.round(ar+(br-ar)*t), g=Math.round(ag+(bg-ag)*t), bl=Math.round(ab+(bb-ab)*t);
+  return '#'+r.toString(16).padStart(2,'0')+g.toString(16).padStart(2,'0')+bl.toString(16).padStart(2,'0');
+}
+function brighten(hex, f) {
+  const r=Math.min(255,Math.round(parseInt(hex.slice(1,3),16)*f));
+  const g=Math.min(255,Math.round(parseInt(hex.slice(3,5),16)*f));
+  const b=Math.min(255,Math.round(parseInt(hex.slice(5,7),16)*f));
+  return '#'+r.toString(16).padStart(2,'0')+g.toString(16).padStart(2,'0')+b.toString(16).padStart(2,'0');
+}
+function darken(hex, f) { return brighten(hex, f); }
+
+const skinsGrid = document.getElementById('skins-grid');
+const TIERS = [
+  {label:'FREE',    ids:['default']},
+  {label:'TIER 1',  ids:['ocean','phantom','venom']},
+  {label:'TIER 2',  ids:['inferno','arctic','neon_candy','toxic','thunder']},
+  {label:'TIER 3',  ids:['void','solar','rose_gold','magma','shadow']},
+  {label:'TIER 4',  ids:['cyber','matrix','crimson','aurora']},
+  {label:'LEGENDARY', ids:['galaxy','prism']},
+];
+
+SKINS.forEach(skin => {
+  const card = document.createElement('div');
+  card.className = 'skin-card';
+  card.style.borderColor = skin.glow+'33';
+
+  const preview = document.createElement('div');
+  preview.className = 'skin-preview';
+  const canvas = document.createElement('canvas');
+  canvas.width=200; canvas.height=150;
+  canvas.style.width='100%'; canvas.style.height='150px';
+  preview.appendChild(canvas);
+
+  const info = document.createElement('div');
+  info.className='skin-info';
+  const tier = TIERS.find(t=>t.ids.includes(skin.id));
+  info.innerHTML=`
+    <div class="skin-name" style="color:${skin.glow}">${skin.name}</div>
+    <div class="skin-trail">${skin.trail}</div>
+    <div class="skin-price ${skin.price===0?'free':''}">
+      ${skin.price===0?'✓ FREE – DEFAULT':`🪔 ${skin.price} lamps · ${tier?tier.label:''}`}
+    </div>`;
+
+  card.appendChild(preview);
+  card.appendChild(info);
+  skinsGrid.appendChild(card);
+  drawSkinCanvas(canvas, skin);
+});
+
+// ── MAP DEFINITIONS (Original 9, cyberpunk-restyled) ─────────────────────────
+const MAPS = [
+  {
+    name:'Ocean',
+    vibe:'Deep Sea · Bioluminescent · Teal Neon',
+    borderColor:'#00b4d8',
+    challenge:{ name:'🌊 Tidal Current', color:'#00b4d8', desc:'Every 8 seconds a current surges across the arena — it physically pushes your snake 1 cell in its direction. Use it or fight it.' },
+    draw(ctx,w,h) {
+      // Deep ocean gradient
+      const bg=ctx.createLinearGradient(0,0,0,h);
+      bg.addColorStop(0,'#000d1a'); bg.addColorStop(0.5,'#003366'); bg.addColorStop(1,'#001833');
+      ctx.fillStyle=bg; ctx.fillRect(0,0,w,h);
+      // Caustic light rays from above
+      for(let i=0;i<8;i++){
+        const x=w*0.05+i*(w*0.13);
+        const ray=ctx.createLinearGradient(x,0,x+20,h*0.7);
+        ray.addColorStop(0,'rgba(0,180,255,0.12)'); ray.addColorStop(1,'transparent');
+        ctx.fillStyle=ray;
+        ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x+30,h*0.7); ctx.lineTo(x+10,h*0.7); ctx.lineTo(x-10,0); ctx.fill();
+      }
+      // Floating particles (plankton)
+      for(let i=0;i<60;i++){
+        const x=Math.random()*w, y=Math.random()*h;
+        const r=Math.random()*1.5+0.3;
+        ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
+        ctx.fillStyle=`rgba(0,220,255,${Math.random()*0.6+0.2})`; ctx.fill();
+      }
+      // Wave lines
+      ctx.strokeStyle='rgba(0,200,255,0.15)'; ctx.lineWidth=1.5;
+      for(let row=0;row<5;row++){
+        ctx.beginPath();
+        for(let x=0;x<w;x+=4){
+          const y=h*0.3+row*h*0.14+Math.sin(x*0.04+row)*8;
+          x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+        }
+        ctx.stroke();
+      }
+      // Deep glow
+      const dg=ctx.createRadialGradient(w*0.5,h,0,w*0.5,h,w*0.6);
+      dg.addColorStop(0,'rgba(0,100,200,0.3)'); dg.addColorStop(1,'transparent');
+      ctx.fillStyle=dg; ctx.fillRect(0,0,w,h);
+    }
+  },
+  {
+    name:'Earth',
+    vibe:'Terrain · Green Grid · Satellite View',
+    borderColor:'#4aff50',
+    challenge:{ name:'🌍 Seismic Shift', color:'#4aff50', desc:'Every 12 seconds an earthquake rattles the grid — all food items teleport to new positions instantly. Map your route fast.' },
+    draw(ctx,w,h) {
+      // Dark terrain base
+      const bg=ctx.createLinearGradient(0,0,w,h);
+      bg.addColorStop(0,'#020c02'); bg.addColorStop(0.5,'#083010'); bg.addColorStop(1,'#041808');
+      ctx.fillStyle=bg; ctx.fillRect(0,0,w,h);
+      // Terrain patches
+      const patches=[
+        {x:0.1,y:0.15,r:80,c:'rgba(30,100,20,0.5)'},{x:0.7,y:0.2,r:60,c:'rgba(20,80,15,0.4)'},
+        {x:0.3,y:0.6,r:100,c:'rgba(40,120,25,0.45)'},{x:0.8,y:0.7,r:70,c:'rgba(25,90,18,0.4)'},
+        {x:0.5,y:0.35,r:50,c:'rgba(50,140,30,0.35)'},{x:0.15,y:0.8,r:55,c:'rgba(35,110,22,0.4)'},
+      ];
+      patches.forEach(p=>{
+        const g=ctx.createRadialGradient(p.x*w,p.y*h,0,p.x*w,p.y*h,p.r);
+        g.addColorStop(0,p.c); g.addColorStop(1,'transparent');
+        ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
+      });
+      // Glowing grid (satellite view)
+      ctx.strokeStyle='rgba(74,255,80,0.12)'; ctx.lineWidth=0.8;
+      for(let x=0;x<w;x+=32){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();}
+      for(let y=0;y<h;y+=32){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}
+      // City light dots
+      for(let i=0;i<20;i++){
+        const x=Math.random()*w, y=Math.random()*h;
+        const g=ctx.createRadialGradient(x,y,0,x,y,6);
+        g.addColorStop(0,'rgba(200,255,180,0.7)'); g.addColorStop(1,'transparent');
+        ctx.fillStyle=g; ctx.fillRect(x-6,y-6,12,12);
+      }
+      // Atmosphere glow edge
+      const atm=ctx.createLinearGradient(0,0,0,h*0.2);
+      atm.addColorStop(0,'rgba(0,255,80,0.08)'); atm.addColorStop(1,'transparent');
+      ctx.fillStyle=atm; ctx.fillRect(0,0,w,h*0.2);
+    }
+  },
+  {
+    name:'Moon',
+    vibe:'Craters · Silver · Zero-G Neon',
+    borderColor:'#c0c0d0',
+    challenge:{ name:'🌕 Low Gravity', color:'#c0c0d0', desc:'Zero-G momentum — your snake slides 1 extra cell after each turn before responding. Plan your turns early or crash.' },
+    draw(ctx,w,h) {
+      // Lunar surface
+      const bg=ctx.createRadialGradient(w*0.4,h*0.35,0,w*0.5,h*0.5,w*0.8);
+      bg.addColorStop(0,'#3a3a50'); bg.addColorStop(0.4,'#1e1e2e'); bg.addColorStop(1,'#08080f');
+      ctx.fillStyle=bg; ctx.fillRect(0,0,w,h);
+      // Craters
+      const craters=[{x:0.2,y:0.3,r:30},{x:0.65,y:0.55,r:20},{x:0.45,y:0.75,r:25},{x:0.8,y:0.2,r:18},{x:0.1,y:0.7,r:15},{x:0.55,y:0.2,r:12}];
+      craters.forEach(c=>{
+        // Crater rim
+        ctx.beginPath(); ctx.arc(c.x*w,c.y*h,c.r,0,Math.PI*2);
+        ctx.strokeStyle='rgba(150,150,170,0.35)'; ctx.lineWidth=2; ctx.stroke();
+        // Crater shadow
+        const cg=ctx.createRadialGradient(c.x*w,c.y*h,0,c.x*w,c.y*h,c.r);
+        cg.addColorStop(0,'rgba(0,0,0,0.5)'); cg.addColorStop(1,'transparent');
+        ctx.fillStyle=cg; ctx.fillRect(c.x*w-c.r,c.y*h-c.r,c.r*2,c.r*2);
+        // Neon crater glow (cyberpunk twist)
+        ctx.beginPath(); ctx.arc(c.x*w,c.y*h,c.r+3,0,Math.PI*2);
+        ctx.strokeStyle='rgba(180,180,255,0.15)'; ctx.lineWidth=1; ctx.stroke();
+      });
+      // Stars
+      for(let i=0;i<40;i++){
+        const x=Math.random()*w,y=Math.random()*h*0.6;
+        ctx.fillStyle=`rgba(255,255,255,${Math.random()*0.7+0.3})`;
+        ctx.fillRect(x,y,Math.random()<0.3?2:1,Math.random()<0.3?2:1);
+      }
+      // Earth in sky
+      const earth=ctx.createRadialGradient(w*0.75,h*0.15,0,w*0.75,h*0.15,25);
+      earth.addColorStop(0,'rgba(40,120,255,0.9)'); earth.addColorStop(0.6,'rgba(20,80,200,0.7)'); earth.addColorStop(1,'transparent');
+      ctx.fillStyle=earth; ctx.fillRect(w*0.75-25,h*0.15-25,50,50);
+    }
+  },
+  {
+    name:'Space',
+    vibe:'Deep Universe · Nebula · Star Field',
+    borderColor:'#6e6eff',
+    challenge:{ name:'🕳️ Black Hole', color:'#6e6eff', desc:'A gravity well pulses at a random position. Get within 3 cells and it yanks your snake 1 tile toward it every tick. The closer, the stronger.' },
+    draw(ctx,w,h) {
+      ctx.fillStyle='#000004'; ctx.fillRect(0,0,w,h);
+      // Nebula clouds
+      const nebulae=[
+        {x:0.25,y:0.4,r:120,c:'rgba(80,0,180,0.22)'},{x:0.75,y:0.3,r:100,c:'rgba(0,60,180,0.18)'},
+        {x:0.5,y:0.7,r:80,c:'rgba(180,0,100,0.15)'},{x:0.1,y:0.6,r:70,c:'rgba(0,120,80,0.12)'},
+      ];
+      nebulae.forEach(n=>{
+        const g=ctx.createRadialGradient(n.x*w,n.y*h,0,n.x*w,n.y*h,n.r);
+        g.addColorStop(0,n.c); g.addColorStop(1,'transparent');
+        ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
+      });
+      // Stars (varied sizes)
+      for(let i=0;i<150;i++){
+        const x=Math.random()*w, y=Math.random()*h;
+        const size=Math.random();
+        const alpha=Math.random()*0.7+0.3;
+        ctx.beginPath(); ctx.arc(x,y,size<0.8?0.5:size<0.95?1:1.5,0,Math.PI*2);
+        const hue=Math.random()>0.8?220:0;
+        ctx.fillStyle=hue?`rgba(180,200,255,${alpha})`:`rgba(255,255,255,${alpha})`; ctx.fill();
+      }
+      // Shooting star
+      ctx.strokeStyle='rgba(255,255,255,0.5)'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(w*0.1,h*0.1); ctx.lineTo(w*0.25,h*0.22); ctx.stroke();
+      // Planet
+      const planet=ctx.createRadialGradient(w*0.8,h*0.2,0,w*0.8,h*0.2,20);
+      planet.addColorStop(0,'rgba(120,80,200,0.9)'); planet.addColorStop(1,'transparent');
+      ctx.fillStyle=planet; ctx.fillRect(w*0.8-20,h*0.2-20,40,40);
+      // Planet ring
+      ctx.save(); ctx.translate(w*0.8,h*0.2); ctx.scale(1,0.3);
+      ctx.beginPath(); ctx.arc(0,0,28,0,Math.PI*2);
+      ctx.strokeStyle='rgba(200,180,255,0.4)'; ctx.lineWidth=3; ctx.stroke();
+      ctx.restore();
+    }
+  },
+  {
+    name:'Desert',
+    vibe:'Sand Dunes · Amber · Heat Haze',
+    borderColor:'#ffaa00',
+    challenge:{ name:'🏜️ Sandstorm', color:'#ffaa00', desc:'Every 15 seconds a storm hits — the arena goes nearly dark for 4 seconds. Navigate from memory. Food glows faintly to give you a chance.' },
+    draw(ctx,w,h) {
+      // Sky
+      const sky=ctx.createLinearGradient(0,0,0,h*0.5);
+      sky.addColorStop(0,'#0a0400'); sky.addColorStop(1,'#2a0e00');
+      ctx.fillStyle=sky; ctx.fillRect(0,0,w,h);
+      // Desert floor gradient
+      const floor=ctx.createLinearGradient(0,h*0.4,0,h);
+      floor.addColorStop(0,'#7a3000'); floor.addColorStop(0.4,'#c86010'); floor.addColorStop(1,'#f0a030');
+      ctx.fillStyle=floor; ctx.fillRect(0,h*0.4,w,h*0.6);
+      // Sand dune silhouettes
+      ctx.fillStyle='#3d1800';
+      ctx.beginPath(); ctx.moveTo(0,h); ctx.lineTo(0,h*0.65);
+      ctx.bezierCurveTo(w*0.2,h*0.45,w*0.35,h*0.55,w*0.5,h*0.62);
+      ctx.bezierCurveTo(w*0.65,h*0.7,w*0.8,h*0.58,w,h*0.52);
+      ctx.lineTo(w,h); ctx.fill();
+      // Heat shimmer lines
+      ctx.strokeStyle='rgba(255,150,0,0.1)'; ctx.lineWidth=1;
+      for(let y=h*0.45;y<h*0.65;y+=8){
+        ctx.beginPath();
+        for(let x=0;x<w;x+=4){
+          const dy=Math.sin(x*0.06)*3;
+          x===0?ctx.moveTo(x,y+dy):ctx.lineTo(x,y+dy);
+        }
+        ctx.stroke();
+      }
+      // Sun glow
+      const sun=ctx.createRadialGradient(w*0.5,h*0.08,0,w*0.5,h*0.08,80);
+      sun.addColorStop(0,'rgba(255,200,0,0.5)'); sun.addColorStop(0.3,'rgba(255,120,0,0.2)'); sun.addColorStop(1,'transparent');
+      ctx.fillStyle=sun; ctx.fillRect(0,0,w,h*0.4);
+      // Neon horizon line
+      ctx.strokeStyle='rgba(255,180,0,0.4)'; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.moveTo(0,h*0.42); ctx.lineTo(w,h*0.42); ctx.stroke();
+    }
+  },
+  {
+    name:'Arctic',
+    vibe:'Ice Fields · Aurora · Frozen Circuit',
+    borderColor:'#80e8ff',
+    challenge:{ name:'❄️ Black Ice', color:'#80e8ff', desc:'The frozen floor kills your brakes — turning takes 1 extra tick to register. The faster you move, the longer the slide. Learn the delay.' },
+    draw(ctx,w,h) {
+      // Deep cold night sky
+      const bg=ctx.createLinearGradient(0,0,0,h);
+      bg.addColorStop(0,'#00060f'); bg.addColorStop(0.55,'#001525'); bg.addColorStop(1,'#a8d8f0');
+      ctx.fillStyle=bg; ctx.fillRect(0,0,w,h);
+
+      // Aurora ribbons
+      const auroraColors=['rgba(0,255,160,0.18)','rgba(0,200,255,0.14)','rgba(80,0,220,0.1)'];
+      auroraColors.forEach((c,i)=>{
+        ctx.beginPath();
+        for(let x=0;x<=w;x+=4){
+          const y=h*0.08+i*h*0.06+Math.sin(x*0.012+i*1.2)*h*0.05;
+          x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+        }
+        ctx.lineTo(w,0); ctx.lineTo(0,0); ctx.closePath();
+        ctx.fillStyle=c; ctx.fill();
+      });
+
+      // Stars
+      for(let i=0;i<60;i++){
+        const x=Math.random()*w, y=Math.random()*h*0.55;
+        ctx.fillStyle=`rgba(220,240,255,${Math.random()*0.7+0.2})`;
+        ctx.fillRect(x,y,Math.random()<0.2?2:1,Math.random()<0.2?2:1);
+      }
+
+      // Snow-covered ground — flat white horizon
+      const horizon=h*0.58;
+      const snowGrad=ctx.createLinearGradient(0,horizon,0,h);
+      snowGrad.addColorStop(0,'#d0eeff'); snowGrad.addColorStop(0.15,'#b8dff5'); snowGrad.addColorStop(1,'#8cc8e8');
+      ctx.fillStyle=snowGrad; ctx.fillRect(0,horizon,w,h-horizon);
+
+      // Snow dune silhouettes
+      ctx.fillStyle='#c2e0f4';
+      ctx.beginPath(); ctx.moveTo(0,h);
+      ctx.lineTo(0,horizon+20);
+      ctx.bezierCurveTo(w*0.15,horizon-10,w*0.3,horizon+5,w*0.45,horizon+18);
+      ctx.bezierCurveTo(w*0.6,horizon+30,w*0.75,horizon-5,w*0.9,horizon+10);
+      ctx.lineTo(w,horizon+15); ctx.lineTo(w,h); ctx.fill();
+
+      // Ice cracks on ground
+      ctx.strokeStyle='rgba(100,180,220,0.4)'; ctx.lineWidth=1;
+      [[0.05,0.65,0.25,0.82],[0.3,0.7,0.55,0.9],[0.6,0.63,0.8,0.78],[0.15,0.85,0.45,1.0],[0.7,0.75,0.95,0.95]].forEach(([x1,y1,x2,y2])=>{
+        ctx.beginPath(); ctx.moveTo(x1*w,y1*h); ctx.lineTo(x2*w,y2*h); ctx.stroke();
+      });
+
+      // Snowflakes falling
+      for(let i=0;i<55;i++){
+        const x=Math.random()*w, y=Math.random()*horizon;
+        const r=Math.random()*2+0.5;
+        ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
+        ctx.fillStyle=`rgba(255,255,255,${Math.random()*0.6+0.3})`; ctx.fill();
+      }
+
+      // Horizon snow glow
+      const hg=ctx.createLinearGradient(0,horizon-10,0,horizon+30);
+      hg.addColorStop(0,'rgba(180,230,255,0.5)'); hg.addColorStop(1,'transparent');
+      ctx.fillStyle=hg; ctx.fillRect(0,horizon-10,w,40);
+
+      // Icy blue overlay at bottom
+      ctx.fillStyle='rgba(100,180,220,0.12)'; ctx.fillRect(0,horizon,w,h-horizon);
+    }
+  },
+  {
+    name:'Lava',
+    vibe:'Volcanic · Molten Core · Fire Grid',
+    borderColor:'#ff4400',
+    challenge:{ name:'🌋 Eruption Zones', color:'#ff4400', desc:'Random lava tiles erupt on the grid, glowing red before they burst. Touch one = instant death. They cool after 5 seconds — then erupt elsewhere.' },
+    draw(ctx,w,h) {
+      // Dark volcanic base
+      ctx.fillStyle='#080000'; ctx.fillRect(0,0,w,h);
+      // Lava glow from below
+      const lavaBg=ctx.createRadialGradient(w/2,h,0,w/2,h,w*0.8);
+      lavaBg.addColorStop(0,'rgba(255,80,0,0.6)'); lavaBg.addColorStop(0.3,'rgba(180,20,0,0.3)'); lavaBg.addColorStop(1,'transparent');
+      ctx.fillStyle=lavaBg; ctx.fillRect(0,0,w,h);
+      // Lava cracks network
+      ctx.strokeStyle='rgba(255,100,0,0.7)'; ctx.lineWidth=1.5;
+      const cracks2=[
+        [0,0.7,0.2,0.5],[0.2,0.5,0.5,0.6],[0.5,0.6,0.7,0.4],[0.7,0.4,1,0.6],
+        [0.1,1,0.3,0.7],[0.4,1,0.5,0.6],[0.6,1,0.8,0.7],[0.3,0.7,0.6,0.85],
+      ];
+      cracks2.forEach(([x1,y1,x2,y2])=>{
+        const g=ctx.createLinearGradient(x1*w,y1*h,x2*w,y2*h);
+        g.addColorStop(0,'rgba(255,200,0,0.8)'); g.addColorStop(1,'rgba(255,60,0,0.4)');
+        ctx.strokeStyle=g; ctx.beginPath(); ctx.moveTo(x1*w,y1*h); ctx.lineTo(x2*w,y2*h); ctx.stroke();
+      });
+      // Lava pools
+      [{x:0.2,y:0.6,r:30},{x:0.7,y:0.75,r:20},{x:0.5,y:0.9,r:25}].forEach(p=>{
+        const pg=ctx.createRadialGradient(p.x*w,p.y*h,0,p.x*w,p.y*h,p.r);
+        pg.addColorStop(0,'rgba(255,220,0,0.8)'); pg.addColorStop(0.5,'rgba(255,80,0,0.6)'); pg.addColorStop(1,'transparent');
+        ctx.fillStyle=pg; ctx.fillRect(0,0,w,h);
+      });
+      // Rock silhouettes
+      ctx.fillStyle='rgba(5,0,0,0.9)';
+      ctx.beginPath(); ctx.moveTo(0,h); ctx.lineTo(0,h*0.75);
+      ctx.bezierCurveTo(w*0.12,h*0.6,w*0.2,h*0.7,w*0.3,h*0.78); ctx.lineTo(w*0.3,h); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(w,h); ctx.lineTo(w,h*0.68);
+      ctx.bezierCurveTo(w*0.88,h*0.55,w*0.75,h*0.65,w*0.65,h*0.75); ctx.lineTo(w*0.65,h); ctx.fill();
+      // Embers
+      for(let i=0;i<30;i++){
+        const x=Math.random()*w, y=h*0.3+Math.random()*h*0.5;
+        ctx.beginPath(); ctx.arc(x,y,Math.random()*1.5+0.3,0,Math.PI*2);
+        ctx.fillStyle=`rgba(255,${Math.floor(100+Math.random()*155)},0,${Math.random()*0.8+0.2})`; ctx.fill();
+      }
+    }
+  },
+  {
+    name:'City',
+    vibe:'Neon Skyline · Cyber Streets · Rain',
+    borderColor:'#c47fff',
+    challenge:{ name:'🚗 Neon Traffic', color:'#c47fff', desc:'Glowing traffic lines sweep across the arena horizontally and vertically. Time your crossings — get hit and it\'s game over. Speed increases with your score.' },
+    draw(ctx,w,h) {
+      // Night sky
+      const sky=ctx.createLinearGradient(0,0,0,h);
+      sky.addColorStop(0,'#020008'); sky.addColorStop(0.5,'#08001a'); sky.addColorStop(1,'#04000e');
+      ctx.fillStyle=sky; ctx.fillRect(0,0,w,h);
+      // Rain streaks
+      ctx.strokeStyle='rgba(100,150,255,0.08)'; ctx.lineWidth=0.5;
+      for(let i=0;i<40;i++){
+        const x=Math.random()*w;
+        const y=Math.random()*h;
+        const len=10+Math.random()*20;
+        ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+2,y+len); ctx.stroke();
+      }
+      // Building silhouettes with neon accents
+      const buildings2=[
+        {x:0,y:0.45,w:50,h:0.55,ac:'#c47fff'},{x:55,y:0.3,w:35,h:0.7,ac:'#00e5ff'},
+        {x:95,y:0.5,w:45,h:0.5,ac:'#ff1a2e'},{x:145,y:0.25,w:55,h:0.75,ac:'#c47fff'},
+        {x:205,y:0.4,w:40,h:0.6,ac:'#00e5ff'},{x:250,y:0.2,w:60,h:0.8,ac:'#8eff71'},
+        {x:315,y:0.35,w:45,h:0.65,ac:'#ff1a2e'},{x:365,y:0.15,w:70,h:0.85,ac:'#c47fff'},
+        {x:440,y:0.38,w:50,h:0.62,ac:'#00e5ff'},{x:495,y:0.28,w:65,h:0.72,ac:'#8eff71'},
+      ];
+      buildings2.forEach(b=>{
+        // Building
+        ctx.fillStyle='rgba(4,0,14,0.95)';
+        ctx.fillRect(b.x,b.y*h,b.w,h*(1-b.y)+1);
+        // Windows
+        for(let wy=b.y*h+8;wy<h-8;wy+=10){
+          for(let wx=b.x+4;wx<b.x+b.w-4;wx+=8){
+            if(Math.random()>0.4){
+              ctx.fillStyle=`rgba(${hexToRgb(b.ac)},${Math.random()*0.5+0.2})`;
+              ctx.fillRect(wx,wy,4,5);
+            }
+          }
+        }
+        // Neon rooftop line
+        ctx.strokeStyle=b.ac; ctx.lineWidth=1.5;
+        ctx.beginPath(); ctx.moveTo(b.x,b.y*h); ctx.lineTo(b.x+b.w,b.y*h); ctx.stroke();
+        // Neon glow
+        const rg=ctx.createLinearGradient(b.x,b.y*h,b.x,b.y*h+30);
+        rg.addColorStop(0,b.ac+'33'); rg.addColorStop(1,'transparent');
+        ctx.fillStyle=rg; ctx.fillRect(b.x,b.y*h,b.w,30);
+      });
+      // Street glow (reflections)
+      const street=ctx.createLinearGradient(0,h*0.85,0,h);
+      street.addColorStop(0,'rgba(120,0,200,0.15)'); street.addColorStop(1,'transparent');
+      ctx.fillStyle=street; ctx.fillRect(0,h*0.85,w,h*0.15);
+    }
+  },
+  {
+    name:'Jungle',
+    vibe:'Dense Canopy · Bio Neon · Overgrowth',
+    borderColor:'#00ff88',
+    challenge:{ name:'🌿 Creeping Vines', color:'#00ff88', desc:'Vines grow inward from the edges every 20 seconds, permanently shrinking the arena. The longer you survive, the tighter the cage gets.' },
+    draw(ctx,w,h) {
+      // Deep jungle night base
+      const bg=ctx.createLinearGradient(0,0,0,h);
+      bg.addColorStop(0,'#000a02'); bg.addColorStop(0.4,'#011a05'); bg.addColorStop(1,'#010e03');
+      ctx.fillStyle=bg; ctx.fillRect(0,0,w,h);
+
+      // Background layered foliage (distant, dark)
+      ctx.fillStyle='rgba(0,18,4,0.95)';
+      [[0,h*0.25],[w*0.5,h*0.2],[w,h*0.28]].forEach(([x,y])=>{
+        ctx.beginPath(); ctx.arc(x,y,120,0,Math.PI*2); ctx.fill();
+      });
+
+      // Mid-ground trees with trunks
+      const trunks=[0.07,0.2,0.34,0.48,0.62,0.76,0.9];
+      trunks.forEach((tx,i)=>{
+        const x=tx*w;
+        const tw=8+Math.random()*6;
+        // Trunk gradient
+        const tg=ctx.createLinearGradient(x,0,x,h);
+        tg.addColorStop(0,'#0a1f06'); tg.addColorStop(1,'#04100a');
+        ctx.fillStyle=tg;
+        ctx.beginPath();
+        ctx.moveTo(x-tw/2,h);
+        ctx.bezierCurveTo(x-tw/2,h*0.6,x-tw/2+Math.sin(i)*8,h*0.3,x+Math.sin(i*2)*6,0);
+        ctx.bezierCurveTo(x+tw/2+Math.sin(i*2)*6,0,x+tw/2,h*0.3,x+tw/2,h);
+        ctx.fill();
+      });
+
+      // Canopy leaves — layered blobs from top
+      const canopyColors=['rgba(0,35,8,0.98)','rgba(0,28,6,0.9)','rgba(2,22,5,0.85)'];
+      canopyColors.forEach((c,layer)=>{
+        ctx.fillStyle=c;
+        for(let i=0;i<8;i++){
+          const cx=(i/7)*w*1.1 - w*0.05;
+          const cy=h*(0.05+layer*0.07);
+          const rx=55+Math.sin(i+layer)*25;
+          const ry=38+Math.cos(i+layer)*15;
+          ctx.beginPath(); ctx.ellipse(cx,cy,rx,ry,Math.sin(i)*0.4,0,Math.PI*2); ctx.fill();
+        }
+      });
+
+      // Hanging vines from canopy
+      ctx.strokeStyle='rgba(0,80,20,0.6)'; ctx.lineWidth=1.5;
+      [0.1,0.28,0.45,0.6,0.78,0.92].forEach(vx=>{
+        const x=vx*w;
+        const vineH=h*0.2+Math.random()*h*0.25;
+        ctx.beginPath(); ctx.moveTo(x,h*0.15);
+        ctx.bezierCurveTo(x+Math.sin(vx*10)*15,h*0.2,x-Math.sin(vx*8)*12,h*0.3,x+Math.sin(vx*6)*8,h*0.15+vineH);
+        ctx.stroke();
+      });
+
+      // Ground mist
+      const mist=ctx.createLinearGradient(0,h*0.72,0,h);
+      mist.addColorStop(0,'transparent'); mist.addColorStop(0.5,'rgba(0,40,12,0.5)'); mist.addColorStop(1,'rgba(0,20,6,0.8)');
+      ctx.fillStyle=mist; ctx.fillRect(0,h*0.72,w,h*0.28);
+
+      // Bioluminescent mushroom/plant glows on floor
+      [{x:0.12,y:0.85},{x:0.35,y:0.9},{x:0.58,y:0.82},{x:0.78,y:0.88},{x:0.92,y:0.93}].forEach(p=>{
+        const g=ctx.createRadialGradient(p.x*w,p.y*h,0,p.x*w,p.y*h,28);
+        g.addColorStop(0,'rgba(0,255,100,0.45)'); g.addColorStop(0.5,'rgba(0,180,60,0.15)'); g.addColorStop(1,'transparent');
+        ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
+      });
+
+      // Fireflies scattered through mid-area
+      for(let i=0;i<30;i++){
+        const x=Math.random()*w, y=h*0.22+Math.random()*h*0.55;
+        const s=Math.random()*1.5+0.5;
+        const g=ctx.createRadialGradient(x,y,0,x,y,s*3);
+        g.addColorStop(0,'rgba(160,255,80,0.95)'); g.addColorStop(1,'transparent');
+        ctx.fillStyle=g; ctx.fillRect(x-s*3,y-s*3,s*6,s*6);
+        ctx.beginPath(); ctx.arc(x,y,s,0,Math.PI*2);
+        ctx.fillStyle='rgba(200,255,120,0.9)'; ctx.fill();
+      }
+
+      // Central atmospheric glow (depth)
+      const atm=ctx.createRadialGradient(w/2,h*0.55,0,w/2,h*0.55,w*0.4);
+      atm.addColorStop(0,'rgba(0,60,15,0.2)'); atm.addColorStop(1,'transparent');
+      ctx.fillStyle=atm; ctx.fillRect(0,0,w,h);
+    }
+  },
+];
+
+function hexToRgb(hex){
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return `${r},${g},${b}`;
+}
+
+const mapsGrid = document.getElementById('maps-grid');
+MAPS.forEach(map=>{
+  const card=document.createElement('div');
+  card.className='map-card';
+  card.style.borderColor=map.borderColor+'44';
+
+  const preview=document.createElement('div');
+  preview.className='map-preview';
+  const canvas=document.createElement('canvas');
+  canvas.width=480; canvas.height=300;
+  canvas.style.width='100%'; canvas.style.height='200px';
+  preview.appendChild(canvas);
+
+  const info=document.createElement('div');
+  info.className='map-info';
+  info.innerHTML=`
+    <div class="map-name" style="color:${map.borderColor}">${map.name}</div>
+    <div class="map-vibe">${map.vibe}</div>
+    <div class="map-challenge" style="border-color:${map.challenge.color}44; background: ${map.challenge.color}08">
+      <div class="map-challenge-label" style="color:${map.challenge.color}">Map Challenge</div>
+      <div class="map-challenge-name" style="color:${map.challenge.color}">${map.challenge.name}</div>
+      <div class="map-challenge-desc">${map.challenge.desc}</div>
+    </div>`;
+
+  card.appendChild(preview);
+  card.appendChild(info);
+  mapsGrid.appendChild(card);
+
+  const ctx=canvas.getContext('2d');
+  map.draw(ctx,480,300);
+});
+</script>
+</body>
+</html>

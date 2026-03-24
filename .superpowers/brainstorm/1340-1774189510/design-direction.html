@@ -1,0 +1,161 @@
+<h2>Which 3D design direction feels right?</h2>
+<p class="subtitle">All 3 keep the same gameplay. Pick the visual world you want to play in.</p>
+
+<div class="cards">
+
+  <!-- Option A: Neon Cyberpunk -->
+  <div class="card" data-choice="neon-cyber" onclick="toggleSelect(this)">
+    <div class="card-image" style="
+      background: #000;
+      height: 200px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    ">
+      <!-- Grid floor -->
+      <div style="
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(0,255,200,0.15) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(0,255,200,0.15) 1px, transparent 1px);
+        background-size: 28px 28px;
+        transform: perspective(300px) rotateX(55deg) translateY(40px);
+        transform-origin: bottom;
+      "></div>
+      <!-- Glow horizon -->
+      <div style="
+        position: absolute;
+        bottom: 60px;
+        left: 0; right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #00ffe8, #ff00c8, #00ffe8, transparent);
+        box-shadow: 0 0 20px #00ffe8, 0 0 60px #ff00c8;
+      "></div>
+      <!-- Snake body (3D blocks) -->
+      <div style="position:absolute; top:30px; left:50%; transform:translateX(-50%); display:flex; gap:4px; perspective:200px;">
+        <div style="width:22px;height:22px;border-radius:4px;background:#00ffe8;box-shadow:0 0 12px #00ffe8, 0 6px 0 #008888; transform:rotateX(-15deg);"></div>
+        <div style="width:22px;height:22px;border-radius:4px;background:#00e8d8;box-shadow:0 0 10px #00ffe8, 0 6px 0 #007070; transform:rotateX(-15deg);"></div>
+        <div style="width:22px;height:22px;border-radius:4px;background:#00d0c0;box-shadow:0 0 8px #00ffe8, 0 6px 0 #005858; transform:rotateX(-15deg);"></div>
+        <div style="width:22px;height:22px;border-radius:4px;background:#00b8a8;box-shadow:0 0 6px #00ffe8, 0 6px 0 #004444; transform:rotateX(-15deg);"></div>
+      </div>
+      <!-- Food particle -->
+      <div style="position:absolute;top:50px;right:60px;width:14px;height:14px;border-radius:50%;background:#ff00c8;box-shadow:0 0 16px #ff00c8, 0 0 30px #ff00c8; animation: glow-pulse 1.2s ease-in-out infinite alternate;"></div>
+      <!-- Scanlines overlay -->
+      <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,0.08) 0px,rgba(0,0,0,0.08) 1px,transparent 1px,transparent 3px);pointer-events:none;"></div>
+      <!-- Label -->
+      <div style="position:absolute;bottom:10px;left:12px;font-size:11px;font-weight:700;letter-spacing:0.15em;color:#00ffe8;text-transform:uppercase;text-shadow:0 0 10px #00ffe8;">Neon Cyber</div>
+    </div>
+    <div class="card-body">
+      <h3>Neon Cyberpunk 3D</h3>
+      <p>Glowing neon grid floor with perspective, extruded 3D snake blocks with neon glow. Vivid cyan/magenta palette. Scanline overlays, particle trails, animated horizon light.</p>
+    </div>
+  </div>
+
+  <!-- Option B: Crystalline Glass -->
+  <div class="card" data-choice="glass-3d" onclick="toggleSelect(this)">
+    <div class="card-image" style="
+      background: linear-gradient(135deg, #0a0a1a 0%, #0d1a2e 50%, #0a1220 100%);
+      height: 200px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    ">
+      <!-- Stars -->
+      <div style="position:absolute;inset:0;background-image:radial-gradient(1.5px 1.5px at 10% 20%,rgba(255,255,255,0.8) 0%,transparent 100%),radial-gradient(1px 1px at 80% 15%,rgba(255,255,255,0.6) 0%,transparent 100%),radial-gradient(1px 1px at 60% 70%,rgba(200,220,255,0.7) 0%,transparent 100%),radial-gradient(2px 2px at 30% 60%,rgba(255,255,255,0.5) 0%,transparent 100%),radial-gradient(1px 1px at 90% 80%,rgba(200,200,255,0.6) 0%,transparent 100%);"></div>
+      <!-- Glass game board -->
+      <div style="
+        width: 140px; height: 110px;
+        border-radius: 12px;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.12);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+        backdrop-filter: blur(4px);
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      ">
+        <!-- Light refraction top -->
+        <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent);"></div>
+        <!-- Snake (glass segments) -->
+        <div style="display:flex; gap:3px; flex-direction: column;">
+          <div style="display:flex;gap:3px;">
+            <div style="width:18px;height:18px;border-radius:4px;background:rgba(100,200,255,0.25);border:1px solid rgba(100,200,255,0.5);box-shadow:0 4px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2);"></div>
+            <div style="width:18px;height:18px;border-radius:4px;background:rgba(100,200,255,0.2);border:1px solid rgba(100,200,255,0.4);box-shadow:0 4px 8px rgba(0,0,0,0.3);"></div>
+            <div style="width:18px;height:18px;border-radius:4px;background:rgba(100,200,255,0.15);border:1px solid rgba(100,200,255,0.3);box-shadow:0 4px 8px rgba(0,0,0,0.3);"></div>
+          </div>
+          <div style="display:flex;gap:3px;">
+            <div style="width:18px;height:18px;border-radius:4px;background:rgba(100,200,255,0.1);border:1px solid rgba(100,200,255,0.2);"></div>
+          </div>
+        </div>
+        <!-- Food -->
+        <div style="position:absolute;top:15px;right:15px;width:12px;height:12px;border-radius:50%;background:rgba(255,180,100,0.6);border:1px solid rgba(255,180,100,0.9);box-shadow:0 0 10px rgba(255,180,100,0.5);"></div>
+      </div>
+      <!-- Label -->
+      <div style="position:absolute;bottom:10px;left:12px;font-size:11px;font-weight:700;letter-spacing:0.15em;color:rgba(150,210,255,0.9);text-transform:uppercase;">Glass Crystal</div>
+    </div>
+    <div class="card-body">
+      <h3>Crystalline Glass 3D</h3>
+      <p>Frosted glass panels with depth shadows and light refractions. Snake segments are semi-transparent 3D crystals. Soft aurora lighting, minimal white borders, premium feel.</p>
+    </div>
+  </div>
+
+  <!-- Option C: Neon Retro Arcade -->
+  <div class="card" data-choice="retro-arcade" onclick="toggleSelect(this)">
+    <div class="card-image" style="
+      background: #0a0010;
+      height: 200px;
+      position: relative;
+      overflow: hidden;
+    ">
+      <!-- CRT vignette -->
+      <div style="position:absolute;inset:0;background:radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.7) 100%);pointer-events:none;z-index:2;"></div>
+      <!-- Scanlines -->
+      <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,0.15) 0px,rgba(0,0,0,0.15) 1px,transparent 1px,transparent 2px);z-index:2;pointer-events:none;"></div>
+      <!-- Pixel grid game area -->
+      <div style="
+        position: absolute;
+        top: 20px; left: 50%; transform: translateX(-50%);
+        width: 140px; height: 120px;
+        border: 2px solid rgba(255,80,200,0.5);
+        box-shadow: 0 0 20px rgba(255,80,200,0.3), inset 0 0 20px rgba(255,80,200,0.05);
+        border-radius: 4px;
+        overflow: hidden;
+      ">
+        <!-- Extruded pixel blocks snake -->
+        <div style="display:flex;gap:0;position:absolute;top:20px;left:14px;gap:2px;">
+          <div style="width:16px;height:16px;background:#ff50c8;box-shadow:0 0 8px #ff50c8,2px 2px 0 #8800aa,4px 4px 0 #440055;border-radius:2px;"></div>
+          <div style="width:16px;height:16px;background:#e040b8;box-shadow:0 0 6px #ff50c8,2px 2px 0 #7700aa;border-radius:2px;"></div>
+          <div style="width:16px;height:16px;background:#c030a0;box-shadow:0 0 4px #ff50c8,2px 2px 0 #660088;border-radius:2px;"></div>
+          <div style="width:16px;height:16px;background:#a02088;box-shadow:2px 2px 0 #550077;border-radius:2px;"></div>
+        </div>
+        <div style="position:absolute;top:38px;left:14px;">
+          <div style="width:16px;height:16px;background:#901878;box-shadow:2px 2px 0 #440066;border-radius:2px;"></div>
+        </div>
+        <!-- Food pixel -->
+        <div style="position:absolute;top:60px;right:16px;width:14px;height:14px;background:#ffff00;box-shadow:0 0 12px #ffff00,2px 2px 0 #888800;border-radius:2px;"></div>
+        <!-- Score display -->
+        <div style="position:absolute;bottom:6px;left:0;right:0;text-align:center;font-family:monospace;font-size:10px;color:#ff50c8;letter-spacing:0.1em;text-shadow:0 0 8px #ff50c8;">SCORE: 0340</div>
+      </div>
+      <!-- Label -->
+      <div style="position:absolute;bottom:10px;left:12px;font-size:11px;font-weight:700;letter-spacing:0.15em;color:#ff50c8;text-transform:uppercase;text-shadow:0 0 8px #ff50c8;z-index:3;">Retro Arcade</div>
+    </div>
+    <div class="card-body">
+      <h3>Retro Arcade 3D</h3>
+      <p>CRT-screen aesthetic with extruded pixel-art blocks. Isometric 3D snake with neon pink/yellow palette, scanlines, vignette, and classic arcade scoring typography.</p>
+    </div>
+  </div>
+
+</div>
+
+<style>
+@keyframes glow-pulse { from { opacity: 0.7; } to { opacity: 1; box-shadow: 0 0 24px #ff00c8, 0 0 50px #ff00c8; } }
+.cards { grid-template-columns: repeat(3, 1fr) !important; }
+@media (max-width: 900px) { .cards { grid-template-columns: 1fr !important; } }
+</style>

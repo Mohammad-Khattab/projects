@@ -14,6 +14,7 @@ export interface Resource {
   type: 'pdf' | 'doc' | 'link' | 'video' | 'file'
   url: string
   uploadedAt?: string
+  chapter?: string  // Moodle section heading, e.g. "Chapter 19" or "Week 3"
 }
 
 export interface Assignment {

@@ -1,0 +1,195 @@
+<h2>Map color themes — do these feel right?</h2>
+<p class="subtitle">Each map gets its own neon palette. The snake, grid, glow, and HUD all shift to match. Click any card you want to change.</p>
+
+<div class="cards" style="grid-template-columns: repeat(3, 1fr) !important; gap: 14px; margin-top: 20px;" data-multiselect>
+
+  <!-- Ocean -->
+  <div class="card" data-choice="ocean" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#000814; height:130px; position:relative; overflow:hidden;">
+      <div style="position:absolute;bottom:-10px;left:-10px;right:-10px;height:100px;background-image:linear-gradient(rgba(0,180,255,0.2) 1px,transparent 1px),linear-gradient(90deg,rgba(0,180,255,0.2) 1px,transparent 1px);background-size:20px 20px;transform:perspective(200px) rotateX(55deg);transform-origin:bottom;"></div>
+      <div style="position:absolute;bottom:30px;left:0;right:0;height:1.5px;background:linear-gradient(90deg,transparent,#00c8ff,#0060ff,#00c8ff,transparent);box-shadow:0 0 12px #00c8ff,0 0 30px #0060ff;"></div>
+      <div style="position:absolute;top:18px;left:50%;transform:translateX(-50%);display:flex;gap:3px;">
+        <div style="width:18px;height:18px;border-radius:3px;background:linear-gradient(135deg,#00c8ff,#0080ff);box-shadow:0 0 10px #00c8ff,0 5px 0 #004488;"></div>
+        <div style="width:18px;height:18px;border-radius:3px;background:linear-gradient(135deg,#00aae0,#0068d8);box-shadow:0 0 7px #00c8ff,0 5px 0 #003366;"></div>
+        <div style="width:18px;height:18px;border-radius:3px;background:linear-gradient(135deg,#008ec0,#0050b8);box-shadow:0 0 5px #00c8ff,0 5px 0 #002244;"></div>
+      </div>
+      <div style="position:absolute;top:20px;right:20px;width:12px;height:12px;border-radius:50%;background:#00c8ff;box-shadow:0 0 14px #00c8ff,0 0 28px rgba(0,200,255,0.5);"></div>
+      <div style="position:absolute;bottom:8px;left:10px;font-size:10px;font-weight:700;letter-spacing:0.12em;color:#00c8ff;font-family:monospace;text-shadow:0 0 8px #00c8ff;">OCEAN</div>
+      <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,0.07) 0px,rgba(0,0,0,0.07) 1px,transparent 1px,transparent 3px);pointer-events:none;"></div>
+    </div>
+    <div class="card-body" style="padding:10px 12px;">
+      <h3 style="font-size:13px;margin-bottom:4px;">Ocean</h3>
+      <p style="font-size:12px;color:#00c8ff;font-family:monospace;">#00c8ff · #0060ff</p>
+    </div>
+  </div>
+
+  <!-- Space -->
+  <div class="card" data-choice="space" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#04000e; height:130px; position:relative; overflow:hidden;">
+      <div style="position:absolute;inset:0;background-image:radial-gradient(1px 1px at 15% 25%,rgba(255,255,255,0.8) 0%,transparent 100%),radial-gradient(1.5px 1.5px at 70% 15%,white 0%,transparent 100%),radial-gradient(1px 1px at 45% 70%,rgba(200,180,255,0.9) 0%,transparent 100%),radial-gradient(1px 1px at 85% 60%,rgba(255,255,255,0.7) 0%,transparent 100%);"></div>
+      <div style="position:absolute;bottom:-10px;left:-10px;right:-10px;height:100px;background-image:linear-gradient(rgba(140,0,255,0.2) 1px,transparent 1px),linear-gradient(90deg,rgba(140,0,255,0.2) 1px,transparent 1px);background-size:20px 20px;transform:perspective(200px) rotateX(55deg);transform-origin:bottom;"></div>
+      <div style="position:absolute;bottom:30px;left:0;right:0;height:1.5px;background:linear-gradient(90deg,transparent,#cc00ff,#8800ff,#cc00ff,transparent);box-shadow:0 0 12px #cc00ff,0 0 30px #8800ff;"></div>
+      <div style="position:absolute;top:18px;left:50%;transform:translateX(-50%);display:flex;gap:3px;">
+        <div style="width:18px;height:18px;border-radius:3px;background:linear-gradient(135deg,#cc00ff,#8800ff);box-shadow:0 0 10px #cc00ff,0 5px 0 #440088;"></div>
+        <div style="width:18px;height:18px;border-radius:3px;background:linear-gradient(135deg,#aa00dd,#6600cc);box-shadow:0 0 7px #cc00ff,0 5px 0 #330066;"></div>
+        <div style="width:18px;height:18px;border-radius:3px;background:linear-gradient(135deg,#8800bb,#4400aa);box-shadow:0 0 5px #cc00ff,0 5px 0 #220044;"></div>
+      </div>
+      <div style="position:absolute;top:20px;right:20px;width:12px;height:12px;border-radius:50%;background:#cc00ff;box-shadow:0 0 14px #cc00ff,0 0 28px rgba(200,0,255,0.5);"></div>
+      <div style="position:absolute;bottom:8px;left:10px;font-size:10px;font-weight:700;letter-spacing:0.12em;color:#cc00ff;font-family:monospace;text-shadow:0 0 8px #cc00ff;">SPACE</div>
+      <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,0.07) 0px,rgba(0,0,0,0.07) 1px,transparent 1px,transparent 3px);pointer-events:none;"></div>
+    </div>
+    <div class="card-body" style="padding:10px 12px;">
+      <h3 style="font-size:13px;margin-bottom:4px;">Space</h3>
+      <p style="font-size:12px;color:#cc00ff;font-family:monospace;">#cc00ff · #8800ff</p>
+    </div>
+  </div>
+
+  <!-- Lava -->
+  <div class="card" data-choice="lava" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0e0000; height:130px; position:relative; overflow:hidden;">
+      <div style="position:absolute;bottom:-10px;left:-10px;right:-10px;height:100px;background-image:linear-gradient(rgba(255,60,0,0.2) 1px,transparent 1px),linear-gradient(90deg,rgba(255,60,0,0.2) 1px,transparent 1px);background-size:20px 20px;transform:perspective(200px) rotateX(55deg);transform-origin:bottom;"></div>
+      <div style="position:absolute;bottom:30px;left:0;right:0;height:1.5px;background:linear-gradient(90deg,transparent,#ff3c00,#ff8800,#ff3c00,transparent);box-shadow:0 0 12px #ff3c00,0 0 30px #ff8800;"></div>
+      <div style="position:absolute;top:18px;left:50%;transform:translateX(-50%);display:flex;gap:3px;">
+        <div style="width:18px;height:18px;border-radius:3px;background:linear-gradient(135deg,#ff5500,#ff2200);box-shadow:0 0 10px #ff3c00,0 5px 0 #881100;"></div>
+        <div style="width:18px;height:18px;border-radius:3px;background:linear-gradient(135deg,#dd4400,#cc1800);box-shadow:0 0 7px #ff3c00,0 5px 0 #660d00;"></div>
+        <div style="width:18px;height:18px;border-radius:3px;background:linear-gradient(135deg,#bb3300,#aa1000);box-shadow:0 0 5px #ff3c00,0 5px 0 #440900;"></div>
+      </div>
+      <div style="position:absolute;top:20px;right:20px;width:12px;height:12px;border-radius:50%;background:#ff8800;box-shadow:0 0 14px #ff8800,0 0 28px rgba(255,136,0,0.5);"></div>
+      <div style="position:absolute;bottom:8px;left:10px;font-size:10px;font-weight:700;letter-spacing:0.12em;color:#ff5500;font-family:monospace;text-shadow:0 0 8px #ff3c00;">LAVA</div>
+      <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,0.07) 0px,rgba(0,0,0,0.07) 1px,transparent 1px,transparent 3px);pointer-events:none;"></div>
+    </div>
+    <div class="card-body" style="padding:10px 12px;">
+      <h3 style="font-size:13px;margin-bottom:4px;">Lava</h3>
+      <p style="font-size:12px;color:#ff5500;font-family:monospace;">#ff5500 · #ff8800</p>
+    </div>
+  </div>
+
+  <!-- City -->
+  <div class="card" data-choice="city" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#04040c; height:130px; position:relative; overflow:hidden;">
+      <div style="position:absolute;bottom:-10px;left:-10px;right:-10px;height:100px;background-image:linear-gradient(rgba(255,220,0,0.18) 1px,transparent 1px),linear-gradient(90deg,rgba(255,220,0,0.18) 1px,transparent 1px);background-size:20px 20px;transform:perspective(200px) rotateX(55deg);transform-origin:bottom;"></div>
+      <div style="position:absolute;bottom:30px;left:0;right:0;height:1.5px;background:linear-gradient(90deg,transparent,#ffdd00,#ffffff,#ffdd00,transparent);box-shadow:0 0 12px #ffdd00,0 0 30px rgba(255,255,255,0.5);"></div>
+      <div style="position:absolute;top:18px;left:50%;transform:translateX(-50%);display:flex;gap:3px;">
+        <div style="width:18px;height:18px;border-radius:3px;background:linear-gradient(135deg,#ffee44,#ffcc00);box-shadow:0 0 10px #ffdd00,0 5px 0 #886600;"></div>
+        <div style="width:18px;height:18px;border-radius:3px;background:linear-gradient(135deg,#ddcc33,#ddaa00);box-shadow:0 0 7px #ffdd00,0 5px 0 #665500;"></div>
+        <div style="width:18px;height:18px;border-radius:3px;background:linear-gradient(135deg,#bbaa22,#bb8800);box-shadow:0 0 5px #ffdd00,0 5px 0 #443300;"></div>
+      </div>
+      <div style="position:absolute;top:20px;right:20px;width:12px;height:12px;border-radius:50%;background:#ffffff;box-shadow:0 0 14px #ffffff,0 0 28px rgba(255,255,255,0.6);"></div>
+      <div style="position:absolute;bottom:8px;left:10px;font-size:10px;font-weight:700;letter-spacing:0.12em;color:#ffee44;font-family:monospace;text-shadow:0 0 8px #ffdd00;">CITY</div>
+      <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,0.07) 0px,rgba(0,0,0,0.07) 1px,transparent 1px,transparent 3px);pointer-events:none;"></div>
+    </div>
+    <div class="card-body" style="padding:10px 12px;">
+      <h3 style="font-size:13px;margin-bottom:4px;">City</h3>
+      <p style="font-size:12px;color:#ffee44;font-family:monospace;">#ffee44 · #ffffff</p>
+    </div>
+  </div>
+
+  <!-- Desert -->
+  <div class="card" data-choice="desert" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0c0500; height:130px; position:relative; overflow:hidden;">
+      <div style="position:absolute;bottom:-10px;left:-10px;right:-10px;height:100px;background-image:linear-gradient(rgba(255,165,0,0.2) 1px,transparent 1px),linear-gradient(90deg,rgba(255,165,0,0.2) 1px,transparent 1px);background-size:20px 20px;transform:perspective(200px) rotateX(55deg);transform-origin:bottom;"></div>
+      <div style="position:absolute;bottom:30px;left:0;right:0;height:1.5px;background:linear-gradient(90deg,transparent,#ffaa00,#ff6600,#ffaa00,transparent);box-shadow:0 0 12px #ffaa00,0 0 30px #ff6600;"></div>
+      <div style="position:absolute;top:18px;left:50%;transform:translateX(-50%);display:flex;gap:3px;">
+        <div style="width:18px;height:18px;border-radius:3px;background:linear-gradient(135deg,#ffbb22,#ff8800);box-shadow:0 0 10px #ffaa00,0 5px 0 #884400;"></div>
+        <div style="width:18px;height:18px;border-radius:3px;background:linear-gradient(135deg,#dd9911,#dd6600);box-shadow:0 0 7px #ffaa00,0 5px 0 #663300;"></div>
+        <div style="width:18px;height:18px;border-radius:3px;background:linear-gradient(135deg,#bb7700,#bb4400);box-shadow:0 0 5px #ffaa00,0 5px 0 #442200;"></div>
+      </div>
+      <div style="position:absolute;top:20px;right:20px;width:12px;height:12px;border-radius:50%;background:#ff6600;box-shadow:0 0 14px #ff6600,0 0 28px rgba(255,102,0,0.5);"></div>
+      <div style="position:absolute;bottom:8px;left:10px;font-size:10px;font-weight:700;letter-spacing:0.12em;color:#ffbb22;font-family:monospace;text-shadow:0 0 8px #ffaa00;">DESERT</div>
+      <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,0.07) 0px,rgba(0,0,0,0.07) 1px,transparent 1px,transparent 3px);pointer-events:none;"></div>
+    </div>
+    <div class="card-body" style="padding:10px 12px;">
+      <h3 style="font-size:13px;margin-bottom:4px;">Desert</h3>
+      <p style="font-size:12px;color:#ffbb22;font-family:monospace;">#ffbb22 · #ff6600</p>
+    </div>
+  </div>
+
+  <!-- Arctic -->
+  <div class="card" data-choice="arctic" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#000a10; height:130px; position:relative; overflow:hidden;">
+      <div style="position:absolute;bottom:-10px;left:-10px;right:-10px;height:100px;background-image:linear-gradient(rgba(100,220,255,0.2) 1px,transparent 1px),linear-gradient(90deg,rgba(100,220,255,0.2) 1px,transparent 1px);background-size:20px 20px;transform:perspective(200px) rotateX(55deg);transform-origin:bottom;"></div>
+      <div style="position:absolute;bottom:30px;left:0;right:0;height:1.5px;background:linear-gradient(90deg,transparent,#88eeff,#ffffff,#88eeff,transparent);box-shadow:0 0 12px #88eeff,0 0 30px rgba(255,255,255,0.4);"></div>
+      <div style="position:absolute;top:18px;left:50%;transform:translateX(-50%);display:flex;gap:3px;">
+        <div style="width:18px;height:18px;border-radius:3px;background:linear-gradient(135deg,#aaffff,#66ddff);box-shadow:0 0 10px #88eeff,0 5px 0 #336688;"></div>
+        <div style="width:18px;height:18px;border-radius:3px;background:linear-gradient(135deg,#88dddd,#44bbdd);box-shadow:0 0 7px #88eeff,0 5px 0 #224466;"></div>
+        <div style="width:18px;height:18px;border-radius:3px;background:linear-gradient(135deg,#66bbbb,#2299bb);box-shadow:0 0 5px #88eeff,0 5px 0 #113344;"></div>
+      </div>
+      <div style="position:absolute;top:20px;right:20px;width:12px;height:12px;border-radius:50%;background:#ffffff;box-shadow:0 0 14px #aaffff,0 0 28px rgba(170,255,255,0.6);"></div>
+      <div style="position:absolute;bottom:8px;left:10px;font-size:10px;font-weight:700;letter-spacing:0.12em;color:#aaffff;font-family:monospace;text-shadow:0 0 8px #88eeff;">ARCTIC</div>
+      <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,0.07) 0px,rgba(0,0,0,0.07) 1px,transparent 1px,transparent 3px);pointer-events:none;"></div>
+    </div>
+    <div class="card-body" style="padding:10px 12px;">
+      <h3 style="font-size:13px;margin-bottom:4px;">Arctic</h3>
+      <p style="font-size:12px;color:#aaffff;font-family:monospace;">#aaffff · #ffffff</p>
+    </div>
+  </div>
+
+  <!-- Moon -->
+  <div class="card" data-choice="moon" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#06060e; height:130px; position:relative; overflow:hidden;">
+      <div style="position:absolute;bottom:-10px;left:-10px;right:-10px;height:100px;background-image:linear-gradient(rgba(160,160,220,0.18) 1px,transparent 1px),linear-gradient(90deg,rgba(160,160,220,0.18) 1px,transparent 1px);background-size:20px 20px;transform:perspective(200px) rotateX(55deg);transform-origin:bottom;"></div>
+      <div style="position:absolute;bottom:30px;left:0;right:0;height:1.5px;background:linear-gradient(90deg,transparent,#aaaaff,#8888cc,#aaaaff,transparent);box-shadow:0 0 12px #aaaaff,0 0 30px #8888cc;"></div>
+      <div style="position:absolute;top:18px;left:50%;transform:translateX(-50%);display:flex;gap:3px;">
+        <div style="width:18px;height:18px;border-radius:3px;background:linear-gradient(135deg,#ccccff,#9999dd);box-shadow:0 0 10px #aaaaff,0 5px 0 #555588;"></div>
+        <div style="width:18px;height:18px;border-radius:3px;background:linear-gradient(135deg,#aaaadd,#7777bb);box-shadow:0 0 7px #aaaaff,0 5px 0 #334466;"></div>
+        <div style="width:18px;height:18px;border-radius:3px;background:linear-gradient(135deg,#8888bb,#555599);box-shadow:0 0 5px #aaaaff,0 5px 0 #222244;"></div>
+      </div>
+      <div style="position:absolute;top:20px;right:20px;width:12px;height:12px;border-radius:50%;background:#ccccff;box-shadow:0 0 14px #aaaaff,0 0 28px rgba(170,170,255,0.5);"></div>
+      <div style="position:absolute;bottom:8px;left:10px;font-size:10px;font-weight:700;letter-spacing:0.12em;color:#ccccff;font-family:monospace;text-shadow:0 0 8px #aaaaff;">MOON</div>
+      <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,0.07) 0px,rgba(0,0,0,0.07) 1px,transparent 1px,transparent 3px);pointer-events:none;"></div>
+    </div>
+    <div class="card-body" style="padding:10px 12px;">
+      <h3 style="font-size:13px;margin-bottom:4px;">Moon</h3>
+      <p style="font-size:12px;color:#ccccff;font-family:monospace;">#ccccff · #8888cc</p>
+    </div>
+  </div>
+
+  <!-- Earth -->
+  <div class="card" data-choice="earth" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#020800; height:130px; position:relative; overflow:hidden;">
+      <div style="position:absolute;bottom:-10px;left:-10px;right:-10px;height:100px;background-image:linear-gradient(rgba(0,255,80,0.2) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,80,0.2) 1px,transparent 1px);background-size:20px 20px;transform:perspective(200px) rotateX(55deg);transform-origin:bottom;"></div>
+      <div style="position:absolute;bottom:30px;left:0;right:0;height:1.5px;background:linear-gradient(90deg,transparent,#00ff55,#88ff00,#00ff55,transparent);box-shadow:0 0 12px #00ff55,0 0 30px #88ff00;"></div>
+      <div style="position:absolute;top:18px;left:50%;transform:translateX(-50%);display:flex;gap:3px;">
+        <div style="width:18px;height:18px;border-radius:3px;background:linear-gradient(135deg,#22ff66,#00dd44);box-shadow:0 0 10px #00ff55,0 5px 0 #006622;"></div>
+        <div style="width:18px;height:18px;border-radius:3px;background:linear-gradient(135deg,#00dd44,#00bb33);box-shadow:0 0 7px #00ff55,0 5px 0 #004d18;"></div>
+        <div style="width:18px;height:18px;border-radius:3px;background:linear-gradient(135deg,#00bb33,#009922);box-shadow:0 0 5px #00ff55,0 5px 0 #003310;"></div>
+      </div>
+      <div style="position:absolute;top:20px;right:20px;width:12px;height:12px;border-radius:50%;background:#88ff00;box-shadow:0 0 14px #88ff00,0 0 28px rgba(136,255,0,0.5);"></div>
+      <div style="position:absolute;bottom:8px;left:10px;font-size:10px;font-weight:700;letter-spacing:0.12em;color:#22ff66;font-family:monospace;text-shadow:0 0 8px #00ff55;">EARTH</div>
+      <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,0.07) 0px,rgba(0,0,0,0.07) 1px,transparent 1px,transparent 3px);pointer-events:none;"></div>
+    </div>
+    <div class="card-body" style="padding:10px 12px;">
+      <h3 style="font-size:13px;margin-bottom:4px;">Earth</h3>
+      <p style="font-size:12px;color:#22ff66;font-family:monospace;">#22ff66 · #88ff00</p>
+    </div>
+  </div>
+
+  <!-- Jungle -->
+  <div class="card" data-choice="jungle" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#020a04; height:130px; position:relative; overflow:hidden;">
+      <div style="position:absolute;bottom:-10px;left:-10px;right:-10px;height:100px;background-image:linear-gradient(rgba(0,220,120,0.2) 1px,transparent 1px),linear-gradient(90deg,rgba(0,220,120,0.2) 1px,transparent 1px);background-size:20px 20px;transform:perspective(200px) rotateX(55deg);transform-origin:bottom;"></div>
+      <div style="position:absolute;bottom:30px;left:0;right:0;height:1.5px;background:linear-gradient(90deg,transparent,#00ff99,#00cc66,#00ff99,transparent);box-shadow:0 0 12px #00ff99,0 0 30px #00cc66;"></div>
+      <div style="position:absolute;top:18px;left:50%;transform:translateX(-50%);display:flex;gap:3px;">
+        <div style="width:18px;height:18px;border-radius:3px;background:linear-gradient(135deg,#00ffaa,#00cc77);box-shadow:0 0 10px #00ff99,0 5px 0 #006633;"></div>
+        <div style="width:18px;height:18px;border-radius:3px;background:linear-gradient(135deg,#00dd88,#00aa55);box-shadow:0 0 7px #00ff99,0 5px 0 #004d26;"></div>
+        <div style="width:18px;height:18px;border-radius:3px;background:linear-gradient(135deg,#00bb66,#008844);box-shadow:0 0 5px #00ff99,0 5px 0 #003318;"></div>
+      </div>
+      <div style="position:absolute;top:20px;right:20px;width:12px;height:12px;border-radius:50%;background:#00cc66;box-shadow:0 0 14px #00cc66,0 0 28px rgba(0,204,102,0.5);"></div>
+      <div style="position:absolute;bottom:8px;left:10px;font-size:10px;font-weight:700;letter-spacing:0.12em;color:#00ffaa;font-family:monospace;text-shadow:0 0 8px #00ff99;">JUNGLE</div>
+      <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,0.07) 0px,rgba(0,0,0,0.07) 1px,transparent 1px,transparent 3px);pointer-events:none;"></div>
+    </div>
+    <div class="card-body" style="padding:10px 12px;">
+      <h3 style="font-size:13px;margin-bottom:4px;">Jungle</h3>
+      <p style="font-size:12px;color:#00ffaa;font-family:monospace;">#00ffaa · #00cc66</p>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:16px;">Click any map you want a different color for — or just say "looks good" in the terminal to approve all 9.</p>
+
+<style>
+.cards { grid-template-columns: repeat(3, 1fr) !important; }
+@media (max-width: 900px) { .cards { grid-template-columns: repeat(2, 1fr) !important; } }
+@media (max-width: 600px) { .cards { grid-template-columns: 1fr !important; } }
+</style>

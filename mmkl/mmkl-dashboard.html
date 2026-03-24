@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MMKL — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════
+   RESET & ROOT
+═══════════════════════════════════════════════ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+/* ── BONE / MONO defaults ── */
+:root {
+  --accent:            rgba(255,255,255,0.85);
+  --accent-hex:        #ffffff;
+  --glow:              rgba(255,255,255,0.06);
+  --grid-color:        rgba(255,255,255,0.1);
+  --card-bg:           rgba(255,255,255,0.04);
+  --card-border:       rgba(255,255,255,0.08);
+  --card-hover-border: rgba(255,255,255,0.22);
+  --icon-bg:           rgba(255,255,255,0.05);
+  --icon-border:       rgba(255,255,255,0.08);
+  --tag-bg:            rgba(255,255,255,0.08);
+  --tag-border:        rgba(255,255,255,0.13);
+  --tag-color:         rgba(255,255,255,0.55);
+  --muted:             rgba(255,255,255,0.35);
+  --pill-bg:           rgba(255,255,255,0.07);
+  --pill-border:       rgba(255,255,255,0.14);
+  --pill-color:        rgba(255,255,255,0.55);
+  --btn-bg:            rgba(255,255,255,0.08);
+  --btn-border:        rgba(255,255,255,0.22);
+  --bar-gradient:      linear-gradient(90deg, rgba(255,255,255,0.4), #fff);
+}
+
+body {
+  background: #050505;
+  color: #f0f0f0;
+  font-family: 'DM Sans', -apple-system, sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ═══════════════════════════════════════════════
+   BACKGROUND LAYERS
+═══════════════════════════════════════════════ */
+#grid-canvas {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  width: 100%; height: 100%;
+}
+.grid-glow {
+  position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  background: radial-gradient(ellipse 90% 55% at 50% 0%, var(--glow) 0%, transparent 70%);
+  animation: glowBreath 6s ease-in-out infinite;
+  transition: background 0.6s ease;
+}
+@keyframes glowBreath {
+  0%, 100% { opacity: 0.7; transform: scaleX(1);   }
+  50%       { opacity: 1;   transform: scaleX(1.08); }
+}
+.noise {
+  position: fixed; inset: 0; z-index: 1; opacity: 0.022; pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ═══════════════════════════════════════════════
+   REFRESH LOADER
+═══════════════════════════════════════════════ */
+#loader {
+  position: fixed; inset: 0; z-index: 9999;
+  background: #000;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  transition: opacity 0.7s ease, visibility 0.7s;
+}
+#loader.done { opacity: 0; visibility: hidden; }
+
+.loader-logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 60px; font-weight: 800; letter-spacing: -4px; color: #fff;
+  animation: logoPop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  opacity: 0; animation-delay: 0.15s;
+}
+.loader-track {
+  margin-top: 28px; width: 140px; height: 1px;
+  background: rgba(255,255,255,0.1); overflow: hidden; border-radius: 1px;
+}
+.loader-bar {
+  height: 100%; width: 0%;
+  background: var(--bar-gradient);
+  box-shadow: 0 0 10px rgba(255,255,255,0.5);
+  animation: barFill 1.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation-delay: 0.35s;
+}
+.loader-label {
+  margin-top: 16px; font-size: 9px; letter-spacing: 5px; text-transform: uppercase;
+  color: rgba(255,255,255,0.2);
+  animation: fadeIn 0.4s ease forwards; animation-delay: 0.55s; opacity: 0;
+}
+
+/* ═══════════════════════════════════════════════
+   START SCREEN
+═══════════════════════════════════════════════ */
+#start {
+  position: fixed; inset: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: center;
+  background: #000;
+  transition: opacity 0.9s ease, visibility 0.9s;
+}
+#start.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+/* ── ZOOM-THROUGH transition ── */
+#start {
+  will-change: transform, opacity;
+}
+#start.zooming {
+  pointer-events: none;
+  animation: startZoomOut 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes startZoomOut {
+  0%   { transform: scale(1);    opacity: 1; }
+  100% { transform: scale(1.18); opacity: 0; }
+}
+
+/* Dashboard zoom-in entrance */
+#dash.entering {
+  animation: dashEnter 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes dashEnter {
+  from { opacity: 0; transform: scale(1.04); }
+  to   { opacity: 1; transform: scale(1);    }
+}
+
+#start-canvas {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  pointer-events: none;
+}
+.start-glow {
+  position: absolute; width: 560px; height: 560px; border-radius: 50%;
+  background: radial-gradient(circle, var(--glow) 0%, transparent 70%);
+  filter: blur(60px); pointer-events: none;
+  animation: glowPulse 4s ease-in-out infinite;
+}
+.orb {
+  position: absolute; border-radius: 50%; filter: blur(80px);
+  background: var(--glow); animation: orbFloat 9s ease-in-out infinite;
+  pointer-events: none;
+}
+.orb-1 { width: 260px; height: 260px; top: 8%;  left: 4%;  animation-delay: 0s;  }
+.orb-2 { width: 180px; height: 180px; top: 58%; right: 6%; animation-delay: -3s; opacity: 0.7; }
+.orb-3 { width: 120px; height: 120px; bottom: 16%; left: 26%; animation-delay: -5s; opacity: 0.5; }
+
+.start-content { position: relative; z-index: 2; text-align: center; }
+
+.start-eyebrow {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px; letter-spacing: 7px; text-transform: uppercase;
+  color: rgba(255,255,255,0.28); margin-bottom: 16px;
+  animation: fadeUp 1s ease forwards; opacity: 0; animation-delay: 0.3s;
+}
+.start-title {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(88px, 14vw, 148px); font-weight: 800;
+  letter-spacing: -6px; line-height: 0.85; color: #fff;
+  animation: fadeUp 1s ease forwards; opacity: 0; animation-delay: 0.5s;
+}
+
+/* ── Liquid Glass treatment for MMKL text ── */
+.mmkl-glass {
+  display: inline-block;
+  position: relative;
+  padding: 0.04em 0.2em 0.06em;
+  border-radius: 0.18em;
+  overflow: hidden;
+
+  /* Frosted glass base */
+  background: linear-gradient(
+    145deg,
+    rgba(255,255,255,0.14) 0%,
+    rgba(255,255,255,0.05) 45%,
+    rgba(255,255,255,0.10) 100%
+  );
+  backdrop-filter: blur(18px) saturate(1.6);
+  -webkit-backdrop-filter: blur(18px) saturate(1.6);
+
+  /* Glass edge */
+  border: 1px solid rgba(255,255,255,0.22);
+  border-bottom-color: rgba(255,255,255,0.08);
+
+  /* Depth + accent glow */
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,0.3),
+    inset 0 -1px 0 rgba(255,255,255,0.06),
+    0 16px 48px rgba(0,0,0,0.45),
+    0 0 80px var(--glow),
+    0 0 24px var(--glow);
+
+  /* Inherit letter-spacing/line-height from parent */
+  letter-spacing: inherit;
+  line-height: inherit;
+}
+
+/* Sweeping shimmer highlight */
+.mmkl-glass::before {
+  content: '';
+  position: absolute;
+  top: -60%; left: -40%;
+  width: 55%; height: 220%;
+  background: linear-gradient(
+    108deg,
+    transparent 0%,
+    rgba(255,255,255,0.06) 40%,
+    rgba(255,255,255,0.22) 50%,
+    rgba(255,255,255,0.06) 60%,
+    transparent 100%
+  );
+  animation: glassShimmer 5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Liquid ripple tint from accent colour */
+.mmkl-glass::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    ellipse 80% 60% at 30% 20%,
+    var(--glow) 0%,
+    transparent 70%
+  );
+  opacity: 0.6;
+  pointer-events: none;
+  animation: liquidPulse 4s ease-in-out infinite;
+}
+
+@keyframes glassShimmer {
+  0%        { transform: translateX(-120%) skewX(-8deg); }
+  60%, 100% { transform: translateX(360%)  skewX(-8deg); }
+}
+@keyframes liquidPulse {
+  0%, 100% { opacity: 0.5; transform: scale(1);    }
+  50%      { opacity: 0.9; transform: scale(1.06); }
+}
+.start-sub {
+  margin-top: 22px; font-family: 'DM Sans', sans-serif;
+  font-size: 14px; font-weight: 300; color: rgba(255,255,255,0.3); letter-spacing: 0.3px;
+  animation: fadeUp 1s ease forwards; opacity: 0; animation-delay: 0.75s;
+}
+.enter-btn {
+  margin-top: 44px;
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 13px 34px; border-radius: 100px;
+  background: var(--btn-bg); border: 1px solid var(--btn-border);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px; font-weight: 500; letter-spacing: 2.5px; text-transform: uppercase;
+  color: #fff; cursor: pointer;
+  transition: background 0.3s, border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+  animation: fadeUp 1s ease forwards; opacity: 0; animation-delay: 1.05s;
+}
+.enter-btn:hover {
+  background: rgba(255,255,255,0.13); border-color: rgba(255,255,255,0.4);
+  transform: translateY(-2px); box-shadow: 0 0 30px var(--glow);
+}
+
+/* ═══════════════════════════════════════════════
+   DASHBOARD WRAPPER
+═══════════════════════════════════════════════ */
+#dash { position: relative; z-index: 2; opacity: 0; transition: opacity 0.8s ease 0.2s; }
+
+/* ═══════════════════════════════════════════════
+   NAVIGATION
+═══════════════════════════════════════════════ */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 52px;
+  background: rgba(5,5,5,0.82); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1px solid rgba(255,255,255,0.055);
+}
+.nav-logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 20px; font-weight: 800; letter-spacing: -1px; color: #fff;
+  text-decoration: none;
+}
+.nav-links { display: flex; gap: 32px; list-style: none; }
+.nav-links a {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px; font-weight: 400; color: var(--muted);
+  text-decoration: none; transition: color 0.2s;
+}
+.nav-links a:hover { color: #fff; }
+.nav-pill {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px; letter-spacing: 0.5px; padding: 4px 12px; border-radius: 100px;
+  background: var(--pill-bg); border: 1px solid var(--pill-border); color: var(--pill-color);
+  transition: all 0.5s ease;
+}
+
+/* ═══════════════════════════════════════════════
+   HERO
+═══════════════════════════════════════════════ */
+.hero { padding: 152px 80px 56px; }
+.section-eyebrow {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 9px; letter-spacing: 6px; text-transform: uppercase;
+  color: rgba(255,255,255,0.28); margin-bottom: 16px;
+  display: flex; align-items: center; gap: 10px;
+}
+.section-eyebrow::before { content: ''; width: 18px; height: 1px; background: rgba(255,255,255,0.28); flex-shrink: 0; }
+.hero-h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(48px, 6vw, 84px); font-weight: 800;
+  letter-spacing: -3px; line-height: 0.93; color: #fff; max-width: 700px;
+}
+.hero-sub {
+  margin-top: 20px; font-family: 'DM Sans', sans-serif;
+  font-size: 15px; font-weight: 300; color: var(--muted);
+  max-width: 420px; line-height: 1.65;
+}
+
+/* ═══════════════════════════════════════════════
+   CATEGORY SECTION
+═══════════════════════════════════════════════ */
+.cat-section { margin-bottom: 64px; }
+
+.cat-header {
+  padding: 0 80px; margin-bottom: 24px;
+  display: flex; align-items: center; gap: 14px;
+  opacity: 0;
+  transform: perspective(700px) translateX(-22px) rotateY(-9deg);
+  transition: opacity 0.65s ease, transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.cat-icon {
+  width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 17px;
+  background: var(--icon-bg); border: 1px solid var(--icon-border);
+  transition: all 0.5s ease;
+}
+.cat-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 18px; font-weight: 700; letter-spacing: -0.5px; color: rgba(255,255,255,0.85);
+}
+.cat-count {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px; color: var(--muted); letter-spacing: 0.5px; padding: 2px 9px;
+  border-radius: 100px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.07);
+}
+.cat-line { flex: 1; height: 1px; background: linear-gradient(90deg, rgba(255,255,255,0.06), transparent); }
+
+/* ═══════════════════════════════════════════════
+   CARD GRID
+═══════════════════════════════════════════════ */
+.cards-scene { perspective: 1200px; padding: 0 80px; }
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(248px, 1fr)); gap: 14px; }
+
+/* ── Base card ── */
+.card {
+  position: relative; background: var(--card-bg); border: 1px solid var(--card-border);
+  border-radius: 14px; padding: 22px; cursor: pointer; text-decoration: none; color: inherit;
+  display: block;
+  will-change: transform, opacity;
+  transform-style: preserve-3d;
+  /* Depth shadow at rest — gives a floating 3D appearance */
+  box-shadow:
+    0 1px 2px rgba(0,0,0,0.4),
+    0 4px 12px rgba(0,0,0,0.35),
+    0 16px 40px rgba(0,0,0,0.25),
+    inset 0 1px 0 rgba(255,255,255,0.07);
+  /* Hidden until revealed by scroll — entrance transform set per-card by JS */
+  opacity: 0;
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.6s ease,
+              border-color 0.3s,
+              box-shadow 0.35s ease,
+              background 0.5s;
+}
+/* Entrance direction variants (assigned by JS) */
+.enter-left  { transform: perspective(800px) rotateY(-24deg) translateX(-30px) translateZ(-50px); }
+.enter-below { transform: perspective(1000px) rotateX(42deg) translateY(44px) translateZ(-60px); }
+.enter-right { transform: perspective(800px) rotateY(24deg) translateX(30px) translateZ(-50px); }
+
+/* Revealed — transition to neutral, then float */
+.card.visible {
+  opacity: 1;
+  transform: none;
+  animation: cardFloat var(--float-dur, 6s) ease-in-out infinite;
+  animation-delay: var(--float-delay, 1s);
+}
+.card:nth-child(2).visible { transition-delay: 0.07s; }
+.card:nth-child(3).visible { transition-delay: 0.14s; }
+.card:nth-child(4).visible { transition-delay: 0.07s; }
+.card:nth-child(5).visible { transition-delay: 0.14s; }
+
+.card::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(160deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.01) 40%, transparent 65%);
+  box-shadow: inset 0 -2px 8px rgba(0,0,0,0.35);
+  border-radius: 14px; z-index: 1;
+}
+.card:hover {
+  border-color: var(--card-hover-border);
+  box-shadow:
+    0 2px 4px rgba(0,0,0,0.4),
+    0 8px 20px rgba(0,0,0,0.4),
+    0 24px 64px rgba(0,0,0,0.35),
+    0 0 40px var(--glow),
+    inset 0 1px 0 rgba(255,255,255,0.1);
+}
+
+.card-icon {
+  width: 42px; height: 42px; border-radius: 11px; margin-bottom: 14px;
+  display: flex; align-items: center; justify-content: center; font-size: 19px;
+  background: var(--icon-bg); border: 1px solid var(--icon-border);
+  transition: background 0.5s, border-color 0.5s;
+}
+.card-type {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 9px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 7px; font-weight: 500;
+}
+.card-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 17px; font-weight: 700; letter-spacing: -0.4px;
+  margin-bottom: 8px; color: rgba(255,255,255,0.92);
+}
+.card-desc {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px; color: var(--muted); line-height: 1.65; margin-bottom: 18px;
+}
+.card-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.05);
+}
+.card-tag {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 9px; padding: 3px 9px; border-radius: 100px; letter-spacing: 0.5px;
+  background: var(--tag-bg); border: 1px solid var(--tag-border); color: var(--tag-color);
+  transition: all 0.5s ease;
+}
+.card-arrow {
+  width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+  border: 1px solid rgba(255,255,255,0.1);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; color: var(--muted); transition: all 0.25s ease;
+  font-style: normal;
+}
+.card:hover .card-arrow {
+  border-color: var(--card-hover-border); color: #fff;
+  background: rgba(255,255,255,0.06); transform: rotate(45deg);
+}
+
+/* ── Remove button ── */
+.card-remove {
+  position: absolute; top: 10px; right: 10px;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.3); font-size: 10px; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; opacity: 0; z-index: 10;
+  transition: opacity 0.2s, background 0.2s, color 0.2s, border-color 0.2s;
+}
+.card:hover .card-remove { opacity: 1; }
+.card-remove:hover { background: rgba(255,60,60,0.18); border-color: rgba(255,80,80,0.5); color: #ff6b6b; }
+@keyframes cardOut {
+  from { opacity: 1; transform: scale(1); max-height: 400px; }
+  to   { opacity: 0; transform: scale(0.94); max-height: 0; margin: 0; padding: 0; }
+}
+.card.removing { animation: cardOut 0.35s ease forwards; pointer-events: none; overflow: hidden; }
+
+/* ── Restore link ── */
+#restore-bar {
+  display: none; text-align: center; padding: 12px 0 0;
+  font-family: 'DM Sans', sans-serif; font-size: 12px; color: var(--muted);
+}
+#restore-bar button {
+  background: none; border: 1px solid rgba(255,255,255,0.12); border-radius: 100px;
+  color: rgba(255,255,255,0.5); font-size: 11px; padding: 5px 14px; cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+#restore-bar button:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ═══════════════════════════════════════════════
+   3D ANIMATION SYSTEM
+═══════════════════════════════════════════════ */
+
+/* Card idle float */
+@keyframes cardFloat {
+  0%, 100% { transform: translateY(0px);  }
+  50%       { transform: translateY(-8px); }
+}
+
+/* Holographic glare */
+.card-glare {
+  position: absolute; inset: 0; border-radius: 14px;
+  pointer-events: none; z-index: 4; opacity: 0;
+  transition: opacity 0.4s ease;
+  background: radial-gradient(
+    circle at var(--gx, 50%) var(--gy, 50%),
+    rgba(255,255,255,0.14) 0%,
+    rgba(255,255,255,0.04) 40%,
+    transparent 68%
+  );
+}
+.card:hover .card-glare { opacity: 1; }
+
+/* Background ambient orbs (added by JS) */
+#dash { position: relative; overflow-x: clip; }
+.bg-orb {
+  position: absolute; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle, var(--accent), transparent 70%);
+  opacity: 0.035; will-change: transform;
+  transition: transform 1s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* Category header entrance */
+.cat-header.visible {
+  opacity: 1;
+  transform: perspective(700px) translateX(0) rotateY(0deg);
+}
+.cat-header:nth-of-type(2).visible { transition-delay: 0.1s; }
+.cat-header:nth-of-type(3).visible { transition-delay: 0.1s; }
+
+/* ── Featured card (GJU Study Hub) ── */
+.card.featured { grid-column: span 2; }
+.featured-inner { display: flex; gap: 24px; align-items: center; }
+.featured-viz {
+  width: 130px; height: 88px; border-radius: 11px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 36px;
+  background: var(--icon-bg); border: 1px solid var(--icon-border);
+  transition: background 0.5s, border-color 0.5s;
+}
+.featured-body { flex: 1; }
+.featured-body .card-footer { border-top: none; padding-top: 0; margin-top: 12px; }
+
+/* ═══════════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════════ */
+footer {
+  padding: 36px 80px; border-top: 1px solid rgba(255,255,255,0.05);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.footer-logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 20px; font-weight: 800; letter-spacing: -1px; color: rgba(255,255,255,0.5);
+}
+.footer-copy {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px; color: rgba(255,255,255,0.25);
+}
+
+/* ═══════════════════════════════════════════════
+   THEME SWITCHER
+═══════════════════════════════════════════════ */
+#theme-sw {
+  position: fixed; bottom: 28px; right: 28px; z-index: 200;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 10px;
+}
+#theme-btn {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.14);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: 17px; color: rgba(255,255,255,0.6); backdrop-filter: blur(12px);
+  transition: background 0.25s, transform 0.25s, box-shadow 0.25s;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.45);
+}
+#theme-btn:hover { background: rgba(255,255,255,0.13); transform: scale(1.08); box-shadow: 0 6px 28px rgba(0,0,0,0.55); }
+
+#theme-panel {
+  background: rgba(8,8,8,0.95); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px; padding: 14px; backdrop-filter: blur(24px);
+  display: none; flex-direction: column; gap: 6px; min-width: 192px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.75);
+}
+#theme-panel.open { display: flex; animation: panelIn 0.22s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+.tp-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 9px; letter-spacing: 4px; text-transform: uppercase;
+  color: rgba(255,255,255,0.2); padding: 0 4px; margin-bottom: 4px;
+}
+.tp-opt {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border-radius: 9px; cursor: pointer;
+  border: 1px solid transparent; transition: background 0.2s, border-color 0.2s;
+}
+.tp-opt:hover { background: rgba(255,255,255,0.05); }
+.tp-opt.active { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); }
+.tp-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 8px currentColor; }
+.tp-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.8);
+}
+.tp-sub {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px; color: rgba(255,255,255,0.28); margin-top: 1px;
+}
+
+/* ═══════════════════════════════════════════════
+   ANIMATIONS
+═══════════════════════════════════════════════ */
+@keyframes logoPop {
+  from { opacity: 0; transform: scale(0.75) translateY(10px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0);    }
+}
+@keyframes barFill {
+  0%   { width: 0%; }
+  60%  { width: 72%; }
+  100% { width: 100%; }
+}
+@keyframes fadeIn  { to { opacity: 1; } }
+@keyframes gridPulse {
+  0%, 100% { opacity: 0.45; }
+  50%      { opacity: 1;    }
+}
+@keyframes glowPulse {
+  0%, 100% { transform: scale(1);    opacity: 0.55; }
+  50%      { transform: scale(1.12); opacity: 0.95; }
+}
+@keyframes orbFloat {
+  0%, 100% { transform: translateY(0);    }
+  50%      { transform: translateY(-28px); }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+@keyframes panelIn {
+  from { opacity: 0; transform: scale(0.92) translateY(8px);  }
+  to   { opacity: 1; transform: scale(1)    translateY(0); }
+}
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  nav { padding: 14px 24px; }
+  .nav-links { display: none; }
+  .hero, .cat-header, .cards-scene, footer { padding-left: 24px; padding-right: 24px; }
+  .card.featured { grid-column: span 1; }
+  .featured-inner { flex-direction: column; }
+  .featured-viz { width: 100%; height: 80px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ════════ BACKGROUND ════════ -->
+<canvas id="grid-canvas"></canvas>
+<div class="grid-glow"></div>
+<div class="noise"></div>
+
+<!-- ════════ REFRESH LOADER ════════ -->
+<div id="loader">
+  <div class="loader-logo">MMKL</div>
+  <div class="loader-track"><div class="loader-bar"></div></div>
+  <div class="loader-label">Loading universe...</div>
+</div>
+
+<!-- ════════ START SCREEN ════════ -->
+<div id="start">
+  <canvas id="start-canvas"></canvas>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="start-glow"></div>
+  <div class="start-content">
+    <div class="start-eyebrow">MMKL Universe</div>
+    <div class="start-title"><span class="mmkl-glass">MMKL</span></div>
+    <div class="start-sub">Games · Projects · Tools — one place.</div>
+    <button class="enter-btn" onclick="enterDash()">
+      Enter
+      <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+        <path d="M1 7h12M8 2l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<!-- ════════ DASHBOARD ════════ -->
+<div id="dash">
+
+  <!-- NAV -->
+  <nav>
+    <a class="nav-logo" href="#"><span class="mmkl-glass">MMKL</span></a>
+    <ul class="nav-links">
+      <li><a href="#gaming">Gaming</a></li>
+      <li><a href="#productivity">Productivity</a></li>
+      <li><a href="#tools">Tools</a></li>
+    </ul>
+    <div class="nav-pill">14 projects</div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="section-eyebrow">MMKL Dashboard</div>
+    <h1 class="hero-h1">Everything<br>We've Built.</h1>
+    <p class="hero-sub">A curated collection of games, tools, and apps — organized by category.</p>
+  </section>
+
+  <!-- ── GAMING ── -->
+  <section id="gaming" class="cat-section">
+    <div class="cat-header">
+      <div class="cat-icon">🎮</div>
+      <div class="cat-title">Gaming</div>
+      <div class="cat-count">3 projects</div>
+      <div class="cat-line"></div>
+    </div>
+    <div class="cards-scene">
+      <div class="cards-grid">
+
+        <a class="card" href="from-other-pc/Projects/xo-game.html" target="_blank" data-tilt data-id="xo-game">
+          <div class="card-icon">✕○</div>
+          <div class="card-type">Game · HTML</div>
+          <div class="card-title">XO Game</div>
+          <div class="card-desc">Classic tic-tac-toe. Two players, pure strategy, zero fluff. Built in vanilla JS.</div>
+          <div class="card-footer">
+            <span class="card-tag">Playable</span>
+            <i class="card-arrow">↗</i>
+          </div>
+        </a>
+
+        <a class="card" href="from-other-pc/Projects/snake/" target="_blank" data-tilt data-id="snake">
+          <div class="card-icon">🐍</div>
+          <div class="card-type">Game · HTML</div>
+          <div class="card-title">Snake</div>
+          <div class="card-desc">Timeless arcade game. Eat, grow, survive. Canvas-rendered, keyboard-controlled.</div>
+          <div class="card-footer">
+            <span class="card-tag">Playable</span>
+            <i class="card-arrow">↗</i>
+          </div>
+        </a>
+
+        <a class="card" href="from-other-pc/Projects/main lobby/" target="_blank" data-tilt data-id="main-lobby">
+          <div class="card-icon">🕹️</div>
+          <div class="card-type">Launcher · HTML</div>
+          <div class="card-title">Main Lobby</div>
+          <div class="card-desc">Game hub interface — browse and launch all arcade projects from one cinematic screen.</div>
+          <div class="card-footer">
+            <span class="card-tag">Launcher</span>
+            <i class="card-arrow">↗</i>
+          </div>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PRODUCTIVITY ── -->
+  <section id="productivity" class="cat-section">
+    <div class="cat-header">
+      <div class="cat-icon">📚</div>
+      <div class="cat-title">Productivity</div>
+      <div class="cat-count">7 projects</div>
+      <div class="cat-line"></div>
+    </div>
+    <div class="cards-scene">
+      <div class="cards-grid">
+
+        <a class="card featured" href="http://localhost:3001" target="_blank" data-tilt data-id="gju-study-hub">
+          <div class="featured-inner">
+            <div class="featured-viz">🎓</div>
+            <div class="featured-body">
+              <div class="card-type">Full-Stack · Next.js · AI</div>
+              <div class="card-title">GJU Study Hub</div>
+              <div class="card-desc">AI-powered study dashboard — scrapes Moodle, tracks assignments, generates notes with Claude, and has per-subject AI chat.</div>
+              <div class="card-footer">
+                <span class="card-tag">Live App</span>
+                <i class="card-arrow">↗</i>
+              </div>
+            </div>
+          </div>
+        </a>
+
+        <a class="card" href="from-other-pc/dashboard.html" target="_blank" data-tilt data-id="mydash">
+          <div class="card-icon">📊</div>
+          <div class="card-type">Dashboard · HTML</div>
+          <div class="card-title">MyDash</div>
+          <div class="card-desc">Personal dashboard with widgets and quick links — fully offline, always fast.</div>
+          <div class="card-footer">
+            <span class="card-tag">Personal</span>
+            <i class="card-arrow">↗</i>
+          </div>
+        </a>
+
+        <a class="card" href="http://localhost:3000" target="_blank" data-tilt data-id="frontend-portfolio">
+          <div class="card-icon">⚙️</div>
+          <div class="card-type">App · React + Vite</div>
+          <div class="card-title">Frontend Portfolio</div>
+          <div class="card-desc">React SPA to manage and launch all saved games and websites in one tab interface.</div>
+          <div class="card-footer">
+            <span class="card-tag">Portfolio</span>
+            <i class="card-arrow">↗</i>
+          </div>
+        </a>
+
+        <a class="card" href="https://teams.microsoft.com" target="_blank" data-tilt data-id="ms-teams">
+          <div class="card-icon">💬</div>
+          <div class="card-type">Web · Communication</div>
+          <div class="card-title">Microsoft Teams</div>
+          <div class="card-desc">Team messaging, video calls, and file sharing — the hub for class and project collaboration.</div>
+          <div class="card-footer">
+            <span class="card-tag">Communication</span>
+            <i class="card-arrow">↗</i>
+          </div>
+        </a>
+
+        <a class="card" href="https://my.gju.edu.jo" target="_blank" data-tilt data-id="mygju">
+          <div class="card-icon">🏫</div>
+          <div class="card-type">Web · University Portal</div>
+          <div class="card-title">MyGJU</div>
+          <div class="card-desc">GJU student portal — registration, grades, schedule, and university services all in one place.</div>
+          <div class="card-footer">
+            <span class="card-tag">University</span>
+            <i class="card-arrow">↗</i>
+          </div>
+        </a>
+
+        <a class="card" href="https://elearning.gju.edu.jo" target="_blank" data-tilt data-id="gju-elearning">
+          <div class="card-icon">📖</div>
+          <div class="card-type">Web · Academic</div>
+          <div class="card-title">GJU eLearning</div>
+          <div class="card-desc">Moodle-based learning platform — course materials, assignments, and submissions for all GJU courses.</div>
+          <div class="card-footer">
+            <span class="card-tag">Academic</span>
+            <i class="card-arrow">↗</i>
+          </div>
+        </a>
+
+        <a class="card" href="https://outlook.office.com" target="_blank" data-tilt data-id="ms-outlook">
+          <div class="card-icon">📧</div>
+          <div class="card-type">Web · Email</div>
+          <div class="card-title">Microsoft Outlook</div>
+          <div class="card-desc">University email — announcements, professor correspondence, and all official GJU communication.</div>
+          <div class="card-footer">
+            <span class="card-tag">Email</span>
+            <i class="card-arrow">↗</i>
+          </div>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── TOOLS & CREATIVE ── -->
+  <section id="tools" class="cat-section">
+    <div class="cat-header">
+      <div class="cat-icon">🛠️</div>
+      <div class="cat-title">Tools &amp; Creative</div>
+      <div class="cat-count">4 projects</div>
+      <div class="cat-line"></div>
+    </div>
+    <div class="cards-scene">
+      <div class="cards-grid">
+
+        <a class="card" href="from-other-pc/boot-animation.html" target="_blank" data-tilt data-id="boot-animation">
+          <div class="card-icon">💻</div>
+          <div class="card-type">Animation · HTML</div>
+          <div class="card-title">Boot Animation</div>
+          <div class="card-desc">Cinematic OS boot sequence built in pure HTML/CSS. Satisfying to watch every time.</div>
+          <div class="card-footer">
+            <span class="card-tag">Creative</span>
+            <i class="card-arrow">↗</i>
+          </div>
+        </a>
+
+        <a class="card" href="from-other-pc/claude-manager.html" target="_blank" data-tilt data-id="claude-manager">
+          <div class="card-icon">🤖</div>
+          <div class="card-type">Tool · HTML</div>
+          <div class="card-title">Claude Manager</div>
+          <div class="card-desc">Custom UI for managing Claude API sessions, prompts, and conversation flows.</div>
+          <div class="card-footer">
+            <span class="card-tag">AI Tool</span>
+            <i class="card-arrow">↗</i>
+          </div>
+        </a>
+
+        <a class="card" href="http://localhost:4000/health" target="_blank" data-tilt data-id="api-server">
+          <div class="card-icon">🌐</div>
+          <div class="card-type">Backend · Express</div>
+          <div class="card-title">API Server</div>
+          <div class="card-desc">Express REST API — health checks and shared backend services powering the stack.</div>
+          <div class="card-footer">
+            <span class="card-tag">Backend</span>
+            <i class="card-arrow">↗</i>
+          </div>
+        </a>
+
+        <a class="card" href="https://www.youtube.com" target="_blank" data-tilt data-id="youtube">
+          <div class="card-icon">▶️</div>
+          <div class="card-type">Web · Video</div>
+          <div class="card-title">YouTube</div>
+          <div class="card-desc">Tutorials, tech talks, and inspiration — the go-to resource for learning and building new things.</div>
+          <div class="card-footer">
+            <span class="card-tag">Video</span>
+            <i class="card-arrow">↗</i>
+          </div>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">MMKL</div>
+    <div class="footer-copy">© 2026 MMKL. All rights reserved.</div>
+  </footer>
+  <div id="restore-bar"><button onclick="restoreAll()">↩ Restore hidden projects</button></div>
+
+</div><!-- /#dash -->
+
+<!-- ════════ THEME SWITCHER ════════ -->
+<div id="theme-sw">
+  <div id="theme-panel">
+    <div class="tp-label">Color Theme</div>
+
+    <div class="tp-opt active" data-theme="bone" onclick="setTheme('bone')">
+      <div class="tp-dot" style="background:#fff;color:#fff"></div>
+      <div><div class="tp-name">Bone</div><div class="tp-sub">Monochrome</div></div>
+    </div>
+    <div class="tp-opt" data-theme="ice" onclick="setTheme('ice')">
+      <div class="tp-dot" style="background:#00c8ff;color:#00c8ff"></div>
+      <div><div class="tp-name">Ice Chrome</div><div class="tp-sub">Electric cyan</div></div>
+    </div>
+    <div class="tp-opt" data-theme="ember" onclick="setTheme('ember')">
+      <div class="tp-dot" style="background:#ff8c1e;color:#ff8c1e"></div>
+      <div><div class="tp-name">Ember</div><div class="tp-sub">Warm amber</div></div>
+    </div>
+    <div class="tp-opt" data-theme="volt" onclick="setTheme('volt')">
+      <div class="tp-dot" style="background:#b4ff00;color:#b4ff00"></div>
+      <div><div class="tp-name">Volt</div><div class="tp-sub">Acid green</div></div>
+    </div>
+    <div class="tp-opt" data-theme="crimson" onclick="setTheme('crimson')">
+      <div class="tp-dot" style="background:#ff3c50;color:#ff3c50"></div>
+      <div><div class="tp-name">Crimson</div><div class="tp-sub">Deep red</div></div>
+    </div>
+    <div class="tp-opt" data-theme="mint" onclick="setTheme('mint')">
+      <div class="tp-dot" style="background:#00ffa0;color:#00ffa0"></div>
+      <div><div class="tp-name">Mint</div><div class="tp-sub">Electric green</div></div>
+    </div>
+  </div>
+
+  <button id="theme-btn" onclick="togglePanel()" title="Change theme" aria-label="Change color theme">◑</button>
+</div>
+
+<!-- ════════ JAVASCRIPT ════════ -->
+<script>
+/* ── REFRESH LOADER ── */
+window.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => document.getElementById('loader').classList.add('done'), 1600);
+});
+
+/* ── ENTER DASHBOARD ── */
+function enterDash() {
+  const start = document.getElementById('start');
+  const dash  = document.getElementById('dash');
+
+  // Phase 1: zoom the start screen title out
+  start.classList.add('zooming');
+
+  // Phase 2: after title has blasted, bring in the dashboard
+  setTimeout(() => {
+    start.classList.add('hidden');
+    dash.style.opacity = '1';
+    dash.classList.add('entering');
+    dash.addEventListener('animationend', () => dash.classList.remove('entering'), { once: true });
+  }, 650);
+}
+
+/* ── ENTRANCE DIRECTION + FLOAT TIMING ── */
+(function assignEntrance() {
+  document.querySelectorAll('.cards-grid').forEach(grid => {
+    [...grid.querySelectorAll('.card')].forEach((card, i) => {
+      const dir = card.classList.contains('featured') ? 'enter-below'
+                : i % 3 === 0 ? 'enter-left'
+                : i % 3 === 2 ? 'enter-right'
+                : 'enter-below';
+      card.classList.add(dir);
+      card.style.setProperty('--float-delay', `${(i * 0.9 % 3.5 + 0.8).toFixed(2)}s`);
+      card.style.setProperty('--float-dur',   `${(5 + (i % 4) * 0.7).toFixed(1)}s`);
+    });
+  });
+})();
+
+/* ── INJECT GLARE INTO EVERY CARD ── */
+document.querySelectorAll('.card').forEach(card => {
+  const glare = document.createElement('div');
+  glare.className = 'card-glare';
+  card.appendChild(glare);
+});
+
+/* ── 3D TILT + GLARE ── */
+document.querySelectorAll('[data-tilt]').forEach(el => {
+  const glare = el.querySelector('.card-glare');
+  el.addEventListener('mousemove', e => {
+    const r  = el.getBoundingClientRect();
+    const dx = ((e.clientX - r.left) / r.width  - 0.5) * 2;
+    const dy = ((e.clientY - r.top)  / r.height - 0.5) * 2;
+    /* Compose float translateY + perspective tilt — animation keeps running silently */
+    el.style.transform = `perspective(900px) translateY(-10px) translateZ(24px) rotateX(${-dy * 8}deg) rotateY(${dx * 8}deg)`;
+    if (glare) {
+      glare.style.setProperty('--gx', ((e.clientX - r.left) / r.width  * 100).toFixed(1) + '%');
+      glare.style.setProperty('--gy', ((e.clientY - r.top)  / r.height * 100).toFixed(1) + '%');
+    }
+  });
+  el.addEventListener('mouseleave', () => {
+    /* Clear inline style — float animation resumes at its current tick (no jump) */
+    el.style.transform = '';
+  });
+});
+
+/* ── SCROLL REVEAL (cards + category headers) ── */
+const revealObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      revealObs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
+
+document.querySelectorAll('.card, .cat-header').forEach(el => revealObs.observe(el));
+
+/* ── MOUSE PARALLAX (background orbs + hero) ── */
+(function setupParallax() {
+  const dash = document.getElementById('dash');
+  const orbDefs = [
+    { w: 520, h: 520, left: '8%',  top: '12%', speed: 22 },
+    { w: 380, h: 380, left: '72%', top: '38%', speed: 32 },
+    { w: 260, h: 260, left: '42%', top: '68%', speed: 14 },
+  ];
+  const bgOrbs = orbDefs.map(d => {
+    const orb = document.createElement('div');
+    orb.className = 'bg-orb';
+    orb.style.cssText = `width:${d.w}px;height:${d.h}px;left:${d.left};top:${d.top};transform:translate(-50%,-50%)`;
+    orb._speed = d.speed;
+    dash.insertBefore(orb, dash.firstChild);
+    return orb;
+  });
+
+  document.addEventListener('mousemove', e => {
+    const mx = e.clientX / window.innerWidth  - 0.5;
+    const my = e.clientY / window.innerHeight - 0.5;
+    bgOrbs.forEach(orb => {
+      orb.style.transform = `translate(calc(-50% + ${mx * orb._speed}px), calc(-50% + ${my * orb._speed}px))`;
+    });
+    const h1 = document.querySelector('.hero-h1');
+    if (h1) h1.style.transform = `translate(${mx * 16}px, ${my * 8}px)`;
+  }, { passive: true });
+})();
+
+/* ── CARD REMOVE ── */
+const HIDDEN_KEY = 'mmkl-hidden';
+function getHidden() { try { return JSON.parse(localStorage.getItem(HIDDEN_KEY) || '[]'); } catch { return []; } }
+function saveHidden(ids) { localStorage.setItem(HIDDEN_KEY, JSON.stringify(ids)); }
+
+function updateRestoreBar() {
+  document.getElementById('restore-bar').style.display = getHidden().length ? 'block' : 'none';
+}
+
+function removeCard(card) {
+  const id = card.dataset.id;
+  card.classList.add('removing');
+  setTimeout(() => {
+    card.style.display = 'none';
+    card.classList.remove('removing');
+    const hidden = getHidden();
+    if (!hidden.includes(id)) { hidden.push(id); saveHidden(hidden); }
+    updateRestoreBar();
+  }, 350);
+}
+
+function restoreAll() {
+  saveHidden([]);
+  document.querySelectorAll('.card[data-id]').forEach(el => {
+    el.style.display = '';
+    el.classList.add('visible');
+  });
+  updateRestoreBar();
+}
+
+// Inject remove buttons + apply saved hidden state
+document.querySelectorAll('.card[data-id]').forEach(card => {
+  const btn = document.createElement('button');
+  btn.className = 'card-remove';
+  btn.title = 'Hide project';
+  btn.textContent = '✕';
+  btn.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); removeCard(card); });
+  card.appendChild(btn);
+});
+
+getHidden().forEach(id => {
+  const el = document.querySelector(`.card[data-id="${id}"]`);
+  if (el) el.style.display = 'none';
+});
+updateRestoreBar();
+
+/* ── THEME SWITCHER ── */
+const THEMES = {
+  bone: {
+    '--accent':            'rgba(255,255,255,0.85)',
+    '--accent-hex':        '#ffffff',
+    '--glow':              'rgba(255,255,255,0.06)',
+    '--grid-color':        'rgba(255,255,255,0.1)',
+    '--card-bg':           'rgba(255,255,255,0.04)',
+    '--card-border':       'rgba(255,255,255,0.08)',
+    '--card-hover-border': 'rgba(255,255,255,0.22)',
+    '--icon-bg':           'rgba(255,255,255,0.05)',
+    '--icon-border':       'rgba(255,255,255,0.08)',
+    '--tag-bg':            'rgba(255,255,255,0.08)',
+    '--tag-border':        'rgba(255,255,255,0.13)',
+    '--tag-color':         'rgba(255,255,255,0.55)',
+    '--muted':             'rgba(255,255,255,0.35)',
+    '--pill-bg':           'rgba(255,255,255,0.07)',
+    '--pill-border':       'rgba(255,255,255,0.14)',
+    '--pill-color':        'rgba(255,255,255,0.55)',
+    '--btn-bg':            'rgba(255,255,255,0.08)',
+    '--btn-border':        'rgba(255,255,255,0.22)',
+    '--bar-gradient':      'linear-gradient(90deg,rgba(255,255,255,0.4),#fff)',
+  },
+  ice: {
+    '--accent':            '#00c8ff',
+    '--accent-hex':        '#00c8ff',
+    '--glow':              'rgba(0,200,255,0.09)',
+    '--grid-color':        'rgba(0,200,255,0.12)',
+    '--card-bg':           'rgba(0,200,255,0.03)',
+    '--card-border':       'rgba(0,200,255,0.1)',
+    '--card-hover-border': 'rgba(0,200,255,0.3)',
+    '--icon-bg':           'rgba(0,200,255,0.08)',
+    '--icon-border':       'rgba(0,200,255,0.15)',
+    '--tag-bg':            'rgba(0,200,255,0.1)',
+    '--tag-border':        'rgba(0,200,255,0.2)',
+    '--tag-color':         '#00c8ff',
+    '--muted':             'rgba(255,255,255,0.35)',
+    '--pill-bg':           'rgba(0,200,255,0.1)',
+    '--pill-border':       'rgba(0,200,255,0.25)',
+    '--pill-color':        '#00c8ff',
+    '--btn-bg':            'rgba(0,200,255,0.1)',
+    '--btn-border':        'rgba(0,200,255,0.3)',
+    '--bar-gradient':      'linear-gradient(90deg,#0090cc,#00c8ff)',
+  },
+  ember: {
+    '--accent':            '#ff8c1e',
+    '--accent-hex':        '#ff8c1e',
+    '--glow':              'rgba(255,140,30,0.08)',
+    '--grid-color':        'rgba(255,140,30,0.12)',
+    '--card-bg':           'rgba(255,140,30,0.03)',
+    '--card-border':       'rgba(255,140,30,0.1)',
+    '--card-hover-border': 'rgba(255,140,30,0.3)',
+    '--icon-bg':           'rgba(255,140,30,0.08)',
+    '--icon-border':       'rgba(255,140,30,0.15)',
+    '--tag-bg':            'rgba(255,140,30,0.1)',
+    '--tag-border':        'rgba(255,140,30,0.2)',
+    '--tag-color':         '#ff8c1e',
+    '--muted':             'rgba(255,255,255,0.35)',
+    '--pill-bg':           'rgba(255,140,30,0.1)',
+    '--pill-border':       'rgba(255,140,30,0.25)',
+    '--pill-color':        '#ff8c1e',
+    '--btn-bg':            'rgba(255,140,30,0.1)',
+    '--btn-border':        'rgba(255,140,30,0.3)',
+    '--bar-gradient':      'linear-gradient(90deg,#cc6400,#ff8c1e)',
+  },
+  volt: {
+    '--accent':            '#b4ff00',
+    '--accent-hex':        '#b4ff00',
+    '--glow':              'rgba(180,255,0,0.07)',
+    '--grid-color':        'rgba(180,255,0,0.1)',
+    '--card-bg':           'rgba(180,255,0,0.02)',
+    '--card-border':       'rgba(180,255,0,0.09)',
+    '--card-hover-border': 'rgba(180,255,0,0.28)',
+    '--icon-bg':           'rgba(180,255,0,0.07)',
+    '--icon-border':       'rgba(180,255,0,0.14)',
+    '--tag-bg':            'rgba(180,255,0,0.08)',
+    '--tag-border':        'rgba(180,255,0,0.18)',
+    '--tag-color':         '#b4ff00',
+    '--muted':             'rgba(255,255,255,0.35)',
+    '--pill-bg':           'rgba(180,255,0,0.08)',
+    '--pill-border':       'rgba(180,255,0,0.2)',
+    '--pill-color':        '#b4ff00',
+    '--btn-bg':            'rgba(180,255,0,0.08)',
+    '--btn-border':        'rgba(180,255,0,0.28)',
+    '--bar-gradient':      'linear-gradient(90deg,#70cc00,#b4ff00)',
+  },
+  crimson: {
+    '--accent':            '#ff3c50',
+    '--accent-hex':        '#ff3c50',
+    '--glow':              'rgba(255,60,80,0.08)',
+    '--grid-color':        'rgba(255,60,80,0.12)',
+    '--card-bg':           'rgba(255,60,80,0.03)',
+    '--card-border':       'rgba(255,60,80,0.1)',
+    '--card-hover-border': 'rgba(255,60,80,0.3)',
+    '--icon-bg':           'rgba(255,60,80,0.08)',
+    '--icon-border':       'rgba(255,60,80,0.15)',
+    '--tag-bg':            'rgba(255,60,80,0.1)',
+    '--tag-border':        'rgba(255,60,80,0.2)',
+    '--tag-color':         '#ff3c50',
+    '--muted':             'rgba(255,255,255,0.35)',
+    '--pill-bg':           'rgba(255,60,80,0.1)',
+    '--pill-border':       'rgba(255,60,80,0.25)',
+    '--pill-color':        '#ff3c50',
+    '--btn-bg':            'rgba(255,60,80,0.1)',
+    '--btn-border':        'rgba(255,60,80,0.3)',
+    '--bar-gradient':      'linear-gradient(90deg,#cc0018,#ff3c50)',
+  },
+  mint: {
+    '--accent':            '#00ffa0',
+    '--accent-hex':        '#00ffa0',
+    '--glow':              'rgba(0,255,160,0.07)',
+    '--grid-color':        'rgba(0,255,160,0.1)',
+    '--card-bg':           'rgba(0,255,160,0.02)',
+    '--card-border':       'rgba(0,255,160,0.09)',
+    '--card-hover-border': 'rgba(0,255,160,0.28)',
+    '--icon-bg':           'rgba(0,255,160,0.07)',
+    '--icon-border':       'rgba(0,255,160,0.14)',
+    '--tag-bg':            'rgba(0,255,160,0.08)',
+    '--tag-border':        'rgba(0,255,160,0.18)',
+    '--tag-color':         '#00ffa0',
+    '--muted':             'rgba(255,255,255,0.35)',
+    '--pill-bg':           'rgba(0,255,160,0.08)',
+    '--pill-border':       'rgba(0,255,160,0.2)',
+    '--pill-color':        '#00ffa0',
+    '--btn-bg':            'rgba(0,255,160,0.08)',
+    '--btn-border':        'rgba(0,255,160,0.28)',
+    '--bar-gradient':      'linear-gradient(90deg,#00cc78,#00ffa0)',
+  },
+};
+
+function setTheme(name) {
+  const t = THEMES[name];
+  if (!t) return;
+  const root = document.documentElement;
+  Object.entries(t).forEach(([k, v]) => root.style.setProperty(k, v));
+  document.querySelectorAll('.tp-opt').forEach(o => o.classList.toggle('active', o.dataset.theme === name));
+  localStorage.setItem('mmkl-theme', name);
+  setTimeout(() => document.getElementById('theme-panel').classList.remove('open'), 280);
+}
+
+// Restore saved theme on load
+(function restoreTheme() {
+  const saved = localStorage.getItem('mmkl-theme');
+  if (saved && THEMES[saved]) setTheme(saved);
+})();
+
+function togglePanel() {
+  document.getElementById('theme-panel').classList.toggle('open');
+}
+
+document.addEventListener('click', e => {
+  if (!document.getElementById('theme-sw').contains(e.target)) {
+    document.getElementById('theme-panel').classList.remove('open');
+  }
+});
+
+/* ── 3D Wave Grid (shared between background + start screen) ── */
+(function setup3DGrid() {
+  const COLS  = 28;   // vertical lines
+  const ROWS  = 20;   // horizontal lines
+  const PAD   = 2;    // extra rows/cols beyond screen edge to avoid gaps
+  const FOV   = 520;
+  const CAM_Z = 380;
+  const AMP   = 72;
+  const SPEED = 0.55;
+
+  let t = 0, lastTs = 0;
+
+  function waveZ(col, row, totalCols, totalRows) {
+    const cx = col / totalCols;
+    const cy = row / totalRows;
+    return (
+      Math.sin(cx * Math.PI * 3.5 + t * SPEED)              * AMP * 0.55 +
+      Math.sin(cy * Math.PI * 2.8 + t * SPEED * 0.75)       * AMP * 0.45 +
+      Math.sin((cx + cy) * Math.PI * 2 + t * SPEED * 1.2)   * AMP * 0.35
+    );
+  }
+
+  function drawWave(canvas, color) {
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const totalCols = COLS + PAD * 2;
+    const totalRows = ROWS + PAD * 2;
+
+    // World grid extends beyond screen by PAD cells on every side
+    const cellW = W / COLS;
+    const cellH = H / ROWS;
+
+    function proj(wx, wy, wz) {
+      const scale = FOV / (FOV + CAM_Z - wz);
+      return {
+        sx: W / 2 + (wx - W / 2) * scale,
+        sy: H / 2 + (wy - H / 2) * scale,
+      };
+    }
+
+    // Build projected points
+    const pts = [];
+    for (let r = 0; r <= totalRows; r++) {
+      pts[r] = [];
+      for (let c = 0; c <= totalCols; c++) {
+        const wx = (c - PAD) * cellW;
+        const wy = (r - PAD) * cellH;
+        const wz = waveZ(c, r, totalCols, totalRows);
+        pts[r][c] = proj(wx, wy, wz);
+      }
+    }
+
+    ctx.clearRect(0, 0, W, H);
+    ctx.strokeStyle = color;
+
+    // Horizontal lines
+    ctx.lineWidth = 1.1;
+    ctx.globalAlpha = 0.85;
+    for (let r = 0; r <= totalRows; r++) {
+      ctx.beginPath();
+      for (let c = 0; c <= totalCols; c++) {
+        const { sx, sy } = pts[r][c];
+        c === 0 ? ctx.moveTo(sx, sy) : ctx.lineTo(sx, sy);
+      }
+      ctx.stroke();
+    }
+
+    // Vertical lines
+    ctx.lineWidth = 0.9;
+    ctx.globalAlpha = 0.65;
+    for (let c = 0; c <= totalCols; c++) {
+      ctx.beginPath();
+      for (let r = 0; r <= totalRows; r++) {
+        const { sx, sy } = pts[r][c];
+        r === 0 ? ctx.moveTo(sx, sy) : ctx.lineTo(sx, sy);
+      }
+      ctx.stroke();
+    }
+
+    ctx.globalAlpha = 1;
+  }
+
+  // Size a canvas to its display size
+  function fitCanvas(canvas) {
+    const w = canvas.offsetWidth  || window.innerWidth;
+    const h = canvas.offsetHeight || window.innerHeight;
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width  = w;
+      canvas.height = h;
+    }
+  }
+
+  function getColor() {
+    return getComputedStyle(document.documentElement)
+      .getPropertyValue('--grid-color').trim() || 'rgba(255,255,255,0.1)';
+  }
+
+  const bgCanvas    = document.getElementById('grid-canvas');
+  const startCanvas = document.getElementById('start-canvas');
+
+  window.addEventListener('resize', () => {
+    fitCanvas(bgCanvas);
+    fitCanvas(startCanvas);
+  });
+  fitCanvas(bgCanvas);
+  fitCanvas(startCanvas);
+
+  function loop(ts) {
+    const dt = Math.min((ts - lastTs) / 1000, 0.05);
+    lastTs = ts;
+    t += dt;
+
+    const color = getColor();
+    drawWave(bgCanvas, color);
+    drawWave(startCanvas, 'rgba(255,255,255,0.1)');
+
+    requestAnimationFrame(loop);
+  }
+
+  requestAnimationFrame(ts => { lastTs = ts; requestAnimationFrame(loop); });
+})();
+</script>
+</body>
+</html>

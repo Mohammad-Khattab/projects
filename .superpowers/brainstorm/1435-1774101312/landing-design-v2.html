@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MKLL — Live Shader Preview</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0d0008; font-family: system-ui, sans-serif; color: white; overflow: hidden; }
+
+  .label-bar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(10px);
+    border-bottom: 1px solid #333;
+    padding: 0 20px; height: 36px;
+    font-size: 12px; color: #888;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .label-bar strong { color: #fff; }
+  .tab {
+    padding: 4px 14px; border-radius: 20px; font-size: 11px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; border: 1px solid #444; color: #aaa;
+  }
+  .tab.active { background: rgba(255,140,40,0.2); border-color: rgba(255,140,40,0.5); color: #ffb347; }
+
+  /* Shader canvas — always full screen behind everything */
+  #shader-canvas {
+    position: fixed; inset: 0; width: 100%; height: 100%;
+    touch-action: none; z-index: 0;
+  }
+
+  /* Views sit on top of canvas */
+  .view {
+    position: fixed; inset: 36px 0 0 0;
+    z-index: 10; overflow: hidden;
+    display: none;
+  }
+  .view.active { display: block; }
+
+  /* ===== LANDING ===== */
+  .landing-content {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+
+  .stack-area {
+    position: relative; height: 190px; width: 480px; margin-bottom: 36px; flex-shrink: 0;
+  }
+  .stack-card {
+    position: absolute; width: 130px; height: 130px;
+    background: rgba(255,255,255,0.07); backdrop-filter: blur(18px);
+    border: 1px solid rgba(255,150,60,0.25); border-radius: 22px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  }
+  .stack-card::before {
+    content: ''; position: absolute; top: 0; left: 10%; right: 10%; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,180,60,0.45), transparent);
+  }
+  .stack-card:nth-child(1) { left: 20px; top: 20px; animation: float1 5s ease-in-out infinite; }
+  .stack-card:nth-child(2) { left: 50%; top: 5px; animation: float2 5s ease-in-out infinite; }
+  .stack-card:nth-child(3) { right: 20px; top: 20px; animation: float3 5s ease-in-out infinite; }
+  @keyframes float1 { 0%,100%{transform:rotate(-14deg) translateY(10px)} 50%{transform:rotate(-14deg) translateY(-4px)} }
+  @keyframes float2 { 0%,100%{transform:translateX(-50%) rotate(-2deg) translateY(0)} 50%{transform:translateX(-50%) rotate(-2deg) translateY(-12px)} }
+  @keyframes float3 { 0%,100%{transform:rotate(12deg) translateY(10px)} 50%{transform:rotate(12deg) translateY(-4px)} }
+  .stack-icon { font-size: 32px; }
+  .stack-name { font-size: 11px; color: rgba(255,255,255,0.85); font-weight: 500; }
+
+  .hero-eyebrow {
+    font-size: 11px; font-weight: 700; letter-spacing: 4px; color: rgba(255,160,60,0.8);
+    text-transform: uppercase; margin-bottom: 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .hero-eyebrow::before, .hero-eyebrow::after {
+    content: ''; display: block; width: 30px; height: 1px; background: rgba(255,160,60,0.4);
+  }
+  .hero-title {
+    font-size: 72px; font-weight: 900; font-family: monospace; letter-spacing: 8px;
+    background: linear-gradient(135deg, #ffb347, #ff6a00, #ffcb69, #ff8c00);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    line-height: 1; margin-bottom: 8px; background-size: 200%;
+    animation: gradShift 4s ease infinite alternate;
+  }
+  @keyframes gradShift { 0%{background-position:0%} 100%{background-position:100%} }
+  .hero-sub { font-size: 13px; color: rgba(255,160,60,0.65); letter-spacing: 3px; margin-bottom: 24px; }
+  .hero-desc { font-size: 15px; color: rgba(255,255,255,0.5); max-width: 360px; text-align: center; line-height: 1.6; margin-bottom: 36px; }
+
+  .get-started-btn {
+    padding: 14px 44px;
+    background: linear-gradient(135deg, #ff6a00, #ffb347);
+    color: #0d0008; font-size: 15px; font-weight: 800; letter-spacing: 1px;
+    border: none; border-radius: 40px; cursor: pointer;
+    box-shadow: 0 8px 32px rgba(255,100,0,0.4), 0 0 0 1px rgba(255,180,60,0.3);
+    animation: btnGlow 3s ease-in-out infinite;
+    transition: transform 0.2s;
+  }
+  @keyframes btnGlow {
+    0%,100%{box-shadow:0 8px 32px rgba(255,100,0,0.4),0 0 0 1px rgba(255,180,60,0.3)}
+    50%{box-shadow:0 8px 48px rgba(255,100,0,0.65),0 0 0 5px rgba(255,180,60,0.1)}
+  }
+  .get-started-btn:hover { transform: translateY(-3px) scale(1.05); }
+
+  /* ===== DASHBOARD ===== */
+  .topbar {
+    position: absolute; top:0;left:0;right:0;height:54px;
+    background:rgba(0,0,0,0.3);backdrop-filter:blur(20px);
+    border-bottom:1px solid rgba(255,150,50,0.12);
+    display:flex;align-items:center;padding:0 20px;gap:14px;z-index:10;
+  }
+  .logo-block{display:flex;flex-direction:column;line-height:1;gap:2px}
+  .logo-name{font-size:16px;font-weight:800;font-family:monospace;letter-spacing:3px;background:linear-gradient(90deg,#ffb347,#ff6a00,#ffcb69);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .logo-sub{font-size:8.5px;color:rgba(255,160,60,0.55);letter-spacing:.5px}
+  .search-wrap{flex:1;max-width:340px;margin:0 auto}
+  .search-wrap input{width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,140,40,0.18);border-radius:20px;padding:6px 14px;color:rgba(255,255,255,0.85);font-size:12.5px;outline:none}
+  .search-wrap input::placeholder{color:rgba(255,255,255,0.3)}
+  .icon-btn{width:32px;height:32px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,140,40,0.18);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px}
+  .clock-block{text-align:right;line-height:1.2}
+  .clock-time{font-size:15px;font-weight:700;font-family:monospace;color:rgba(255,190,80,0.9)}
+  .clock-date{font-size:9px;color:rgba(255,255,255,0.35)}
+  .main{position:absolute;top:54px;left:0;right:0;bottom:0;padding:28px 24px;overflow-y:auto;z-index:5}
+  .category-label{font-size:10px;font-weight:700;letter-spacing:2px;color:rgba(255,160,60,0.55);text-transform:uppercase;margin-bottom:12px}
+  .app-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:12px;margin-bottom:28px}
+  .app-card{height:100px;background:rgba(255,255,255,0.055);backdrop-filter:blur(18px);border:1px solid rgba(255,140,50,0.18);border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;position:relative;overflow:hidden;transition:transform .2s,border-color .2s}
+  .app-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,180,60,0.35),transparent)}
+  .app-card:hover{border-color:rgba(255,160,60,0.45);transform:translateY(-3px) scale(1.02)}
+  .app-icon{font-size:28px}
+  .app-name{font-size:10.5px;color:rgba(255,255,255,0.82);font-weight:500;text-align:center;padding:0 6px}
+  .add-card{height:100px;background:rgba(255,140,30,0.04);border:1.5px dashed rgba(255,140,40,0.22);border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer}
+  .add-plus{font-size:22px;color:rgba(255,160,60,0.5)}
+  .add-label{font-size:9.5px;color:rgba(255,160,60,0.4)}
+</style>
+</head>
+<body>
+
+<!-- THE REAL WEBGL SHADER — always running behind everything -->
+<canvas id="shader-canvas"></canvas>
+
+<div class="label-bar">
+  <strong>MKLL — Live WebGL Shader</strong>
+  <span style="color:#555">|</span>
+  <span class="tab active" id="tab-landing" onclick="showView('landing')">Landing Page</span>
+  <span class="tab" id="tab-dashboard" onclick="showView('dashboard')">Dashboard</span>
+  <span style="margin-left:auto;color:#666;font-size:11px;">Real WebGL shader running · move mouse over it</span>
+</div>
+
+<!-- LANDING -->
+<div id="landing" class="view active">
+  <div class="landing-content">
+    <div class="stack-area">
+      <div class="stack-card"><div class="stack-icon">🎮</div><div class="stack-name">XO Game</div></div>
+      <div class="stack-card"><div class="stack-icon">📚</div><div class="stack-name">Study Hub</div></div>
+      <div class="stack-card"><div class="stack-icon">🐍</div><div class="stack-name">Snake</div></div>
+    </div>
+    <div class="hero-eyebrow">Your personal launchpad</div>
+    <div class="hero-title">MKLL</div>
+    <div class="hero-sub">Mo Khattab Lamba Land</div>
+    <div class="hero-desc">All your apps, tools, and games — one place, one click.</div>
+    <button class="get-started-btn" onclick="showView('dashboard')">Get Started →</button>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" class="view">
+  <div class="topbar">
+    <div class="logo-block">
+      <span class="logo-name">MKLL</span>
+      <span class="logo-sub">Mo Khattab Lamba Land</span>
+    </div>
+    <div class="search-wrap"><input type="text" placeholder="⌘K  Search apps…"/></div>
+    <div style="display:flex;gap:8px">
+      <div class="icon-btn">＋</div>
+      <div class="icon-btn">⚙</div>
+    </div>
+    <div class="clock-block">
+      <div class="clock-time" id="clock-time">21:47</div>
+      <div class="clock-date" id="clock-date">Sat, Mar 21</div>
+    </div>
+  </div>
+  <div class="main">
+    <div class="category-label">Games</div>
+    <div class="app-grid">
+      <div class="app-card"><div class="app-icon">🎮</div><div class="app-name">XO Game</div></div>
+      <div class="app-card"><div class="app-icon">🐍</div><div class="app-name">Snake</div></div>
+      <div class="add-card"><div class="add-plus">＋</div><div class="add-label">Add app</div></div>
+    </div>
+    <div class="category-label">Tools</div>
+    <div class="app-grid">
+      <div class="app-card"><div class="app-icon">📚</div><div class="app-name">GJU Study Hub</div></div>
+      <div class="app-card"><div class="app-icon">🌐</div><div class="app-name">Browser</div></div>
+      <div class="add-card"><div class="add-plus">＋</div><div class="add-label">Add app</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── View switcher ──────────────────────────────────────────────
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(name).classList.add('active');
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+// ── Clock ──────────────────────────────────────────────────────
+function updateClock() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  document.getElementById('clock-time').textContent = h + ':' + m;
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('clock-date').textContent =
+    days[now.getDay()] + ', ' + months[now.getMonth()] + ' ' + now.getDate();
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+// ── WebGL Shader (exact shader from your first prompt) ─────────
+const canvas = document.getElementById('shader-canvas');
+
+function resizeCanvas() {
+  const dpr = Math.max(1, 0.5 * window.devicePixelRatio);
+  canvas.width  = window.innerWidth  * dpr;
+  canvas.height = window.innerHeight * dpr;
+  canvas.style.width  = window.innerWidth  + 'px';
+  canvas.style.height = window.innerHeight + 'px';
+  if (gl) gl.viewport(0, 0, canvas.width, canvas.height);
+}
+
+const gl = canvas.getContext('webgl2');
+let program, uRes, uTime, uMove, uTouch, uPointerCount, uPointers;
+let mouse = [0, 0], mouseMove = [0, 0];
+
+const vertSrc = `#version 300 es
+precision highp float;
+in vec4 position;
+void main(){ gl_Position = position; }`;
+
+const fragSrc = `#version 300 es
+/*
+ * made by Matthias Hurrle (@atzedent)
+ * To explore strange new worlds, to seek out new life
+ * and new civilizations, to boldly go where no man has gone before.
+ */
+precision highp float;
+out vec4 O;
+uniform vec2 resolution;
+uniform float time;
+uniform vec2 move;
+uniform vec2 touch;
+uniform int pointerCount;
+uniform vec2 pointers;
+#define FC gl_FragCoord.xy
+#define T time
+#define R resolution
+#define MN min(R.x,R.y)
+
+float rnd(vec2 p) {
+  p = fract(p * vec2(12.9898, 78.233));
+  p += dot(p, p + 34.56);
+  return fract(p.x * p.y);
+}
+float noise(in vec2 p) {
+  vec2 i = floor(p), f = fract(p), u = f*f*(3.-2.*f);
+  float a=rnd(i), b=rnd(i+vec2(1,0)), c=rnd(i+vec2(0,1)), d=rnd(i+1.);
+  return mix(mix(a,b,u.x), mix(c,d,u.x), u.y);
+}
+float fbm(vec2 p) {
+  float t=.0, a=1.; mat2 m=mat2(1.,-.5,.2,1.2);
+  for(int i=0;i<5;i++){ t+=a*noise(p); p*=2.*m; a*=.5; }
+  return t;
+}
+float clouds(vec2 p) {
+  float d=1., t=.0;
+  for(float i=.0;i<3.;i++){
+    float a=d*fbm(i*10.+p.x*.2+.2*(1.+i)*p.y+d+i*i+p);
+    t=mix(t,d,a); d=a; p*=2./(i+1.);
+  }
+  return t;
+}
+void main(void) {
+  vec2 uv=(FC-.5*R)/MN, st=uv*vec2(2,1);
+  vec3 col=vec3(0);
+  float bg=clouds(vec2(st.x+T*.5,-st.y));
+  uv*=1.-.3*(sin(T*.2)*.5+.5);
+  for(float i=1.;i<12.;i++){
+    uv+=.1*cos(i*vec2(.1+.01*i,.8)+i*i+T*.5+.1*uv.x);
+    vec2 p=uv;
+    float d=length(p);
+    col+=.00125/d*(cos(sin(i)*vec3(1,2,3))+1.);
+    float b=noise(i+p+bg*1.731);
+    col+=.002*b/length(max(p,vec2(b*p.x*.02,p.y)));
+    col=mix(col,vec3(bg*.25,bg*.137,bg*.05),d);
+  }
+  O=vec4(col,1);
+}`;
+
+function compileShader(type, src) {
+  const s = gl.createShader(type);
+  gl.shaderSource(s, src);
+  gl.compileShader(s);
+  return s;
+}
+
+function initGL() {
+  const vs = compileShader(gl.VERTEX_SHADER, vertSrc);
+  const fs = compileShader(gl.FRAGMENT_SHADER, fragSrc);
+  program = gl.createProgram();
+  gl.attachShader(program, vs);
+  gl.attachShader(program, fs);
+  gl.linkProgram(program);
+
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,1,-1,-1,1,1,1,-1]), gl.STATIC_DRAW);
+  const pos = gl.getAttribLocation(program, 'position');
+  gl.enableVertexAttribArray(pos);
+  gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
+
+  uRes          = gl.getUniformLocation(program, 'resolution');
+  uTime         = gl.getUniformLocation(program, 'time');
+  uMove         = gl.getUniformLocation(program, 'move');
+  uTouch        = gl.getUniformLocation(program, 'touch');
+  uPointerCount = gl.getUniformLocation(program, 'pointerCount');
+  uPointers     = gl.getUniformLocation(program, 'pointers');
+}
+
+function render(now) {
+  gl.clearColor(0,0,0,1);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.useProgram(program);
+  gl.uniform2f(uRes, canvas.width, canvas.height);
+  gl.uniform1f(uTime, now * 1e-3);
+  gl.uniform2f(uMove, mouseMove[0], mouseMove[1]);
+  gl.uniform2f(uTouch, mouse[0], mouse[1]);
+  gl.uniform1i(uPointerCount, 0);
+  gl.uniform2f(uPointers, 0, 0);
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  requestAnimationFrame(render);
+}
+
+canvas.addEventListener('mousemove', e => {
+  mouseMove = [mouseMove[0] + e.movementX, mouseMove[1] + e.movementY];
+  mouse = [e.clientX, canvas.height - e.clientY];
+});
+
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+initGL();
+requestAnimationFrame(render);
+</script>
+</body>
+</html>

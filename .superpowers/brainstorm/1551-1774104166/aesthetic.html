@@ -1,0 +1,106 @@
+<h2>What aesthetic should your dashboard have?</h2>
+<p class="subtitle">Pick the vibe that feels most like "you" — this sets the tone for everything</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="cyberpunk" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: #0a0a0f; padding: 16px; min-height: 140px; position: relative; overflow: hidden;">
+      <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 30% 50%, rgba(0,255,200,0.12) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(255,0,128,0.1) 0%, transparent 50%);"></div>
+      <div style="font-family:monospace;color:#0ff;font-size:10px;opacity:0.5;margin-bottom:8px;">// SYSTEM ONLINE</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;">
+        <div style="background:rgba(0,255,200,0.08);border:1px solid rgba(0,255,200,0.3);border-radius:4px;padding:8px;text-align:center;">
+          <div style="color:#0ff;font-size:16px;font-weight:bold;font-family:monospace;">XO</div>
+          <div style="color:rgba(0,255,200,0.5);font-size:9px;font-family:monospace;">GAME</div>
+        </div>
+        <div style="background:rgba(255,0,128,0.08);border:1px solid rgba(255,0,128,0.3);border-radius:4px;padding:8px;text-align:center;">
+          <div style="color:#f0f;font-size:16px;font-weight:bold;font-family:monospace;">🐍</div>
+          <div style="color:rgba(255,0,128,0.5);font-size:9px;font-family:monospace;">SNAKE</div>
+        </div>
+        <div style="background:rgba(100,0,255,0.08);border:1px solid rgba(100,0,255,0.3);border-radius:4px;padding:8px;text-align:center;">
+          <div style="color:#90f;font-size:16px;font-weight:bold;font-family:monospace;">HUB</div>
+          <div style="color:rgba(100,0,255,0.5);font-size:9px;font-family:monospace;">APP</div>
+        </div>
+      </div>
+      <div style="height:2px;background:linear-gradient(90deg, #0ff, #f0f, transparent);border-radius:2px;margin-bottom:6px;"></div>
+      <div style="color:rgba(0,255,200,0.4);font-size:9px;font-family:monospace;">▓▓▓▓▓▓▓▒▒░░ NEON GRID ACTIVE</div>
+    </div>
+    <div class="card-body">
+      <h3>Cyberpunk / Neon Grid</h3>
+      <p>Dark bg, glowing neon accents, grid lines, holographic panels. Sci-fi control room energy. Think Tron meets blade runner.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="space" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: #030510; padding: 16px; min-height: 140px; position: relative; overflow: hidden;">
+      <div style="position:absolute;inset:0;" id="stars-bg">
+        <div style="position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;top:15%;left:20%;opacity:0.8;"></div>
+        <div style="position:absolute;width:1px;height:1px;background:#fff;border-radius:50%;top:35%;left:60%;opacity:0.6;"></div>
+        <div style="position:absolute;width:2px;height:2px;background:#adf;border-radius:50%;top:55%;left:35%;opacity:0.9;"></div>
+        <div style="position:absolute;width:1px;height:1px;background:#fff;border-radius:50%;top:20%;left:80%;opacity:0.5;"></div>
+        <div style="position:absolute;width:2px;height:2px;background:#fda;border-radius:50%;top:75%;left:15%;opacity:0.7;"></div>
+        <div style="position:absolute;width:1px;height:1px;background:#daf;border-radius:50%;top:80%;left:70%;opacity:0.8;"></div>
+        <div style="position:absolute;width:80px;height:80px;background:radial-gradient(circle, rgba(60,80,200,0.4) 0%, transparent 70%);border-radius:50%;bottom:-20px;right:20px;"></div>
+      </div>
+      <div style="position:relative;display:flex;gap:8px;align-items:flex-start;">
+        <div style="background:rgba(255,255,255,0.06);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,0.1);border-radius:50%;width:50px;height:50px;display:flex;align-items:center;justify-content:center;font-size:20px;">🎮</div>
+        <div style="background:rgba(255,255,255,0.06);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,0.1);border-radius:50%;width:40px;height:40px;margin-top:15px;display:flex;align-items:center;justify-content:center;font-size:16px;">🌐</div>
+        <div style="background:rgba(255,255,255,0.06);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,0.1);border-radius:50%;width:55px;height:55px;margin-top:5px;display:flex;align-items:center;justify-content:center;font-size:22px;">🚀</div>
+      </div>
+      <div style="margin-top:10px;color:rgba(200,220,255,0.6);font-size:9px;font-family:sans-serif;letter-spacing:2px;">ORBITAL DASHBOARD v2.0</div>
+    </div>
+    <div class="card-body">
+      <h3>Space / Cosmos</h3>
+      <p>Starfield bg, floating orbs and planets, each project is an orbit. Deep blue/purple palette. Astronaut explorer vibes.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="glass" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); padding: 16px; min-height: 140px; position: relative; overflow: hidden;">
+      <div style="position:absolute;width:120px;height:120px;background:radial-gradient(circle, rgba(100,180,255,0.15) 0%, transparent 70%);border-radius:50%;top:-30px;right:-20px;"></div>
+      <div style="position:absolute;width:80px;height:80px;background:radial-gradient(circle, rgba(200,100,255,0.1) 0%, transparent 70%);border-radius:50%;bottom:-10px;left:10px;"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;position:relative;">
+        <div style="background:rgba(255,255,255,0.08);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:10px;">
+          <div style="color:rgba(255,255,255,0.9);font-size:11px;font-weight:600;margin-bottom:4px;">Games</div>
+          <div style="color:rgba(255,255,255,0.4);font-size:9px;">XO · Snake · Lobby</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.05);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:10px;">
+          <div style="color:rgba(255,255,255,0.9);font-size:11px;font-weight:600;margin-bottom:4px;">Projects</div>
+          <div style="color:rgba(255,255,255,0.4);font-size:9px;">GJU Hub · Dash</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.06);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:10px;grid-column:span 2;">
+          <div style="color:rgba(255,255,255,0.9);font-size:11px;font-weight:600;margin-bottom:4px;">Websites</div>
+          <div style="color:rgba(255,255,255,0.4);font-size:9px;">portfolio · tools · experiments</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Glassmorphism / Aurora</h3>
+      <p>Frosted glass panels with blur, aurora gradient background, soft glow. Premium, modern, and clean. Apple Vision Pro aesthetic.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="retro3d" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: #0d0d0d; padding: 16px; min-height: 140px; position: relative; overflow: hidden;">
+      <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(0,255,0,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,0,0.03) 1px, transparent 1px);background-size:20px 20px;"></div>
+      <div style="position:relative;">
+        <div style="border:2px solid #0f0;padding:6px;margin-bottom:6px;display:inline-block;">
+          <span style="color:#0f0;font-family:monospace;font-size:10px;">C:\DASHBOARD\&gt; _</span>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:4px;">
+          <div style="border:1px solid #0f0;color:#0f0;font-family:monospace;font-size:9px;padding:6px 8px;text-shadow:0 0 6px #0f0;">[ GAME-01 ]</div>
+          <div style="border:1px solid #0f0;color:#0f0;font-family:monospace;font-size:9px;padding:6px 8px;text-shadow:0 0 6px #0f0;">[ PROJ-02 ]</div>
+        </div>
+        <div style="margin-top:6px;border:1px solid rgba(0,255,0,0.3);padding:6px;background:rgba(0,255,0,0.04);">
+          <div style="color:rgba(0,255,0,0.5);font-family:monospace;font-size:8px;">SYSTEM BOOT...........OK</div>
+          <div style="color:rgba(0,255,0,0.5);font-family:monospace;font-size:8px;">LOAD DASHBOARD.......OK</div>
+          <div style="color:#0f0;font-family:monospace;font-size:8px;">READY ■</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Retro Terminal / DOS</h3>
+      <p>Green phosphor glow, scanlines, monospace fonts, CRT effects with 3D perspective. Hacker nostalgic — unique and very personal.</p>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MKLL Snake</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,600;0,800;1,600;1,800&family=Space+Grotesk:wght@500;700&family=Pixelify+Sans:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<link href="game.css" rel="stylesheet">
+<script src="audio.js"></script>
+<style>
+  :root {
+    --green: #6fff54; --green-glow: rgba(111,255,84,0.4);
+    --purple: #b46bfa; --cyan: #6df0f5; --bg-dark: #0a0b0e;
+    --panel-bg: rgba(22,23,28,0.6); --panel-border: rgba(255,255,255,0.05);
+    --text-muted: #8b8e96;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body,html { width:100%; height:100%; background:#0a0b0e; font-family:'Inter',sans-serif; color:#fff; overflow:hidden; }
+  #landing-screen { position:relative; width:100%; height:100%; }
+  #canvas-container { position:absolute; top:0;left:0;width:100%;height:100%;z-index:1; }
+  .vignette { position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle at center,transparent 30%,rgba(5,6,10,0.85) 100%);pointer-events:none;z-index:2; }
+  #ui-layer { position:absolute; top:0; left:0; z-index:10; width:100%; height:100%; padding:30px; pointer-events:none; }
+  .top-bar { display:flex;justify-content:space-between;align-items:flex-start; }
+  .logo { font-family:'Pixelify Sans', sans-serif; font-size:24px; font-weight:700; color:var(--green); letter-spacing:1px; text-shadow:0 0 10px var(--green-glow); }
+  .top-icons { display:flex;gap:15px;pointer-events:auto; }
+  .icon-btn { min-width:40px;height:40px;padding:0 12px;background:var(--panel-bg);border:1px solid var(--panel-border);backdrop-filter:blur(10px);border-radius:6px;display:flex;gap:8px;justify-content:center;align-items:center;color:#fff;font-size:16px;cursor:pointer;transition:all 0.3s ease; }
+  .icon-btn:hover { background:rgba(255,255,255,0.1);transform:translateY(-2px);border-color:rgba(255,255,255,0.15); }
+  .icon-btn.icon-only { padding:0;width:40px; }
+  .btn-text { font-size:13px;font-weight:600;font-family:'Space Grotesk',sans-serif;white-space:nowrap; }
+  .lamp-icon { color:#ffea00;filter:drop-shadow(0 0 5px rgba(255,234,0,0.8));font-size:18px; }
+  .side-panel { background:var(--panel-bg);border:1px solid var(--panel-border);backdrop-filter:blur(10px);border-radius:6px;padding:20px;pointer-events:auto; }
+  .right-panel { position:absolute;top:120px;right:30px;width:220px; }
+  .live-indicator { display:flex;align-items:center;gap:8px;font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px; }
+  .dot { width:6px;height:6px;background:#ff4747;border-radius:50%;box-shadow:0 0 8px rgba(255,71,71,0.6); }
+  .tournament-name { font-size:14px;font-weight:700;margin-bottom:4px; } .time-left { font-size:11px;color:var(--text-muted); }
+  .center-content { position:absolute; top:50%; left:50%; transform:translate(-50%,-58%); text-align:center; width:100%; transition:all 0.5s cubic-bezier(0.16,1,0.3,1); pointer-events:none; }
+  .main-title { display:flex;flex-direction:column;align-items:center;line-height:0.85;margin-bottom:20px; }
+  .title-ascend { font-family:'Pixelify Sans', sans-serif; font-size:120px; font-weight:700; text-transform:uppercase; color:#fff; margin-bottom: 0px; line-height:0.8; }
+  .title-online { font-family:'Pixelify Sans', sans-serif; font-size:120px; font-weight:700; color:var(--green); text-transform:uppercase; text-shadow:0 0 40px rgba(111,255,84,0.7); line-height:0.8; }
+  #progression-stats { position:absolute; top:50%; left:50%; transform:translate(-50%,calc(-50% + 345px)); display:flex; gap:15px; pointer-events:auto; z-index:11; }
+  .stat-pill { background:rgba(255,234,0,0.1); border:1px solid rgba(255,234,0,0.25); backdrop-filter:blur(8px); padding:6px 16px; border-radius:20px; color:#ffea00; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:700; letter-spacing:1px; display:flex; align-items:center; gap:8px; text-shadow:0 0 10px rgba(255,234,0,0.4); }
+  .cards-container { position:absolute; top:50%; left:50%; transform:translate(-50%,calc(-50% + 220px)); display:flex; gap:20px; pointer-events:auto; transition:all 0.5s cubic-bezier(0.16,1,0.3,1); }
+  .card { width:260px;height:200px;background:linear-gradient(180deg,rgba(30,32,40,0.8) 0%,rgba(20,22,28,0.9) 100%);border:1px solid var(--panel-border);border-radius:8px;backdrop-filter:blur(12px);padding:30px 25px;display:flex;flex-direction:column;justify-content:flex-end;position:relative;overflow:hidden;transition:transform 0.3s,border-color 0.3s,box-shadow 0.3s;cursor:pointer; }
+  .card:hover { transform:translateY(-5px);border-color:rgba(255,255,255,0.15);box-shadow:0 10px 30px rgba(0,0,0,0.5); }
+  .card-icon { position:absolute;top:25px;right:25px;font-size:40px;color:rgba(255,255,255,0.05); } .card:hover .card-icon { color:rgba(255,255,255,0.1); }
+  .card-subtitle { font-size:10px;text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:6px; }
+  .card-title { font-size:24px;font-weight:800;margin-bottom:20px;letter-spacing:-0.5px; }
+  .card-btn { width:100%;padding:12px 0;border:none;border-radius:4px;font-family:'Inter',sans-serif;font-weight:700;font-size:13px;text-align:center;cursor:pointer;text-transform:uppercase;letter-spacing:1px;transition:all 0.2s; }
+  .card-free .card-subtitle { color:var(--green); } .card-free .card-btn { background:var(--green);color:#000;box-shadow:0 0 15px var(--green-glow); }
+  .card-campaign .card-subtitle { color:var(--purple); } .card-campaign .card-btn { background:var(--purple);color:#000;box-shadow:0 0 15px rgba(180,107,250,0.4); }
+  .card-shop .card-subtitle { color:var(--cyan); } .card-shop .card-btn { background:var(--cyan);color:#000;box-shadow:0 0 15px rgba(109,240,245,0.4); }
+  .hero-hide { opacity:0!important; transform:translate(-50%,-58%) scale(0.9)!important; filter:blur(10px); pointer-events:none !important; }
+  .hero-cards-hide { opacity:0!important; transform:translate(-50%,calc(-50% + 220px)) scale(0.9)!important; filter:blur(10px); pointer-events:none !important; }
+
+  /* Modals */
+  .modal-overlay { position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.2);backdrop-filter:blur(0px);display:flex;justify-content:center;align-items:center;z-index:100;pointer-events:none;opacity:0;transition:all 0.5s cubic-bezier(0.16,1,0.3,1); }
+  .modal-overlay.active { opacity:1;pointer-events:auto;backdrop-filter:blur(20px);background:rgba(0,0,0,0.6); }
+  .modal-box { background:linear-gradient(180deg,#16181d 0%,#0d0f12 100%);border:1px solid var(--green);box-shadow:0 0 40px rgba(111,255,84,0.15);border-radius:12px;padding:40px;width:800px;max-width:90vw;position:relative;transform:translateY(40px) scale(0.9);transition:all 0.5s cubic-bezier(0.16,1,0.3,1);opacity:0; }
+  .modal-overlay.active .modal-box { transform:translateY(0) scale(1);opacity:1; }
+  .modal-close { position:absolute;top:20px;right:25px;font-size:24px;color:#666;cursor:pointer;transition:0.2s; } .modal-close:hover { color:#fff; }
+  .modal-title { font-size:32px;font-weight:800;text-align:center;margin-bottom:30px;letter-spacing:-1px;text-transform:uppercase; }
+  .grid-9 { display:grid;grid-template-columns:repeat(3,1fr);gap:15px; }
+  .map-box { background:#1c1f26;border:1px solid rgba(255,255,255,0.05);border-radius:8px;padding:20px;text-align:center;cursor:pointer;transition:0.2s; }
+  .map-box:hover { border-color:var(--green);background:#232730;transform:translateY(-3px); }
+  .map-box.locked { opacity:0.5;filter:grayscale(1);pointer-events:none; }
+  .map-box i { font-size:30px;margin-bottom:15px;color:var(--green); }
+  .map-name { font-size:16px;font-weight:700;font-family:'Space Grotesk';margin-bottom:5px; }
+  .map-desc { font-size:11px;color:var(--text-muted); }
+  /* Map icons keep original colors now */
+
+  /* Shop */
+  .shop-grid { display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-height:480px;overflow-y:auto;padding-right:15px;margin-top:10px; }
+  .shop-grid::-webkit-scrollbar { width:6px; } .shop-grid::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.2);border-radius:10px; }
+  .shop-item { display:flex;align-items:center;justify-content:space-between;background:#191c23;padding:12px 18px;border-radius:8px;border:1px solid rgba(255,255,255,0.05);transition:0.2s; }
+  .shop-item:hover { transform:translateY(-2px);border-color:rgba(255,255,255,0.15);background:#1e222a; }
+  .shop-item .cost { font-weight:700;display:flex;align-items:center;gap:8px;font-size:14px; }
+  .shop-btn { background:var(--cyan);border:none;padding:6px 14px;border-radius:4px;font-weight:700;cursor:pointer;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#000;transition:0.2s; }
+  .shop-btn:hover { background:#fff; }
+  .shop-btn.owned { background:rgba(111,255,84,0.1);color:var(--green);box-shadow:none;cursor:default; }
+  .shop-btn.equipped-btn { background:var(--green);color:#000; cursor:default; }
+  .skin-name { font-size:14px;font-weight:700;font-family:'Space Grotesk';margin-bottom:2px; }
+
+  /* ===== Loading Screen ===== */
+  #loader-overlay {
+    position: fixed; top:0; left:0; width:100%; height:100%;
+    background: #050805;
+    z-index: 9999;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    transition: opacity 0.7s ease, visibility 0.7s ease;
+  }
+  #loader-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+  #loader-canvas { display: block; }
+  #loader-text {
+    margin-top: 28px;
+    font-family: 'Pixelify Sans', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #6fff54;
+    text-shadow: 0 0 12px rgba(111,255,84,0.6);
+    animation: loaderPulse 1.2s ease-in-out infinite alternate;
+  }
+  @keyframes loaderPulse { from { opacity: 0.4; } to { opacity: 1; } }
+
+  /* Side Panels */
+  .side-panel { position:absolute; top:120px; width:260px; pointer-events:auto; z-index:10; }
+  .right-panel { right:30px; text-align:right; }
+  .left-panel { left:30px; text-align:left; }
+  .friend-list { display:flex; flex-direction:column; gap:14px; margin-top:20px; }
+  .friend-card { background:rgba(20,22,28,0.6); border:1px solid rgba(255,255,255,0.05); backdrop-filter:blur(12px); padding:16px; border-radius:10px; transition:0.3s cubic-bezier(0.16,1,0.3,1); cursor:default; }
+  .friend-card:hover { border-color:rgba(111,255,84,0.3); transform:translateX(8px); background:rgba(20,22,28,0.8); }
+  .friend-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+  .friend-name { font-weight:700; color:#fff; font-size:13px; font-family:'Space Grotesk'; letter-spacing:0.5px; }
+  .friend-stars { color:#ffea00; font-size:11px; font-weight:700; display:flex; align-items:center; gap:5px; }
+  .friend-best { font-size:10px; color:var(--text-muted); line-height:1.4; text-transform:uppercase; letter-spacing:0.5px; }
+  .friend-best span { color:var(--green); font-weight:700; }
+  .side-label { font-size:11px; color:#fff; font-weight:800; opacity:0.6; letter-spacing:2px; text-transform:uppercase; margin-bottom:5px; display:flex; align-items:center; gap:8px; }
+  .side-label i { font-size:10px; color:var(--green); }
+</style>
+</head>
+<body>
+
+<!-- ===== LOADING ANIMATION ===== -->
+<div id="loader-overlay">
+  <canvas id="loader-canvas" width="220" height="220"></canvas>
+  <div id="loader-text">MKLL SNAKE &nbsp; LOADING</div>
+</div>
+
+<script>
+(function startLoader() {
+  const cv = document.getElementById('loader-canvas');
+  const ctx = cv.getContext('2d');
+  const cx = 110, cy = 110, r = 72, segLen = 14, segs = 18;
+  let angle = 0;
+  let loaderRunning = true;
+  let exitProgress = 0;
+
+  function drawLoader() {
+    if (!loaderRunning && exitProgress >= 1) { ctx.clearRect(0,0,220,220); return; }
+    requestAnimationFrame(drawLoader);
+    ctx.clearRect(0, 0, 220, 220);
+
+    const orbitFactor = loaderRunning ? 1 : Math.max(0, 1 - exitProgress * 2);
+    const slideOffset = loaderRunning ? 0 : exitProgress * 400;
+
+    // Glowing lamp (fades out if exit)
+    ctx.save();
+    ctx.globalAlpha = orbitFactor;
+    ctx.shadowColor = '#ffea00'; ctx.shadowBlur = 28 * orbitFactor;
+    ctx.fillStyle = '#ffea00';
+    ctx.beginPath(); ctx.arc(cx, cy, 14, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+
+    // Snake body
+    for (let i = 0; i < segs; i++) {
+      const a = angle - i * (Math.PI * 2 / segs) * orbitFactor;
+      const dist = r * orbitFactor;
+      const x = cx + Math.cos(a) * dist + slideOffset;
+      const y = cy + Math.sin(a) * dist;
+      
+      const t = i / segs;
+      const green = Math.floor(220 * (1 - t * 0.65));
+      ctx.beginPath();
+      ctx.arc(x, y, (segLen/2) * (1 - t*0.3), 0, Math.PI*2);
+      ctx.fillStyle = `rgb(30,${green},30)`;
+      ctx.shadowColor = '#6fff54'; ctx.shadowBlur = (i===0 ? 18 : 4) * orbitFactor;
+      ctx.fill();
+      ctx.strokeStyle = '#6fff54'; ctx.lineWidth = i===0 ? 1.5 : 0.5;
+      ctx.stroke();
+    }
+    
+    // Head eyes
+    if (orbitFactor > 0.1) {
+      const hx = cx + Math.cos(angle)*r*orbitFactor + slideOffset;
+      const hy = cy + Math.sin(angle)*r*orbitFactor;
+      const ex = -Math.sin(angle)*4, ey = Math.cos(angle)*4;
+      [1,-1].forEach(s => {
+        ctx.fillStyle = '#ffea00';
+        ctx.beginPath(); ctx.arc(hx+ex*s, hy+ey*s, 2.5, 0, Math.PI*2); ctx.fill();
+      });
+    }
+
+    angle += 0.04;
+    if (!loaderRunning) exitProgress += 0.02;
+  }
+  drawLoader();
+  window._stopLoader = function() { loaderRunning = false; };
+}());
+</script>
+
+<!-- ===== LANDING SCREEN ===== -->
+<div id="landing-screen">
+  <div id="canvas-container"></div>
+  <div class="vignette"></div>
+  <div id="ui-layer">
+    <div class="top-bar">
+      <div class="logo">MKLL SNAKE</div>
+      <div class="top-icons">
+        <div class="icon-btn"><i class="fa-solid fa-lightbulb lamp-icon"></i><span class="btn-text" id="lamp-display">...</span></div>
+        <div class="icon-btn icon-only" onclick="openModal('settings-modal')"><i class="fa-solid fa-gear"></i></div>
+        <div class="icon-btn"><i class="fa-solid fa-right-to-bracket"></i><span class="btn-text">Login</span></div>
+      </div>
+    </div>
+    <div class="side-panel right-panel">
+      <div class="live-indicator"><div class="dot"></div> LIVE TOURNAMENT</div>
+      <div class="tournament-name">NEON DISTRICT</div><div class="time-left">Ends in 2h 45m</div>
+    </div>
+
+    <div class="side-panel left-panel">
+      <div class="side-label"><i class="fa-solid fa-user-group"></i> SOCIAL / FRIENDS</div>
+      <div class="friend-list" id="friend-list-container">
+        <!-- Friends rendered via JS -->
+      </div>
+    </div>
+
+    <div class="center-content" id="hero-title">
+      <div class="main-title"><div class="title-ascend">MKLL</div><div class="title-online">SNAKE</div></div>
+    </div>
+    <div class="cards-container" id="hero-cards">
+      <div class="card card-free" onclick="openModal('map-modal','freeplay')">
+        <i class="fa-solid fa-play card-icon"></i>
+        <div><div class="card-subtitle">Quick Start</div><div class="card-title">FREE PLAY</div><button class="card-btn">Select Map</button></div>
+      </div>
+      <div class="card card-campaign" onclick="openModal('map-modal','campaign')">
+        <i class="fa-solid fa-list-ol card-icon"></i>
+        <div><div class="card-subtitle">Campaign</div><div class="card-title">LEVELS</div><button class="card-btn">Progress</button></div>
+      </div>
+      <div class="card card-shop" onclick="openModal('shop-modal')">
+        <i class="fa-solid fa-palette card-icon"></i>
+        <div><div class="card-subtitle">Skin Data Store</div><div class="card-title">THEMES</div><button class="card-btn">CUSTOMISE</button></div>
+      </div>
+    </div>
+    <div id="progression-stats">
+      <div class="stat-pill"><i class="fa-solid fa-star"></i> <span id="star-count">0/27</span> STARS EARNED</div>
+    </div>
+  </div>
+
+  <!-- Map Selection Modal -->
+  <div class="modal-overlay" id="map-modal">
+    <div class="modal-box">
+      <i class="fa-solid fa-xmark modal-close" onclick="closeModal('map-modal')"></i>
+      <div class="modal-title" style="color:var(--green);">Select Deployment Map</div>
+      <div class="grid-9" id="map-grid">
+        <div class="map-box" data-map="ocean">    <i class="fa-solid fa-water" style="color:#6df0f5;"></i><div class="map-name">Ocean</div><div class="map-desc">Waves slow progression</div></div>
+        <div class="map-box locked" data-map="desert">  <i class="fa-solid fa-sun" style="color:#edbb6d;"></i><div class="map-name">Desert</div><div class="map-desc">Quicksand traps</div></div>
+        <div class="map-box locked" data-map="jungle">  <i class="fa-solid fa-leaf" style="color:#6eff59;"></i><div class="map-name">Jungle</div><div class="map-desc">Shifting maze walls</div></div>
+        <div class="map-box locked" data-map="volcano"> <i class="fa-solid fa-fire" style="color:#ff5733;"></i><div class="map-name">Volcano</div><div class="map-desc">Falling meteors</div></div>
+        <div class="map-box locked" data-map="tundra">  <i class="fa-solid fa-snowflake" style="color:#bffffc;"></i><div class="map-name">Tundra</div><div class="map-desc">Ice slide patches</div></div>
+        <div class="map-box locked" data-map="cyber">   <i class="fa-solid fa-microchip" style="color:#b46bfa;"></i><div class="map-name">Cyber Zone</div><div class="map-desc">Laser row sweeps</div></div>
+        <div class="map-box locked" data-map="swamp">   <i class="fa-solid fa-frog" style="color:#4f6645;"></i><div class="map-name">Swamp</div><div class="map-desc">Fog of war</div></div>
+        <div class="map-box locked" data-map="lunar">   <i class="fa-solid fa-moon" style="color:#b3b6c2;"></i><div class="map-name">Lunar Base</div><div class="map-desc">Speed boost rings</div></div>
+        <div class="map-box locked" data-map="graveyard"><i class="fa-solid fa-ghost" style="color:#7b8296;"></i><div class="map-name">Graveyard</div><div class="map-desc">Phantom chaser</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Shop Modal -->
+  <div class="modal-overlay" id="shop-modal">
+    <div class="modal-box">
+      <i class="fa-solid fa-xmark modal-close" onclick="closeModal('shop-modal')"></i>
+      <div class="modal-title" style="color:var(--cyan);">Skin Data Store</div>
+      <div style="text-align:center;font-size:13px;color:#8b8e96;margin:-20px 0 14px;">Your Lamps: <strong id="shop-lamps" style="color:#ffea00;">...</strong></div>
+      <div class="shop-grid" id="shop-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DIFFICULTY PICKER ===== -->
+<div id="diff-modal">
+  <div id="diff-box">
+    <div id="diff-map-title">Ocean</div>
+    <div id="diff-map-desc">Periodic waves slow your snake down.</div>
+    <div class="diff-btns">
+      <button class="diff-btn easy"   id="diff-easy"   onclick="startWithDiff('easy')">🟢 Easy <span class="diff-badge">Starter speed</span></button>
+      <button class="diff-btn medium" id="diff-medium" onclick="startWithDiff('medium')">🟠 Medium <span class="diff-badge">Requires Easy clear</span></button>
+      <button class="diff-btn hard"   id="diff-hard"   onclick="startWithDiff('hard')">🔴 Hard <span class="diff-badge">Requires Medium clear</span></button>
+    </div>
+    <button class="diff-close" onclick="closeDiffModal()">← Back to map select</button>
+  </div>
+</div>
+
+<!-- ===== GAME SCREEN ===== -->
+<div id="game-screen">
+  <div id="game-hud">
+    <div>
+      <div class="hud-label">SCORE</div>
+      <div class="hud-val" id="hud-score">0</div>
+    </div>
+    <div style="text-align:center;">
+      <div id="hud-map-name">OCEAN</div>
+      <div id="hud-diff">EASY</div>
+    </div>
+    <div style="text-align:right;">
+      <div class="hud-label">LAMPS</div>
+      <div class="hud-val hud-lamps-val" id="hud-lamps">0</div>
+    </div>
+  </div>
+  <div id="canvas-wrapper">
+    <canvas id="game-canvas"></canvas>
+    <div id="game-toast"></div>
+  </div>
+  <div id="esc-hint">Press <strong>ESC</strong> to return to menu</div>
+</div>
+
+<!-- ===== SETTINGS MODAL ===== -->
+<div class="modal-overlay" id="settings-modal">
+  <div class="modal-box" style="width:400px; border-color:var(--cyan); box-shadow:0 0 40px rgba(109,240,245,0.1);">
+    <i class="fa-solid fa-xmark modal-close" onclick="closeModal('settings-modal')"></i>
+    <div class="modal-title" style="color:var(--cyan); font-size:24px;">Audio Settings</div>
+    
+    <div style="margin-bottom:25px;">
+      <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:14px; font-weight:700;">
+        <span>MUSIC VOLUME</span>
+        <span id="music-vol-label">50%</span>
+      </div>
+      <input type="range" id="music-slider" min="0" max="100" value="50" style="width:100%; accent-color:var(--cyan); cursor:pointer;">
+    </div>
+
+    <div style="margin-bottom:25px;">
+      <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:14px; font-weight:700;">
+        <span>SFX VOLUME</span>
+        <span id="sfx-vol-label">70%</span>
+      </div>
+      <input type="range" id="sfx-slider" min="0" max="100" value="70" style="width:100%; accent-color:var(--cyan); cursor:pointer;">
+    </div>
+
+    <button class="card-btn" style="width:100%; background:rgba(255,255,255,0.05); color:#fff; border:1px solid rgba(255,255,255,0.1); box-shadow:none;" onclick="toggleMuteAll()" id="mute-btn">
+      <i class="fa-solid fa-volume-high"></i> MUTE ALL
+    </button>
+  </div>
+</div>
+
+<!-- ===== DEATH SCREEN ===== -->
+<div id="death-screen">
+  <div id="death-box">
+    <div id="death-title">GAME <span>OVER</span></div>
+    <div class="death-stat">Score: <strong id="death-score">0</strong></div>
+    <div class="death-stat">Lamps earned: <span class="lamp-val" id="death-lamps">0</span> 💡</div>
+    <div class="death-btns">
+      <button class="death-btn primary" id="primary-end-btn" onclick="retryGame()">↺ Try Again</button>
+      <button class="death-btn secondary" onclick="returnToMenu()">← Main Menu</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Scripts ===== -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="maps.js"></script>
+<script src="game.js"></script>
+<script>
+// ---- Global user data ----
+let userData = { lamps: 0, maps: {}, ownedSkins: ['classic_neon'], equippedSkin: 'classic_neon' };
+window.userData = userData; // Ensure global access
+let selectedMapId = null;
+let currentMode = 'freeplay'; // 'freeplay' | 'campaign'
+
+// ---- Skin catalogue ----
+const SKINS = [
+  { id:'classic_neon',   name:'Classic Neon',     desc:'The original matrix wireframe.',    cost:0,    color:'var(--green)' },
+  { id:'toxic_yellow',   name:'Toxic Yellow',      desc:'Irradiated core scales.',           cost:25,   color:'#e5ff00' },
+  { id:'abyssal_blue',   name:'Abyssal Blue',      desc:'Deep pressure shell.',              cost:35,   color:'#005eff' },
+  { id:'arctic_cyan',    name:'Arctic Cyan',        desc:'Frozen sub-zero geometry.',         cost:50,   color:'#6df0f5' },
+  { id:'amethyst',       name:'Amethyst Purple',   desc:'Crystal laced nodes.',              cost:60,   color:'#b46bfa' },
+  { id:'crimson_blood',  name:'Crimson Blood',     desc:'Aggressive red-shift finish.',      cost:75,   color:'#ff2b2b' },
+  { id:'sunflare_gold',  name:'Sunflare Gold',     desc:'Incandescent light emitter.',       cost:85,   color:'#ff9100' },
+  { id:'titanium',       name:'Titanium Silver',   desc:'Industrial reinforced metal.',      cost:100,  color:'#c9d2de' },
+  { id:'obsidian',       name:'Obsidian Void',     desc:'Luminous black hole anomaly.',      cost:120,  color:'#888899' },
+  { id:'glitch_matrix',  name:'Glitch Matrix',     desc:'Synthetic hardware error.',         cost:150,  color:'#ff00ea' },
+  { id:'desert_storm',   name:'Desert Sandstorm',  desc:'Dune camouflage pattern.',          cost:175,  color:'#edbb6d' },
+  { id:'lava_core',      name:'Lava Core',         desc:'Erupting magma scales.',            cost:200,  color:'#ff5733' },
+  { id:'phantom_white',  name:'Phantom White',     desc:'High-vis ethereal transparency.',   cost:250,  color:'#ffffff' },
+  { id:'sakura',         name:'Sakura Blossom',    desc:'Spring petal overlay.',             cost:300,  color:'#ffb8ed' },
+  { id:'emerald_pulse',  name:'[NEW] Emerald Pulse',desc:'Vibrant bio-luminescent scales.', cost:350,  color:'#00ff88' },
+  { id:'supernova',      name:'[NEW] Supernova',    desc:'Blinding stellar explosion.',      cost:400,  color:'#ffcc00' },
+  { id:'cyber_vibe',     name:'[NEW] Cyber Vibe',   desc:'Hyper-saturated neon grid.',        cost:450,  color:'#00ffff' },
+  { id:'rgb_chroma',     name:'[LEGENDARY] RGB Chroma',desc:'Cycling spectrum of light.',    cost:1000, color:'linear-gradient(90deg, red, green, blue)' },
+  { id:'dark_pulse',     name:'[UNIQUE] Dark Pulse',desc:'Unstable gravitational core.',    cost:500,  color:'#ffea00' },
+];
+
+// ---- Map meta ----
+const MAP_META = {
+  ocean:     { title:'Ocean',     desc:'Periodic waves slow your snake down.', icon:'🌊' },
+  desert:    { title:'Desert',    desc:'Quicksand tiles freeze your input.',   icon:'🏜️' },
+  jungle:    { title:'Jungle',    desc:'Shifting maze walls reshape the arena.', icon:'🌿' },
+  volcano:   { title:'Volcano',   desc:'Falling meteors stun on impact.',      icon:'🌋' },
+  tundra:    { title:'Tundra',    desc:'Ice patches slide you an extra step.', icon:'❄️' },
+  cyber:     { title:'Cyber Zone',desc:'Laser rows sweep across the grid.',    icon:'⚡' },
+  swamp:     { title:'Swamp',     desc:'Dense fog limits your vision to 5 cells.', icon:'🐸' },
+  lunar:     { title:'Lunar Base',desc:'Speed rings turbo-boost your snake.',  icon:'🚀' },
+  graveyard: { title:'Graveyard', desc:'A phantom chases you through the dark.', icon:'👻' },
+};
+
+// ---- Boot ----
+async function boot() {
+  await loadUser();
+  renderShop();
+  renderFriends();
+  initBgScene();
+  
+  // Audio unlock: Browser requirement
+  window.addEventListener('mousedown', () => {
+    if (window.SND && !window.SND.initialized) {
+      window.SND.init();
+      window.SND.playMusic('menu');
+    }
+  }, { once: true });
+
+  applyActiveSkin(userData.equippedSkin);
+  setupMapClicks();
+  // Dismiss loading overlay
+  const overlay = document.getElementById('loader-overlay');
+  overlay.classList.add('hidden');
+  setTimeout(() => { 
+    if (window._stopLoader) window._stopLoader();
+    overlay.style.display = 'none';
+  }, 750);
+}
+
+async function loadUser() {
+  console.log('[BOOT] Loading user data...');
+  try {
+    const r = await fetch('/api/user');
+    userData = await r.json();
+    window.userData = userData;
+    document.getElementById('lamp-display').textContent = userData.lamps.toLocaleString();
+    document.getElementById('shop-lamps').textContent   = userData.lamps.toLocaleString();
+    refreshMapGrid();
+    console.log('[BOOT] User data loaded:', userData.lamps, 'lamps');
+  } catch(e) { console.warn('Backend offline, using local state'); }
+}
+
+function refreshMapGrid() {
+  const maps = userData.maps || {};
+  const ORDER = ['ocean','desert','jungle','volcano','tundra','cyber','swamp','lunar','graveyard'];
+  let totalStars = 0;
+  ORDER.forEach((id) => {
+    const box = document.querySelector(`.map-box[data-map="${id}"]`);
+    const prog = maps[id] || {};
+    if (prog.easy) totalStars++;
+    if (prog.medium) totalStars++;
+    if (prog.hard) totalStars++;
+    if (!box) return;
+
+    box.classList.remove('locked');
+    const hasAny = prog.easy || prog.medium || prog.hard;
+    box.classList.toggle('cleared', !!hasAny);
+
+    let starEl = box.querySelector('.map-stars');
+    if (!starEl) {
+      starEl = document.createElement('div');
+      starEl.className = 'map-stars';
+      starEl.style.cssText = 'font-size:11px;margin-top:4px;letter-spacing:2px;';
+      box.appendChild(starEl);
+    }
+    starEl.textContent = `${prog.easy?'⭐':'☆'}${prog.medium?'⭐':'☆'}${prog.hard?'⭐':'☆'}`;
+  });
+  const counter = document.getElementById('star-count');
+  if (counter) counter.textContent = `${totalStars}/27`;
+}
+
+// ---- Modal helpers ----
+function openModal(id, mode) {
+  if (mode) currentMode = mode;
+  refreshMapGrid(); // re-apply locks based on new mode
+  document.getElementById('hero-title').classList.add('hero-hide');
+  document.getElementById('hero-cards').classList.add('hero-cards-hide');
+  fetchAndRefreshLamps();
+  setTimeout(() => document.getElementById(id).classList.add('active'), 150);
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('active');
+  setTimeout(() => {
+    document.getElementById('hero-title').classList.remove('hero-hide');
+    document.getElementById('hero-cards').classList.remove('hero-cards-hide');
+  }, 400);
+}
+
+async function fetchAndRefreshLamps() {
+  try {
+    const r = await fetch('/api/user');
+    const d = await r.json();
+    userData = d;
+    document.getElementById('lamp-display').textContent = d.lamps.toLocaleString();
+    document.getElementById('shop-lamps').textContent   = d.lamps.toLocaleString();
+    refreshMapGrid();
+    renderShop();
+  } catch(e) {}
+}
+
+const MOCK_FRIENDS = [
+  { name: 'X_SnakeVenom_X', stars: 22, map: 'Cyber Zone', diff: 'Hard', score: 840 },
+  { name: 'NeonShadow', stars: 15, map: 'Volcano', diff: 'Medium', score: 420 },
+  { name: 'LampsHunter99', stars: 9, map: 'Ocean', diff: 'Easy', score: 180 },
+  { name: 'PixelCobra', stars: 26, map: 'Graveyard', diff: 'Hard', score: 1250 }
+];
+
+function renderFriends() {
+  const container = document.getElementById('friend-list-container');
+  container.innerHTML = '';
+  MOCK_FRIENDS.sort((a,b) => b.stars - a.stars).forEach(f => {
+    const div = document.createElement('div');
+    div.className = 'friend-card';
+    div.innerHTML = `
+      <div class="friend-header">
+        <span class="friend-name">${f.name}</span>
+        <span class="friend-stars"><i class="fa-solid fa-star"></i> ${f.stars}/27</span>
+      </div>
+      <div class="friend-best">PB: <span>${f.score}</span> on ${f.map} (<b>${f.diff}</b>)</div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+// ---- Map click — event delegation so dynamic lock toggling works ----
+function setupMapClicks() {
+  document.getElementById('map-grid').addEventListener('click', (e) => {
+    const box = e.target.closest('.map-box');
+    if (!box || box.classList.contains('locked')) return;
+    openDiffPicker(box.dataset.map);
+  });
+
+  // Audio settings logic
+  const mS = document.getElementById('music-slider');
+  const sS = document.getElementById('sfx-slider');
+  mS.oninput = (e) => {
+    const v = e.target.value / 100;
+    if (window.SND) window.SND.setMusicVolume(v);
+    document.getElementById('music-vol-label').textContent = e.target.value + '%';
+  };
+  sS.oninput = (e) => {
+    const v = e.target.value / 100;
+    if (window.SND) window.SND.setSFXVolume(v);
+    document.getElementById('sfx-vol-label').textContent = e.target.value + '%';
+  };
+}
+
+let isMuted = false;
+function toggleMuteAll() {
+  isMuted = !isMuted;
+  if (window.SND) window.SND.setMasterVolume(isMuted ? 0 : 0.5);
+  const btn = document.getElementById('mute-btn');
+  btn.innerHTML = isMuted ? '<i class="fa-solid fa-volume-xmark"></i> UNMUTE ALL' : '<i class="fa-solid fa-volume-high"></i> MUTE ALL';
+  btn.style.color = isMuted ? 'var(--crimson-blood)' : '#fff';
+}
+
+// Lamp goals and map colors
+const DIFF_GOALS  = { easy: 15, medium: 25, hard: 40 };
+const DIFF_BONUS  = { easy: 30, medium: 70, hard: 150 };
+const MAP_COLORS  = {
+  ocean:     { bg: '#020d14', grid: 'rgba(109,240,245,0.06)', accent: '#6df0f5' },
+  desert:    { bg: '#140d02', grid: 'rgba(237,187,109,0.06)', accent: '#edbb6d' },
+  jungle:    { bg: '#021408', grid: 'rgba(110,255,89,0.06)',  accent: '#6eff59' },
+  volcano:   { bg: '#140202', grid: 'rgba(255,87,51,0.06)',   accent: '#ff5733' },
+  tundra:    { bg: '#02090e', grid: 'rgba(191,255,252,0.06)', accent: '#bffffc' },
+  cyber:     { bg: '#0a0214', grid: 'rgba(180,107,250,0.08)', accent: '#b46bfa' },
+  swamp:     { bg: '#060e02', grid: 'rgba(79,102,69,0.08)',   accent: '#4f6645' },
+  lunar:     { bg: '#080808', grid: 'rgba(179,182,194,0.06)', accent: '#b3b6c2' },
+  graveyard: { bg: '#050508', grid: 'rgba(123,130,150,0.06)', accent: '#7b8296' },
+};
+
+function openDiffPicker(mapId) {
+  selectedMapId = mapId;
+  const meta = MAP_META[mapId] || { title: mapId, desc: '' };
+  document.getElementById('diff-map-title').textContent = `${meta.icon} ${meta.title}`;
+  document.getElementById('diff-map-desc').textContent  = meta.desc;
+
+  const prog     = (userData.maps || {})[mapId] || {};
+  const easyBtn  = document.getElementById('diff-easy');
+  const medBtn   = document.getElementById('diff-medium');
+  const hardBtn  = document.getElementById('diff-hard');
+
+  // Campaign: enforce Easy→Medium→Hard progression per map
+  // Free Play: all difficulties always open, no goal
+  const isCampaign = currentMode === 'campaign';
+  window.currentMode = currentMode; // expose to game.js
+  easyBtn.classList.remove('locked');
+  medBtn.classList.toggle('locked',  isCampaign && !prog.easy);
+  hardBtn.classList.toggle('locked', isCampaign && !prog.medium);
+
+  const goalLabel = (g, bonus, locked, lockMsg) =>
+    locked ? `🔒 ${lockMsg}` : `Eat ${g} lamps · +${bonus}💡`;
+
+  const high = prog.highScores || { easy: 0, medium: 0, hard: 0 };
+
+  if (isCampaign) {
+    easyBtn.innerHTML  = `🟢 Easy   <span class="diff-badge">${goalLabel(DIFF_GOALS.easy,   DIFF_BONUS.easy,   false,        '')}</span>`;
+    medBtn.innerHTML   = `🟠 Medium <span class="diff-badge">${goalLabel(DIFF_GOALS.medium, DIFF_BONUS.medium, !prog.easy,   'Clear Easy first')}</span>`;
+    hardBtn.innerHTML  = `🔴 Hard   <span class="diff-badge">${goalLabel(DIFF_GOALS.hard,   DIFF_BONUS.hard,   !prog.medium, 'Clear Medium first')}</span>`;
+  } else {
+    easyBtn.innerHTML  = `🟢 Easy   <span class="diff-badge">Best: ${high.easy || 0}</span>`;
+    medBtn.innerHTML   = `🟠 Medium <span class="diff-badge">Best: ${high.medium || 0}</span>`;
+    hardBtn.innerHTML  = `🔴 Hard   <span class="diff-badge">Best: ${high.hard || 0}</span>`;
+  }
+
+  closeModal('map-modal');
+  setTimeout(() => { document.getElementById('diff-modal').style.display = 'flex'; }, 350);
+}
+
+function closeDiffModal() {
+  document.getElementById('diff-modal').style.display = 'none';
+  setTimeout(() => openModal('map-modal', currentMode), 100);
+}
+
+function startWithDiff(difficulty) {
+  document.getElementById('diff-modal').style.display = 'none';
+  const meta = MAP_META[selectedMapId];
+  document.getElementById('hud-map-name').textContent = (meta?.title || selectedMapId).toUpperCase();
+  document.getElementById('hud-diff').textContent = `${difficulty.toUpperCase()} · Goal: ${DIFF_GOALS[difficulty]} 💡`;
+  document.getElementById('landing-screen').style.display = 'none';
+  // Pass map color theme + goal to game engine
+  window.activeMapTheme = MAP_COLORS[selectedMapId] || MAP_COLORS.ocean;
+  window.levelGoal = currentMode === 'campaign' ? DIFF_GOALS[difficulty] : null; // null = no goal in freeplay
+  window.currentMapId = selectedMapId;
+  window.currentDiff  = difficulty;
+  if (window.SND) {
+    window.SND.stopMusic();
+    window.SND.playMusic(selectedMapId);
+  }
+  initGame(selectedMapId, difficulty);
+}
+
+// ---- Shop ----
+function renderShop() {
+  const grid = document.getElementById('shop-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  SKINS.forEach(s => {
+    const owned    = userData.ownedSkins?.includes(s.id) || s.cost === 0;
+    const equipped = userData.equippedSkin === s.id;
+    const div = document.createElement('div');
+    div.className = 'shop-item';
+    let btn;
+    if (equipped) {
+      btn = `<button class="shop-btn equipped-btn" disabled>Equipped</button>`;
+    } else if (owned) {
+      btn = `<button class="shop-btn" onclick="equipSkin('${s.id}')">Equip</button>`;
+    } else {
+      btn = `<i class="fa-solid fa-lightbulb" style="color:#ffea00;"></i> ${s.cost} <button class="shop-btn" onclick="buySkin('${s.id}',${s.cost})">Purchase</button>`;
+    }
+    div.innerHTML = `<div><div class="skin-name" style="color:${s.color};font-family:'Space Grotesk',sans-serif;">${s.name}</div><div style="font-size:11px;color:#8b8e96;">${s.desc}</div></div><div class="cost">${btn}</div>`;
+    grid.appendChild(div);
+  });
+}
+
+async function buySkin(id, cost) {
+  try {
+    const r = await fetch('/api/buy-skin', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ skinId: id, cost }) });
+    const d = await r.json();
+    if (d.error) { alert(d.error); return; }
+    userData.lamps = d.lamps;
+    userData.ownedSkins.push(id);
+    document.getElementById('lamp-display').textContent = d.lamps.toLocaleString();
+    document.getElementById('shop-lamps').textContent   = d.lamps.toLocaleString();
+    renderShop();
+  } catch(e) { console.warn('offline'); }
+}
+
+// Skin → hex color map
+const SKIN_COLORS = {
+  classic_neon:  0x5ac94f, toxic_yellow:  0xd4ec00, abyssal_blue:  0x1155ee,
+  arctic_cyan:   0x3de0e8, amethyst:      0x9944dd, crimson_blood: 0xdd2222,
+  sunflare_gold: 0xff8800, titanium:      0xaabbcc, obsidian:      0x888899,
+  glitch_matrix: 0xee00cc, desert_storm:  0xc89840, lava_core:     0xee4422,
+  phantom_white: 0xffffff, sakura:        0xffaadd, dark_pulse:    0xffea00,
+  emerald_pulse: 0x00ff88, supernova:     0xffcc00, cyber_vibe:    0x00ffff,
+  rgb_chroma:    0xffffff 
+};
+
+async function equipSkin(id) {
+  try {
+    await fetch('/api/equip-skin', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ skinId: id }) });
+  } catch(e) {}
+  userData.equippedSkin = id;
+  applyActiveSkin(id);
+  renderShop();
+}
+
+function applyActiveSkin(id) {
+  const hex = SKIN_COLORS[id] ?? 0x5ac94f;
+  const col = new THREE.Color(hex);
+  // Update background 3D snake material
+  if (snake3Mesh) { 
+    snake3Mesh.material.color.set(col); 
+    snake3Mesh.material.emissive = col;
+    snake3Mesh.material.emissiveIntensity = 0.4;
+    snake3Mesh.material.map = null; 
+    snake3Mesh.material.needsUpdate = true; 
+  }
+  if (snake3Head) { 
+    snake3Head.material.color.set(col); 
+    snake3Head.material.emissive = col;
+    snake3Head.material.emissiveIntensity = 0.4;
+    snake3Head.material.map = null; 
+    snake3Head.material.needsUpdate = true; 
+  }
+  // Update in-game snake draws via global
+  window.activeSkinColor = `#${col.getHexString()}`;
+  window.currentSkinId = id;
+}
+
+// ---- Override retryGame / returnToMenu to refresh landing ----
+const _origReturn = window.returnToMenu;
+function returnToMenu() {
+  if (window.SND) {
+    window.SND.stopMusic();
+    window.SND.playMusic('menu');
+  }
+  clearInterval(gameLoop);
+  if (mapChallenge) mapChallenge.stop();
+  document.getElementById('death-screen').style.display = 'none';
+  document.getElementById('game-screen').style.display  = 'none';
+  document.getElementById('landing-screen').style.display = 'block';
+  fetchAndRefreshLamps();
+};
+
+// ---- 3D BG Scene ----
+let scene3, cam3, ren3, snake3Group, snake3Mesh, snake3Head, time3 = 0;
+const n3 = 80, trees3 = [];
+
+function initBgScene() {
+  const container = document.getElementById('canvas-container');
+  scene3 = new THREE.Scene();
+  scene3.background = new THREE.Color(0x061408);
+  scene3.fog = new THREE.FogExp2(0x061408, 0.012);
+  cam3 = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 1000);
+  cam3.position.set(0, 5, 25); cam3.lookAt(0, 0, 0);
+  ren3 = new THREE.WebGLRenderer({ antialias: true });
+  ren3.setSize(innerWidth, innerHeight); container.appendChild(ren3.domElement);
+
+  scene3.add(new THREE.AmbientLight(0xdcf5e1, 0.5));
+  const cL = new THREE.PointLight(0x00ffff,2.5,80); cL.position.set(-20,20,20); scene3.add(cL);
+  const gL = new THREE.PointLight(0x6fff54,3,60);   gL.position.set(15,-10,5);  scene3.add(gL);
+  const tL = new THREE.PointLight(0x66ff88,1.5,100); tL.position.set(0,30,-30); scene3.add(tL);
+
+  buildForest();
+  buildSnake();
+  window.addEventListener('resize', () => { cam3.aspect=innerWidth/innerHeight; cam3.updateProjectionMatrix(); ren3.setSize(innerWidth,innerHeight); });
+  animateBg();
+}
+
+function buildSnake() {
+  snake3Group = new THREE.Group();
+  const geom = new THREE.SphereGeometry(3,32,16);
+  const tex = buildTex();
+  const mat = new THREE.MeshStandardMaterial({map:tex,roughness:0.8,metalness:0});
+  snake3Mesh = new THREE.InstancedMesh(geom, mat, n3); snake3Mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  snake3Group.add(snake3Mesh);
+
+  const hG = new THREE.SphereGeometry(3.6,32,24); hG.scale(1.1,0.9,1.3); hG.translate(0,0,1.5);
+  snake3Head = new THREE.Mesh(hG, mat);
+  const eG = new THREE.SphereGeometry(0.8,16,16), eM = new THREE.MeshBasicMaterial({color:0x010101});
+  const lE = new THREE.Mesh(eG,eM); lE.position.set(1.8,1.2,4.5);
+  const rE = new THREE.Mesh(eG,eM); rE.position.set(-1.8,1.2,4.5);
+  snake3Head.add(lE); snake3Head.add(rE);
+  const tG = new THREE.Group(); window.bg3Tongue = tG;
+  const tM = new THREE.MeshBasicMaterial({color:0xff3333});
+  const tB = new THREE.Mesh(new THREE.CylinderGeometry(0.1,0.1,1.5),tM); tB.rotation.x=Math.PI/2; tB.position.set(0,-0.5,5.8); tG.add(tB);
+  const fL = new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.1,0.8),tM); fL.rotation.x=Math.PI/2; fL.rotation.y=-Math.PI/5; fL.position.set(0.25,-0.5,6.7); tG.add(fL);
+  const fR = new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.1,0.8),tM); fR.rotation.x=Math.PI/2; fR.rotation.y=Math.PI/5; fR.position.set(-0.25,-0.5,6.7); tG.add(fR);
+  snake3Head.add(tG);
+  scene3.add(snake3Head); scene3.add(snake3Group);
+}
+
+function buildTex(){
+  const cv=document.createElement('canvas'); cv.width=512; cv.height=512; const c=cv.getContext('2d');
+  c.fillStyle='#5ac94f'; c.fillRect(0,0,512,512);
+  c.fillStyle='#30802c'; c.strokeStyle='#1e5c1a'; c.lineWidth=4;
+  for(let x=0;x<=512;x+=128){c.beginPath();c.moveTo(x+64,20);c.lineTo(x+104,60);c.lineTo(x+64,100);c.lineTo(x+24,60);c.closePath();c.fill();c.stroke();}
+  c.fillStyle='#dced8e'; c.fillRect(0,350,512,162); c.strokeStyle='#b2c75a'; c.lineWidth=6;
+  for(let x=0;x<=512;x+=48){c.beginPath();c.moveTo(x,350);c.lineTo(x,512);c.stroke();}
+  const t=new THREE.CanvasTexture(cv); t.wrapS=THREE.RepeatWrapping; t.wrapT=THREE.ClampToEdgeWrapping; return t;
+}
+
+function buildForest(){
+  const tG=new THREE.CylinderGeometry(0.4,0.6,2.5,7), tM=new THREE.MeshStandardMaterial({color:0x1a120c,roughness:1});
+  const lG=new THREE.ConeGeometry(2.5,6,7); lG.translate(0,3,0); const lM=new THREE.MeshStandardMaterial({color:0x05260c,roughness:0.9});
+  for(let i=0;i<150;i++){
+    let x=(Math.random()-0.5)*160,z=(Math.random()-0.5)*160-20;
+    if(Math.abs(x)<30&&Math.abs(z+15)<30) continue;
+    const g=new THREE.Group(); g.position.set(x,-8,z);
+    const tr=new THREE.Mesh(tG,tM); tr.position.y=1.25; g.add(tr);
+    const lv=new THREE.Mesh(lG,lM); lv.position.y=2.5; lv.rotation.y=Math.random()*Math.PI;
+    const s=0.6+Math.random()*0.9; g.scale.set(s,s,s); g.add(lv); scene3.add(g);
+    trees3.push({group:g,leaves:lv,baseX:x,windOffset:Math.random()*100,swayMult:0.05+Math.random()*0.06});
+  }
+  const sG=new THREE.BufferGeometry(); const sP=new Float32Array(3000*3);
+  for(let i=0;i<3000;i++){sP[i*3]=(Math.random()-0.5)*800;sP[i*3+1]=(Math.random()-0.3)*400;sP[i*3+2]=(Math.random()-0.5)*800-100;}
+  sG.setAttribute('position',new THREE.BufferAttribute(sP,3));
+  window.bgStars=new THREE.Points(sG,new THREE.PointsMaterial({color:0x6fff54,size:0.6,transparent:true,opacity:0.8,blending:THREE.AdditiveBlending}));
+  scene3.add(window.bgStars);
+  const cG=new THREE.SphereGeometry(6,12,12),cM=new THREE.MeshStandardMaterial({color:0x112117,roughness:1,flatShading:true});
+  window.bgClouds=[];
+  for(let i=0;i<25;i++){const cl=new THREE.Group();for(let j=0;j<5;j++){const p=new THREE.Mesh(cG,cM);p.position.set((Math.random()-0.5)*15,(Math.random()-0.5)*8,(Math.random()-0.5)*15);const s=0.5+Math.random()*1.5;p.scale.set(s,s,s);cl.add(p);}cl.position.set((Math.random()-0.5)*400,35+Math.random()*50,(Math.random()-0.5)*400-100);scene3.add(cl);window.bgClouds.push(cl);}
+}
+
+function bgPath(t){ return new THREE.Vector3(Math.sin(t*0.4)*28,Math.sin(t*0.8)*14+Math.cos(t*0.3)*6+4,Math.cos(t*0.4)*20-Math.sin(t*0.2)*12-20); }
+
+function animateBg(){
+  // Only run when landing is visible
+  if(document.getElementById('landing-screen').style.display==='none'){ requestAnimationFrame(animateBg); return; }
+  requestAnimationFrame(animateBg); time3+=0.012;
+
+  // RGB Chroma Legendary effect
+  if (window.currentSkinId === 'rgb_chroma') {
+    const hue = (Date.now() / 15) % 360;
+    const col = new THREE.Color(`hsl(${hue}, 100%, 50%)`);
+    // Pass hex string to game.js for compatibility
+    window.activeSkinColor = `#${col.getHexString()}`;
+    if (snake3Mesh) { 
+      snake3Mesh.material.color.set(col); 
+      snake3Mesh.material.emissive.set(col); 
+      snake3Mesh.material.emissiveIntensity = 0.5;
+    }
+    if (snake3Head) { 
+      snake3Head.material.color.set(col); 
+      snake3Head.material.emissive.set(col); 
+      snake3Head.material.emissiveIntensity = 0.5;
+    }
+  }
+
+  const d=new THREE.Object3D();
+  for(let i=0;i<n3;i++){
+    const st=time3-(i*0.035),pt=bgPath(st);
+    d.position.copy(pt); d.lookAt(bgPath(st+0.1));
+    const s=Math.max(0.01,1-Math.pow(i/(n3-1),1.6)); d.scale.set(s,s,s); d.updateMatrix(); snake3Mesh.setMatrixAt(i,d.matrix);
+  }
+  snake3Mesh.instanceMatrix.needsUpdate=true;
+  snake3Head.position.copy(bgPath(time3)); snake3Head.lookAt(bgPath(time3+0.1));
+  if(window.bg3Tongue){const f=Math.sin(time3*6);window.bg3Tongue.scale.z=f>0.9?1+(f-0.9)*15:0.01;}
+  const spd=0.15,wt=time3*1.5;
+  if(window.bgStars){const p=bgStars.geometry.attributes.position.array;for(let i=0;i<p.length;i+=3){p[i+2]+=spd*0.8;if(p[i+2]>100)p[i+2]-=800;}bgStars.geometry.attributes.position.needsUpdate=true;}
+  if(window.bgClouds)bgClouds.forEach(c=>{c.position.z+=spd*0.8;if(c.position.z>80){c.position.z-=450;c.position.x=(Math.random()-0.5)*400;}});
+  trees3.forEach(t=>{t.group.position.z+=spd;if(t.group.position.z>30){t.group.position.z-=190;t.group.position.x=(Math.random()-0.5)*160;}const g=Math.sin(wt+t.windOffset)*t.swayMult;t.leaves.rotation.z=g;t.leaves.rotation.x=g*0.5;});
+  ren3.render(scene3,cam3);
+}
+
+boot();
+</script>
+</body>
+</html>

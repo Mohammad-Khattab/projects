@@ -197,15 +197,116 @@ input:focus, textarea:focus, select:focus {
 }
 
 .spinner {
-  width: 18px;
-  height: 18px;
-  border: 2px solid var(--border);
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(99,102,241,0.25);
   border-top-color: var(--accent-from);
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Refresh overlay (XO-game-style boot loader) ─────────────────── */
+.refresh-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 10, 15, 0.92);
+  backdrop-filter: blur(16px);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  animation: overlayIn 0.25s ease;
+}
+
+@keyframes overlayIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.refresh-loader {
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+
+/* Outer ring — spins clockwise */
+.refresh-loader-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-top-color: #6366f1;
+  border-right-color: rgba(99,102,241,0.3);
+  animation: spin 0.85s linear infinite;
+  box-shadow: 0 0 18px rgba(99,102,241,0.45), inset 0 0 18px rgba(99,102,241,0.1);
+}
+
+/* Inner ring — spins counter-clockwise */
+.refresh-loader-ring-inner {
+  position: absolute;
+  inset: 14px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-bottom-color: #8b5cf6;
+  border-left-color: rgba(139,92,246,0.3);
+  animation: spin 1.3s linear infinite reverse;
+  box-shadow: 0 0 12px rgba(139,92,246,0.4);
+}
+
+/* Pulsing rings expanding outward — like XO bootPulse */
+.refresh-pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(99,102,241,0.6);
+  animation: refreshPulse 2s ease-out infinite;
+}
+.refresh-pulse:nth-child(3) { animation-delay: 0.65s; }
+.refresh-pulse:nth-child(4) { animation-delay: 1.3s; }
+
+@keyframes refreshPulse {
+  0%   { transform: scale(1);   opacity: 0.7; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+
+/* Center dot — pulses */
+.refresh-loader-dot {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.refresh-loader-dot::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  box-shadow: 0 0 14px rgba(99,102,241,0.9);
+  animation: dotPulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes dotPulse {
+  from { transform: scale(0.8); opacity: 0.7; box-shadow: 0 0 8px rgba(99,102,241,0.6); }
+  to   { transform: scale(1.2); opacity: 1;   box-shadow: 0 0 20px rgba(99,102,241,1); }
+}
+
+.refresh-overlay-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+  letter-spacing: 0.08em;
+  animation: textBlink 1.4s ease-in-out infinite;
+}
+
+@keyframes textBlink {
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 1; }
+}
 
 .page-container {
   max-width: 1280px;

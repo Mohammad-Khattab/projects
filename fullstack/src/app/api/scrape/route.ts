@@ -1,15 +1,16 @@
 import { NextResponse } from 'next/server'
-import { readScrapedData } from '@/lib/storage'
+import { readScrapedData, teamsConnected } from '@/lib/storage'
 import { scrapeAll } from '@/lib/scraper'
 
 export const maxDuration = 300
 
 export async function GET() {
   const cached = readScrapedData()
+  const teams = teamsConnected()
   if (cached) {
-    return NextResponse.json({ data: cached })
+    return NextResponse.json({ data: cached, teamsConnected: teams })
   }
-  return NextResponse.json({ data: null, message: 'No cached data — click Refresh to scrape' })
+  return NextResponse.json({ data: null, teamsConnected: teams, message: 'No cached data — click Refresh to scrape' })
 }
 
 export async function POST() {

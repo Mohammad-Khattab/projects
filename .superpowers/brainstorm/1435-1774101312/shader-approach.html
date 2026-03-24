@@ -1,0 +1,75 @@
+<h2>How should the WebGL shader be used in MKLL?</h2>
+<p class="subtitle">The animated nebula/swirl effect from your prompt — where does it live?</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0d0008;height:160px;position:relative;overflow:hidden;border-radius:8px 8px 0 0;">
+      <!-- Simulate full-page shader -->
+      <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 30% 40%,rgba(255,100,20,0.35) 0%,transparent 60%),radial-gradient(ellipse at 70% 60%,rgba(180,60,0,0.25) 0%,transparent 55%),radial-gradient(ellipse at 50% 80%,rgba(255,160,0,0.2) 0%,transparent 50%),#0d0008;"></div>
+      <!-- Nav bar -->
+      <div style="position:absolute;top:0;left:0;right:0;height:32px;background:rgba(0,0,0,0.3);backdrop-filter:blur(8px);display:flex;align-items:center;padding:0 12px;gap:8px;font-size:10px;color:rgba(255,200,100,0.9);font-family:monospace;font-weight:bold;">
+        MKLL
+        <span style="flex:1"></span>
+        <span style="color:rgba(255,255,255,0.4);font-size:9px">🔍 + ⚙</span>
+      </div>
+      <!-- Cards floating on shader -->
+      <div style="position:absolute;bottom:12px;left:12px;right:12px;display:flex;gap:8px;">
+        <div style="flex:1;height:55px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,160,60,0.25);border-radius:6px;backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;font-size:18px;">🎮</div>
+        <div style="flex:1;height:55px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,160,60,0.25);border-radius:6px;backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;font-size:18px;">📚</div>
+        <div style="flex:1;height:55px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,160,60,0.25);border-radius:6px;backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;font-size:18px;">🌐</div>
+        <div style="flex:1;height:55px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,160,60,0.25);border-radius:6px;backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;font-size:18px;">🔧</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Full-Page Living Background</h3>
+      <p>Shader animates behind everything — cards, nav, all content float over it. Most immersive. The whole dashboard feels alive.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0d0008;height:160px;position:relative;overflow:hidden;border-radius:8px 8px 0 0;">
+      <!-- Hero band with shader -->
+      <div style="position:absolute;top:0;left:0;right:0;height:70px;background:radial-gradient(ellipse at 30% 60%,rgba(255,100,20,0.45) 0%,transparent 65%),radial-gradient(ellipse at 80% 30%,rgba(200,80,0,0.3) 0%,transparent 55%),#0d0008;display:flex;align-items:center;padding:0 12px;flex-direction:column;justify-content:center;">
+        <div style="font-size:10px;color:rgba(255,200,100,0.9);font-family:monospace;font-weight:bold;letter-spacing:2px;">MKLL</div>
+        <div style="font-size:8px;color:rgba(255,180,80,0.6);margin-top:2px;">Mo Khattab Lamba Land</div>
+      </div>
+      <!-- Solid dark body -->
+      <div style="position:absolute;bottom:0;left:0;right:0;height:90px;background:#0d1117;display:flex;align-items:center;padding:0 10px;gap:8px;">
+        <div style="flex:1;height:55px;background:#161b22;border:1px solid rgba(255,160,60,0.2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;">🎮</div>
+        <div style="flex:1;height:55px;background:#161b22;border:1px solid rgba(255,160,60,0.2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;">📚</div>
+        <div style="flex:1;height:55px;background:#161b22;border:1px solid rgba(255,160,60,0.2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;">🌐</div>
+        <div style="flex:1;height:55px;background:#161b22;border:1px solid rgba(255,160,60,0.2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;">🔧</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Shader Hero + Solid Body</h3>
+      <p>Animated shader in the top header/hero area only. Below it, a clean dark surface holds the app grid. Best readability.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0d0008;height:160px;position:relative;overflow:hidden;border-radius:8px 8px 0 0;">
+      <!-- Dark bg with ambient glow -->
+      <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 20% 80%,rgba(255,80,0,0.12) 0%,transparent 50%),radial-gradient(ellipse at 80% 20%,rgba(255,160,0,0.1) 0%,transparent 50%),#0d0008;"></div>
+      <!-- Nav -->
+      <div style="position:absolute;top:0;left:0;right:0;height:32px;background:rgba(13,0,8,0.8);border-bottom:1px solid rgba(255,140,40,0.2);display:flex;align-items:center;padding:0 12px;gap:8px;font-size:10px;color:rgba(255,200,100,0.9);font-family:monospace;font-weight:bold;">
+        MKLL
+        <span style="flex:1"></span>
+        <span style="color:rgba(255,255,255,0.4);font-size:9px">🔍 + ⚙</span>
+      </div>
+      <!-- Cards with warm amber borders/glows -->
+      <div style="position:absolute;bottom:12px;left:12px;right:12px;display:flex;gap:8px;">
+        <div style="flex:1;height:55px;background:rgba(30,15,5,0.9);border:1px solid rgba(255,120,30,0.4);border-radius:6px;box-shadow:0 0 12px rgba(255,100,0,0.15);display:flex;align-items:center;justify-content:center;font-size:18px;">🎮</div>
+        <div style="flex:1;height:55px;background:rgba(30,15,5,0.9);border:1px solid rgba(255,180,40,0.35);border-radius:6px;box-shadow:0 0 12px rgba(255,160,0,0.12);display:flex;align-items:center;justify-content:center;font-size:18px;">📚</div>
+        <div style="flex:1;height:55px;background:rgba(30,15,5,0.9);border:1px solid rgba(255,120,30,0.4);border-radius:6px;box-shadow:0 0 12px rgba(255,100,0,0.15);display:flex;align-items:center;justify-content:center;font-size:18px;">🌐</div>
+        <div style="flex:1;height:55px;background:rgba(30,15,5,0.9);border:1px solid rgba(255,180,40,0.35);border-radius:6px;box-shadow:0 0 12px rgba(255,160,0,0.12);display:flex;align-items:center;justify-content:center;font-size:18px;">🔧</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Ambient Ember Dark UI</h3>
+      <p>No live shader — instead a deep dark background with warm amber/orange glows and card accents capturing the shader's palette. Lightest on GPU.</p>
+    </div>
+  </div>
+
+</div>

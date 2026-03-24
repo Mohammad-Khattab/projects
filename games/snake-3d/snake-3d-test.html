@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MMKL Snake</title>
+
+<!-- Fonts: Inter for main text, Space Grotesk/Mono for details -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,600;0,800;1,600;1,800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<!-- FontAwesome for icons -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+<style>
+  :root {
+    --green: #6fff54;
+    --green-glow: rgba(111, 255, 84, 0.4);
+    --purple: #b46bfa;
+    --cyan: #6df0f5;
+    --bg-dark: #0a0b0e;
+    --panel-bg: rgba(22, 23, 28, 0.6);
+    --panel-border: rgba(255, 255, 255, 0.05);
+    --text-muted: #8b8e96;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body, html {
+    width: 100%; height: 100%;
+    background-color: var(--bg-dark);
+    font-family: 'Inter', sans-serif;
+    color: white;
+    overflow: hidden;
+  }
+
+  #canvas-container {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 1;
+  }
+
+  /* Overlay gradient to darken background behind UI */
+  .vignette {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle at center, transparent 30%, rgba(5,6,10,0.85) 100%);
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  #ui-layer {
+    position: relative;
+    z-index: 10;
+    width: 100%; height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 30px;
+    pointer-events: none; 
+  }
+
+  /* Top Bar */
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .logo {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--green);
+    letter-spacing: 2px;
+    text-shadow: 0 0 15px var(--green-glow);
+  }
+
+  .top-icons {
+    display: flex;
+    gap: 15px;
+    pointer-events: auto;
+  }
+
+  .icon-btn {
+    min-width: 40px; height: 40px;
+    padding: 0 12px;
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    backdrop-filter: blur(10px);
+    border-radius: 6px;
+    display: flex; gap: 8px; justify-content: center; align-items: center;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .icon-btn:hover { background: rgba(255,255,255,0.1); transform: translateY(-2px); border-color: rgba(255,255,255,0.15); }
+
+  /* Icon only button padding fix */
+  .icon-btn.icon-only { padding: 0; width: 40px; }
+
+  .btn-text { font-size: 13px; font-weight: 600; font-family: 'Space Grotesk', sans-serif; white-space: nowrap; }
+  .lamp-icon { color: #ffea00; filter: drop-shadow(0 0 5px rgba(255, 234, 0, 0.8)); font-size: 18px; }
+
+  /* Login specific */
+  .login-btn { border-color: rgba(111, 255, 84, 0.3); }
+  .login-btn:hover { border-color: var(--green); box-shadow: 0 0 10px var(--green-glow); }
+
+  /* Side Panels */
+  .side-panel {
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    backdrop-filter: blur(10px);
+    border-radius: 6px;
+    padding: 20px;
+    pointer-events: auto;
+  }
+
+  .left-panel {
+    position: absolute;
+    top: 120px; left: 30px;
+    width: 140px;
+  }
+
+  .right-panel {
+    position: absolute;
+    top: 120px; right: 30px;
+    width: 220px;
+  }
+
+  .panel-title {
+    font-size: 10px;
+    color: var(--green);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  /* Energy Bars */
+  .energy-bars {
+    display: flex; gap: 4px; margin-bottom: 20px;
+  }
+  .bar {
+    flex: 1; height: 18px;
+    background: rgba(111, 255, 84, 0.2);
+  }
+  .bar.filled { background: var(--green); box-shadow: 0 0 8px var(--green-glow); }
+  
+  .grid-sync {
+    font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;
+  }
+  .sync-value {
+    font-size: 18px; font-weight: 700; font-family: 'Space Grotesk', sans-serif;
+  }
+
+  /* Right Panel details */
+  .live-indicator {
+    display: flex; align-items: center; gap: 8px; font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;
+  }
+  .dot { width: 6px; height: 6px; background: #ff4747; border-radius: 50%; box-shadow: 0 0 8px rgba(255,71,71,0.6); }
+  
+  .tournament-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .time-left { font-size: 11px; color: var(--text-muted); }
+
+  /* Center Title Area */
+  .center-content {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    width: 100%;
+    margin-top: -60px;
+  }
+
+  .main-title {
+    display: flex; flex-direction: column; align-items: center;
+    line-height: 0.85; margin-bottom: 20px;
+  }
+  
+  .title-ascend {
+    font-size: 100px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -2px;
+    color: #fff;
+  }
+  
+  .title-online {
+    font-size: 96px;
+    font-weight: 800;
+    font-style: italic;
+    color: var(--green);
+    text-transform: uppercase;
+    letter-spacing: -3px;
+    /* Neon glow effect */
+    text-shadow: 0 0 30px rgba(111,255,84,0.5);
+  }
+
+  .season-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 15px;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--green);
+    font-weight: 600;
+  }
+  .season-line {
+    width: 50px; height: 1px; background: var(--green); opacity: 0.5;
+  }
+
+  /* Cards Row */
+  .cards-container {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, calc(-50% + 180px));
+    display: flex; gap: 20px;
+    pointer-events: auto;
+  }
+
+  .card {
+    width: 260px; height: 200px;
+    background: linear-gradient(180deg, rgba(30,32,40,0.8) 0%, rgba(20,22,28,0.9) 100%);
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    backdrop-filter: blur(12px);
+    padding: 30px 25px;
+    display: flex; flex-direction: column;
+    justify-content: flex-end;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+  }
+  .card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(255,255,255,0.15);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  }
+
+  .card-icon {
+    position: absolute;
+    top: 25px; right: 25px;
+    font-size: 40px;
+    color: rgba(255,255,255,0.05);
+  }
+  .card:hover .card-icon {
+    color: rgba(255,255,255,0.1);
+  }
+
+  .card-subtitle {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-bottom: 6px;
+  }
+  .card-title {
+    font-size: 24px; font-weight: 800; margin-bottom: 20px; letter-spacing: -0.5px;
+  }
+
+  .card-btn {
+    width: 100%; padding: 12px 0;
+    border: none; border-radius: 4px;
+    font-family: 'Inter', sans-serif; font-weight: 700; font-size: 13px;
+    text-align: center; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;
+    transition: all 0.2s ease;
+  }
+
+  .card-free .card-subtitle { color: var(--green); }
+  .card-free .card-btn { background: var(--green); color: #000; box-shadow: 0 0 15px var(--green-glow); }
+  .card-free .card-btn:hover { background: #82ff6b; }
+
+  .card-campaign .card-subtitle { color: var(--purple); }
+  .card-campaign .card-btn { background: var(--purple); color: #000; box-shadow: 0 0 15px rgba(180,107,250,0.4); }
+  .card-campaign .card-btn:hover { background: #c285ff; }
+
+  .card-shop .card-subtitle { color: var(--cyan); }
+  .card-shop .card-btn { background: var(--cyan); color: #000; box-shadow: 0 0 15px rgba(109,240,245,0.4); }
+  .card-shop .card-btn:hover { background: #8af4f8; }
+
+  /* Bottom Stats */
+  .bottom-stats {
+    position: absolute;
+    bottom: 90px;
+    left: 50%; transform: translateX(-50%);
+    display: flex; gap: 60px;
+    text-align: center;
+  }
+
+  .stat-label {
+    font-size: 9px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 5px;
+  }
+  .stat-value {
+    font-size: 22px;
+    font-weight: 700;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+  .stat-value.cyan { color: var(--cyan); }
+  .stat-value.green { color: var(--green); }
+
+  /* Bottom Nav Footer */
+  .footer-nav {
+    position: absolute;
+    bottom: 0; left: 0; width: 100%;
+    height: 70px;
+    background: rgba(10, 11, 14, 0.8);
+    backdrop-filter: blur(15px);
+    border-top: 1px solid var(--panel-border);
+    display: flex; justify-content: center;
+    pointer-events: auto;
+  }
+
+  .nav-item {
+    width: 200px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 6px;
+    color: #666;
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .nav-item i { font-size: 18px; }
+  .nav-item:hover { color: #fff; }
+
+  .nav-item.active {
+    background: var(--green);
+    color: #000;
+  }
+
+</style>
+</head>
+<body>
+
+<div id="canvas-container"></div>
+<div class="vignette"></div>
+
+<div id="ui-layer">
+  
+  <div class="top-bar">
+    <div class="logo">MMKL SNAKE</div>
+    <div class="top-icons">
+      <!-- Added Lamp Currency -->
+      <div class="icon-btn" title="Lamps Currency">
+        <i class="fa-solid fa-lightbulb lamp-icon"></i>
+        <span class="btn-text">1,500</span>
+      </div>
+      <!-- Added Store Button -->
+      <div class="icon-btn" title="Store">
+        <i class="fa-solid fa-store"></i>
+        <span class="btn-text">Store</span>
+      </div>
+      <!-- Added Friends List -->
+      <div class="icon-btn icon-only" title="Friends List"><i class="fa-solid fa-user-group"></i></div>
+      <!-- Added Login -->
+      <div class="icon-btn login-btn" title="Login">
+        <i class="fa-solid fa-right-to-bracket"></i>
+        <span class="btn-text">Login</span>
+      </div>
+      <!-- Existing System Icons -->
+      <div class="icon-btn icon-only" title="Help"><i class="fa-solid fa-question"></i></div>
+      <div class="icon-btn icon-only" title="Settings"><i class="fa-solid fa-gear"></i></div>
+    </div>
+  </div>
+
+  <div class="side-panel left-panel">
+    <div class="panel-title">Energy Level</div>
+    <div class="energy-bars">
+      <div class="bar filled"></div>
+      <div class="bar filled"></div>
+      <div class="bar filled"></div>
+      <div class="bar"></div>
+    </div>
+    <div class="grid-sync">Grid Sync</div>
+    <div class="sync-value">98.4%</div>
+  </div>
+
+  <div class="side-panel right-panel">
+    <div class="live-indicator">
+      <div class="dot"></div> LIVE TOURNAMENT
+    </div>
+    <div class="tournament-name">NEON DISTRICT</div>
+    <div class="time-left">Ends in 2h 45m</div>
+  </div>
+
+  <div class="center-content">
+    <div class="main-title">
+      <div class="title-ascend">MMKL</div>
+      <div class="title-online">SNAKE</div>
+    </div>
+  </div>
+
+  <div class="cards-container">
+    <div class="card card-free">
+      <i class="fa-solid fa-play card-icon"></i>
+      <div>
+        <div class="card-subtitle">Quick Start</div>
+        <div class="card-title">FREE PLAY</div>
+        <button class="card-btn">Launch</button>
+      </div>
+    </div>
+    
+    <div class="card card-campaign">
+      <i class="fa-solid fa-list-ol card-icon"></i>
+      <div>
+        <div class="card-subtitle">Campaign</div>
+        <div class="card-title">LEVELS</div>
+        <button class="card-btn">Progress</button>
+      </div>
+    </div>
+
+    <div class="card card-shop">
+      <i class="fa-solid fa-palette card-icon"></i>
+      <div>
+        <div class="card-subtitle">Skin Shop</div>
+        <div class="card-title">THEMES</div>
+        <button class="card-btn">Customise</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-stats">
+    <div>
+      <div class="stat-label">Global Rank</div>
+      <div class="stat-value cyan">#1,402</div>
+    </div>
+    <div>
+      <div class="stat-label">Best Length</div>
+      <div class="stat-value green">84.2M</div>
+    </div>
+    <div>
+      <div class="stat-label">Active Players</div>
+      <div class="stat-value">12,042</div>
+    </div>
+  </div>
+
+  <div class="footer-nav">
+    <div class="nav-item active">
+      <i class="fa-solid fa-play"></i>
+      Free Play
+    </div>
+    <div class="nav-item">
+      <i class="fa-solid fa-list-ol"></i>
+      Levels
+    </div>
+    <div class="nav-item">
+      <i class="fa-solid fa-palette"></i>
+      Themes
+    </div>
+  </div>
+
+</div>
+
+<!-- Three.js for Background Animation -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+  let scene, camera, renderer, snakeGroup, snakeCurve, snakeMesh, outerMesh, snakeHead;
+  let time = 0;
+  const numPoints = 80;
+  const points = [];
+  const trees = [];
+
+  function init() {
+    const container = document.getElementById('canvas-container');
+    
+    scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x0a0b0e, 0.015);
+    
+    camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 5, 25);
+    camera.lookAt(0, 0, 0);
+    
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    container.appendChild(renderer.domElement);
+
+    // Lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+    scene.add(ambientLight);
+
+    const cyanLight = new THREE.PointLight(0x00ffff, 2, 50);
+    cyanLight.position.set(-10, 10, 10);
+    scene.add(cyanLight);
+
+    const greenLight = new THREE.PointLight(0x6fff54, 2, 50);
+    greenLight.position.set(10, -5, 5);
+    scene.add(greenLight);
+
+    const blueLight = new THREE.DirectionalLight(0x0055ff, 1.5);
+    blueLight.position.set(0, 20, -10);
+    scene.add(blueLight);
+
+    createForest();
+
+    snakeGroup = new THREE.Group();
+    
+    // Rebuilding Snake logically with InstancedMesh for flawless tapered performance
+    // Bringing back the smooth, seamless round cartoon snake body
+    const scaleGeom = new THREE.SphereGeometry(3.0, 32, 16);
+    scaleGeom.scale(1, 1.0, 1.0); // Perfectly round to fit the cartoon aesthetic
+    
+    const scaleTex = createScaleTexture();
+
+    const coreMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff, // solid white to let canvas texture colors show perfectly
+      roughness: 0.8,
+      metalness: 0.0,
+      map: scaleTex // Cartoon texture matching reference image
+    });
+
+    snakeMesh = new THREE.InstancedMesh(scaleGeom, coreMat, numPoints);
+    snakeMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+
+    snakeGroup.add(snakeMesh);
+
+    // Initial dummy array for Head tracking
+    for (let i = 0; i < numPoints; i++) points.push(new THREE.Vector3(0, 0, 0));
+    
+    // --- Create Cute Cartoon Snake Head ---
+    const headGeom = new THREE.SphereGeometry(3.6, 32, 24);
+    // Make it slightly wider and rounded snout
+    headGeom.scale(1.1, 0.9, 1.3);
+    headGeom.translate(0, 0, 1.5); // shift forward to merge with neck
+    
+    const headMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff, roughness: 0.8, metalness: 0.0,
+      map: scaleTex // Map the skin texture to the head as well
+    });
+    snakeHead = new THREE.Mesh(headGeom, headMat);
+    
+    // Big Cute Round Black Eyes
+    const eyeGeom = new THREE.SphereGeometry(0.8, 16, 16);
+    const eyeMat = new THREE.MeshBasicMaterial({ color: 0x010101 }); // Solid deep black
+    
+    const leftEye = new THREE.Mesh(eyeGeom, eyeMat);
+    leftEye.position.set(1.8, 1.2, 4.5);
+    
+    // Add white reflection pupil dot to add life
+    const pupilGeom = new THREE.SphereGeometry(0.25, 8, 8);
+    const pupilMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const leftPupil = new THREE.Mesh(pupilGeom, pupilMat);
+    leftPupil.position.set(0.4, 0.4, 0.6); // top forward
+    leftEye.add(leftPupil);
+    
+    const rightEye = new THREE.Mesh(eyeGeom, eyeMat);
+    rightEye.position.set(-1.8, 1.2, 4.5);
+    const rightPupil = new THREE.Mesh(pupilGeom, pupilMat);
+    rightPupil.position.set(-0.4, 0.4, 0.6);
+    rightEye.add(rightPupil);
+    
+    snakeHead.add(leftEye);
+    snakeHead.add(rightEye);
+    
+    // Add a red forked tongue
+    const tongueGeom = new THREE.Group();
+    const tongueBase = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 1.5), new THREE.MeshBasicMaterial({ color: 0xff3333 }));
+    tongueBase.rotation.x = Math.PI / 2;
+    tongueBase.position.set(0, -0.5, 5.8);
+    
+    const forkL = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.1, 0.8), new THREE.MeshBasicMaterial({ color: 0xff3333 }));
+    forkL.rotation.x = Math.PI / 2;
+    forkL.rotation.y = -Math.PI / 5;
+    forkL.position.set(0.25, -0.5, 6.7);
+    
+    const forkR = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.1, 0.8), new THREE.MeshBasicMaterial({ color: 0xff3333 }));
+    forkR.rotation.x = Math.PI / 2;
+    forkR.rotation.y = Math.PI / 5;
+    forkR.position.set(-0.25, -0.5, 6.7);
+    
+    tongueGeom.add(tongueBase);
+    tongueGeom.add(forkL);
+    tongueGeom.add(forkR);
+    snakeHead.add(tongueGeom);
+    
+    scene.add(snakeHead);
+    scene.add(snakeGroup);
+
+    window.addEventListener('resize', onWindowResize, false);
+    animate();
+  }
+
+  function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  }
+
+  function createScaleTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512; canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+    
+    // Base Green Background (Back and Sides)
+    ctx.fillStyle = '#5ac94f'; 
+    ctx.fillRect(0, 0, 512, 512);
+    
+    // Draw Dark Green Diamonds along the spine (Top of canvas: Y=0 to Y=150)
+    // The U axis wraps around, so we draw diamonds spanning the width.
+    ctx.fillStyle = '#30802c'; 
+    ctx.strokeStyle = '#1e5c1a';
+    ctx.lineWidth = 4;
+    for (let x = 0; x <= 512; x += 128) { // distribute around the equator/body
+      ctx.beginPath();
+      // Draw diamonds right near the top edge
+      ctx.moveTo(x + 64, 20);
+      ctx.lineTo(x + 104, 60);
+      ctx.lineTo(x + 64, 100);
+      ctx.lineTo(x + 24, 60);
+      ctx.closePath();
+      ctx.fill(); ctx.stroke();
+    }
+    
+    // Yellow-green underbelly (Bottom of canvas: Y=350 to 512)
+    ctx.fillStyle = '#dced8e';
+    ctx.fillRect(0, 350, 512, 162); 
+    
+    // Belly horizontal stripes
+    ctx.strokeStyle = '#b2c75a';
+    ctx.lineWidth = 6;
+    for (let x = 0; x <= 512; x += 48) {
+      // Lines wrapping around the belly (which is the U axis / X on canvas)
+      // Since belly is at the pole, U wraps like pie slices. 
+      // Drawing bars along X will make them look like lateral segments spanning the belly!
+      ctx.beginPath(); ctx.moveTo(x, 350); ctx.lineTo(x, 512); ctx.stroke();
+    }
+    
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.ClampToEdgeWrapping;
+    return texture;
+  }
+
+  function createForest() {
+    const trunkGeo = new THREE.CylinderGeometry(0.4, 0.6, 2.5, 7);
+    const trunkMat = new THREE.MeshStandardMaterial({ color: 0x1a120c, roughness: 1.0 });
+    
+    // Conical low-poly leaves
+    const leavesGeo = new THREE.ConeGeometry(2.5, 6, 7);
+    leavesGeo.translate(0, 3, 0); // Shift origin to the bottom attachment point
+    const leavesMat = new THREE.MeshStandardMaterial({ color: 0x05260c, roughness: 0.9 });
+
+    // Dark mysterious ground floor
+    const groundGeo = new THREE.PlaneGeometry(300, 300);
+    const groundMat = new THREE.MeshStandardMaterial({ color: 0x020d04, roughness: 1.0 });
+    const ground = new THREE.Mesh(groundGeo, groundMat);
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.y = -8;
+    scene.add(ground);
+
+    for (let i = 0; i < 150; i++) {
+      let x = (Math.random() - 0.5) * 160;
+      let z = (Math.random() - 0.5) * 160 - 20; 
+      // Clear out the very center stage
+      if (Math.abs(x) < 30 && Math.abs(z + 15) < 30) continue;
+
+      const treeGroup = new THREE.Group();
+      treeGroup.position.set(x, -8, z);
+
+      const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+      trunk.position.y = 1.25;
+      treeGroup.add(trunk);
+
+      const leaves = new THREE.Mesh(leavesGeo, leavesMat);
+      leaves.position.y = 2.5; 
+      leaves.rotation.y = Math.random() * Math.PI;
+      
+      const scale = 0.6 + Math.random() * 0.9;
+      treeGroup.scale.set(scale, scale, scale);
+
+      treeGroup.add(leaves);
+      scene.add(treeGroup);
+      
+      // Store the whole group so we can scroll it towards the player
+      trees.push({
+        group: treeGroup,
+        leaves: leaves,
+        baseX: x,
+        windOffset: Math.random() * 100,
+        swayMultiplier: 0.05 + Math.random() * 0.06
+      });
+    }
+
+    // Add Cyber-Forest Ground Grid
+    window.gridHelper = new THREE.GridHelper(350, 70, 0x003311, 0x001105);
+    window.gridHelper.position.y = -7.9;
+    scene.add(window.gridHelper);
+
+    // Forest Fireflies / Magical Dust
+    const particleGeom = new THREE.BufferGeometry();
+    const particleCount = 600;
+    const particlePos = new Float32Array(particleCount * 3);
+    const particleSpeeds = new Float32Array(particleCount);
+    for (let i = 0; i < particleCount; i++) {
+      particlePos[i*3] = (Math.random() - 0.5) * 300;
+      particlePos[i*3+1] = Math.random() * 30 - 8;
+      particlePos[i*3+2] = (Math.random() - 0.5) * 200 - 30;
+      particleSpeeds[i] = 0.02 + Math.random() * 0.04;
+    }
+    particleGeom.setAttribute('position', new THREE.BufferAttribute(particlePos, 3));
+    particleGeom.setAttribute('speed', new THREE.BufferAttribute(particleSpeeds, 1));
+    const particleMat = new THREE.PointsMaterial({
+      color: 0x6fff54, size: 0.5, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending
+    });
+    window.fireflies = new THREE.Points(particleGeom, particleMat);
+    scene.add(window.fireflies);
+  }
+
+  // Beautiful, smooth, non-intersecting parametric math to fix the "faulty" snapping geometry
+  // This produces a majestic 3D infinity loop (Lissajous curve) that freely rotates up, down, and around.
+  function getPathPos(t) {
+    const x = Math.sin(t * 0.5) * 22;
+    const y = Math.sin(t * 1.0) * 10; // Up and down looping
+    const z = Math.cos(t * 0.5) * 15 - 15; // Deep circular motion
+    return new THREE.Vector3(x, y, z);
+  }
+
+  function animate() {
+    requestAnimationFrame(animate);
+    
+    time += 0.012; // Controls overall snake speed
+
+    const dummy = new THREE.Object3D();
+    const headPos = getPathPos(time);
+
+    for (let i = 0; i < numPoints; i++) {
+       // Reduce the time gap to make the segments pack together into a seamless cartoon body again
+       const sampleTime = time - (i * 0.035);
+       const pt = getPathPos(sampleTime);
+       if (i === 0) points[0].copy(pt); // Keep head tracker updated
+       
+       dummy.position.copy(pt);
+       
+       // Orient segment towards next segment
+       const nextPt = getPathPos(sampleTime + 0.1);
+       dummy.lookAt(nextPt);
+       
+       // Seamlessly taper the tail to match a natural cute snake
+       const taper = 1.0 - Math.pow(i / (numPoints - 1), 1.6); 
+       const scl = Math.max(0.01, taper);
+       
+       dummy.scale.set(scl, scl, scl);
+       dummy.updateMatrix();
+       snakeMesh.setMatrixAt(i, dummy.matrix);
+    }
+    
+    snakeMesh.instanceMatrix.needsUpdate = true;
+
+    // Update Face/Head Position & Rotation
+    if (snakeHead) {
+      snakeHead.position.copy(headPos);
+      const futurePos = getPathPos(time + 0.1);
+      snakeHead.lookAt(futurePos);
+    }
+
+    // Animate glowing fireflies and drift them forward
+    const globalSpeed = 0.15; // Much slower infinite scrolling speed exactly as requested
+    if (window.fireflies) {
+      const positions = window.fireflies.geometry.attributes.position.array;
+      const speeds = window.fireflies.geometry.attributes.speed.array;
+      for (let i = 0; i < positions.length; i += 3) {
+        // Vertical rising
+        positions[i+1] += speeds[i/3] + Math.sin(time * 2 + positions[i]) * 0.01;
+        if (positions[i+1] > 25) positions[i+1] = -8; // Reset to ground
+        
+        // Horizontal drifting towards player
+        positions[i+2] += globalSpeed * 0.7; // Slightly slower than ground for deep parallax
+        if (positions[i+2] > 30) positions[i+2] -= 230; // Respawn far back
+      }
+      window.fireflies.geometry.attributes.position.needsUpdate = true;
+    }
+
+    // Process forest scrolling and wind animation
+    const windTime = time * 1.5;
+    
+    if (window.gridHelper) {
+      window.gridHelper.position.z += globalSpeed;
+      if (window.gridHelper.position.z > 5) window.gridHelper.position.z -= 5; // Seamless looping grid
+    }
+
+    for (let i = 0; i < trees.length; i++) {
+      const tree = trees[i];
+      // Move tree towards camera
+      tree.group.position.z += globalSpeed;
+      if (tree.group.position.z > 30) {
+         tree.group.position.z -= 190; // Respawn far back in the fog
+         tree.group.position.x = (Math.random() - 0.5) * 160; // Pick new random X
+         if (Math.abs(tree.group.position.x) < 30) tree.group.position.x += 40; // Avoid center path clipping
+      }
+
+      // Complex gusty wind pattern
+      const gust = Math.sin(windTime + tree.windOffset) * tree.swayMultiplier + 
+                   Math.sin(windTime * 2.3 + tree.baseX * 0.1) * (tree.swayMultiplier * 0.5);
+      
+      tree.leaves.rotation.z = gust;
+      tree.leaves.rotation.x = gust * 0.5;
+    }
+
+    renderer.render(scene, camera);
+  }
+
+  init();
+</script>
+</body>
+</html>

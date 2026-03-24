@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MKLL — Full Design Preview</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #111; font-family: system-ui, sans-serif; color: white; }
+
+  .label-bar {
+    background: #1a1a1a;
+    border-bottom: 1px solid #333;
+    padding: 10px 20px;
+    font-size: 13px;
+    color: #888;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .label-bar strong { color: #fff; }
+
+  /* ===== MKLL MOCKUP ===== */
+  .mkll-frame {
+    position: relative;
+    width: 100%;
+    height: calc(100vh - 44px);
+    overflow: hidden;
+    background: #0d0008;
+  }
+
+  /* Simulated animated shader background */
+  .shader-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 15% 35%, rgba(255,90,10,0.38) 0%, transparent 45%),
+      radial-gradient(ellipse at 80% 20%, rgba(200,60,0,0.28) 0%, transparent 40%),
+      radial-gradient(ellipse at 55% 75%, rgba(255,140,0,0.22) 0%, transparent 45%),
+      radial-gradient(ellipse at 90% 80%, rgba(180,40,0,0.2) 0%, transparent 40%),
+      radial-gradient(ellipse at 30% 90%, rgba(255,80,20,0.15) 0%, transparent 35%),
+      #0d0008;
+    animation: shaderPulse 8s ease-in-out infinite alternate;
+  }
+  @keyframes shaderPulse {
+    0%   { filter: hue-rotate(0deg) brightness(1); }
+    50%  { filter: hue-rotate(8deg) brightness(1.08); }
+    100% { filter: hue-rotate(-5deg) brightness(0.95); }
+  }
+
+  /* ===== TOP BAR ===== */
+  .topbar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 54px;
+    background: rgba(0,0,0,0.3);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255,150,50,0.12);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 14px;
+    z-index: 10;
+  }
+
+  .logo-block {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
+    gap: 2px;
+  }
+  .logo-name {
+    font-size: 16px;
+    font-weight: 800;
+    font-family: monospace;
+    letter-spacing: 3px;
+    background: linear-gradient(90deg, #ffb347, #ff6a00, #ffcb69);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: none;
+  }
+  .logo-sub {
+    font-size: 8.5px;
+    color: rgba(255,160,60,0.55);
+    letter-spacing: 0.5px;
+  }
+
+  .search-wrap {
+    flex: 1;
+    max-width: 340px;
+    margin: 0 auto;
+  }
+  .search-wrap input {
+    width: 100%;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,140,40,0.18);
+    border-radius: 20px;
+    padding: 6px 14px;
+    color: rgba(255,255,255,0.85);
+    font-size: 12.5px;
+    outline: none;
+  }
+  .search-wrap input::placeholder { color: rgba(255,255,255,0.3); }
+
+  .topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .icon-btn {
+    width: 32px; height: 32px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,140,40,0.18);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .clock-block {
+    text-align: right;
+    line-height: 1.2;
+  }
+  .clock-time {
+    font-size: 15px;
+    font-weight: 700;
+    font-family: monospace;
+    color: rgba(255,190,80,0.9);
+  }
+  .clock-date {
+    font-size: 9px;
+    color: rgba(255,255,255,0.35);
+  }
+
+  /* ===== MAIN CONTENT ===== */
+  .main {
+    position: absolute;
+    top: 54px; left: 0; right: 0; bottom: 0;
+    padding: 28px 24px;
+    overflow-y: auto;
+    z-index: 5;
+  }
+
+  .category-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: rgba(255,160,60,0.55);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    padding-left: 2px;
+  }
+
+  .app-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  .app-card {
+    height: 100px;
+    background: rgba(255,255,255,0.055);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255,140,50,0.18);
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s, background 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .app-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,180,60,0.35), transparent);
+  }
+  .app-card:hover {
+    border-color: rgba(255,160,60,0.45);
+    background: rgba(255,255,255,0.085);
+    transform: translateY(-3px) scale(1.02);
+  }
+
+  .app-icon { font-size: 28px; }
+  .app-name {
+    font-size: 10.5px;
+    color: rgba(255,255,255,0.82);
+    font-weight: 500;
+    text-align: center;
+    padding: 0 6px;
+  }
+
+  /* action buttons shown on hover */
+  .app-actions {
+    position: absolute;
+    top: 6px; right: 6px;
+    display: flex; gap: 3px;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .app-card:hover .app-actions { opacity: 1; }
+  .act-btn {
+    width: 18px; height: 18px;
+    background: rgba(0,0,0,0.5);
+    border-radius: 4px;
+    font-size: 9px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  /* Add card */
+  .add-card {
+    height: 100px;
+    background: rgba(255,140,30,0.04);
+    border: 1.5px dashed rgba(255,140,40,0.22);
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .add-card:hover {
+    background: rgba(255,140,30,0.08);
+    border-color: rgba(255,160,60,0.4);
+  }
+  .add-plus { font-size: 22px; color: rgba(255,160,60,0.5); }
+  .add-label { font-size: 9.5px; color: rgba(255,160,60,0.4); }
+
+  /* Annotation callouts */
+  .annotation {
+    position: absolute;
+    background: rgba(255,220,80,0.95);
+    color: #000;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    z-index: 20;
+  }
+  .annotation::after {
+    content: '';
+    position: absolute;
+    border: 5px solid transparent;
+  }
+  .ann-down::after {
+    top: 100%; left: 50%; transform: translateX(-50%);
+    border-top-color: rgba(255,220,80,0.95);
+  }
+  .ann-right::after {
+    top: 50%; right: 100%; transform: translateY(-50%);
+    border-right-color: rgba(255,220,80,0.95);
+  }
+  .ann-left::after {
+    top: 50%; left: 100%; transform: translateY(-50%);
+    border-left-color: rgba(255,220,80,0.95);
+  }
+</style>
+</head>
+<body>
+
+<div class="label-bar">
+  <strong>MKLL — Full Design Preview</strong>
+  <span style="color:#555">|</span>
+  <span>Full-page animated shader · Minimal glassmorphism cards · Amber/orange palette</span>
+  <span style="margin-left:auto;color:#f90;font-size:11px;">⬇ scroll to see full layout</span>
+</div>
+
+<div class="mkll-frame">
+  <div class="shader-bg"></div>
+
+  <!-- Annotations -->
+  <div class="annotation ann-down" style="top:14px;left:58px;">Gradient logo text</div>
+  <div class="annotation ann-down" style="top:8px;left:210px;">Subtitle always visible</div>
+  <div class="annotation ann-left" style="top:14px;right:110px;">Amber clock</div>
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="logo-block">
+      <span class="logo-name">MKLL</span>
+      <span class="logo-sub">Mo Khattab Lamba Land</span>
+    </div>
+
+    <div class="search-wrap">
+      <input type="text" placeholder="⌘K  Search apps…" />
+    </div>
+
+    <div class="topbar-actions">
+      <div class="icon-btn">＋</div>
+      <div class="icon-btn">⚙</div>
+    </div>
+
+    <div class="clock-block">
+      <div class="clock-time">21:47</div>
+      <div class="clock-date">Sat, Mar 21</div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- Annotation -->
+    <div style="position:relative;height:0;">
+      <div class="annotation ann-right" style="position:absolute;top:12px;left:-18px;">Category label</div>
+    </div>
+
+    <div class="category-label">Games</div>
+    <div class="app-grid">
+      <div class="app-card">
+        <div class="app-actions"><div class="act-btn">✏</div><div class="act-btn">✕</div></div>
+        <div class="app-icon">🎮</div>
+        <div class="app-name">XO Game</div>
+      </div>
+      <div class="app-card">
+        <div class="app-actions"><div class="act-btn">✏</div><div class="act-btn">✕</div></div>
+        <div class="app-icon">🐍</div>
+        <div class="app-name">Snake</div>
+      </div>
+      <div class="add-card">
+        <div class="add-plus">＋</div>
+        <div class="add-label">Add app</div>
+      </div>
+    </div>
+
+    <div class="category-label">Tools</div>
+    <div class="app-grid">
+      <div class="app-card">
+        <div class="app-actions"><div class="act-btn">✏</div><div class="act-btn">✕</div></div>
+        <div class="app-icon">📚</div>
+        <div class="app-name">GJU Study Hub</div>
+      </div>
+      <div class="app-card">
+        <div class="app-actions"><div class="act-btn">✏</div><div class="act-btn">✕</div></div>
+        <div class="app-icon">🌐</div>
+        <div class="app-name">Browser</div>
+      </div>
+      <div class="app-card">
+        <div class="app-actions"><div class="act-btn">✏</div><div class="act-btn">✕</div></div>
+        <div class="app-icon">💻</div>
+        <div class="app-name">Dev Tools</div>
+      </div>
+      <div class="add-card">
+        <div class="add-plus">＋</div>
+        <div class="add-label">Add app</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Annotation for cards -->
+  <div class="annotation ann-left" style="bottom:80px;right:20px;z-index:20;">Frosted glass cards · top shimmer line · hover lift</div>
+
+</div>
+
+</body>
+</html>

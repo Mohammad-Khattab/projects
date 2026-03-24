@@ -17,30 +17,28 @@ export function mergeScrapedData(
   const subjectMap = new Map<string, Subject>()
 
   for (const s of moodle.subjects) {
-    const key = slugify(s.name)
-    subjectMap.set(key, { ...s, id: key })
+    subjectMap.set(s.id, { ...s })
   }
 
   for (const s of mygju.subjects) {
-    const key = slugify(s.name)
-    if (subjectMap.has(key)) {
-      const existing = subjectMap.get(key)!
-      subjectMap.set(key, {
+    if (subjectMap.has(s.id)) {
+      const existing = subjectMap.get(s.id)!
+      subjectMap.set(s.id, {
         ...existing,
         source: 'both',
         resourceCount: existing.resourceCount + s.resourceCount,
         assignmentCount: existing.assignmentCount + s.assignmentCount
       })
     } else {
-      subjectMap.set(key, { ...s, id: key })
+      subjectMap.set(s.id, { ...s })
     }
   }
 
   const normalizeResources = (items: Resource[], source: string) =>
-    items.map(r => ({ ...r, id: `${source}-${r.id}`, subjectId: slugify(r.subjectId) }))
+    items.map(r => ({ ...r, id: `${source}-${r.id}` }))
 
   const normalizeAssignments = (items: Assignment[], source: string) =>
-    items.map(a => ({ ...a, id: `${source}-${a.id}`, subjectId: slugify(a.subjectId) }))
+    items.map(a => ({ ...a, id: `${source}-${a.id}` }))
 
   return {
     subjects: Array.from(subjectMap.values()),

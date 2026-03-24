@@ -7,6 +7,7 @@ interface NavBarProps {
   scrapedAt?: string
   onRefresh?: () => void
   refreshing?: boolean
+  refreshingText?: string
 }
 
 function timeAgo(isoDate: string): string {
@@ -19,10 +20,24 @@ function timeAgo(isoDate: string): string {
   return `${Math.floor(hrs / 24)}d ago`
 }
 
-export default function NavBar({ scrapedAt, onRefresh, refreshing }: NavBarProps) {
+export default function NavBar({ scrapedAt, onRefresh, refreshing, refreshingText }: NavBarProps) {
   const pathname = usePathname()
 
   return (
+    <>
+    {refreshing && (
+      <div className="refresh-overlay">
+        <div className="refresh-loader">
+          <div className="refresh-pulse" />
+          <div className="refresh-pulse" />
+          <div className="refresh-pulse" />
+          <div className="refresh-loader-ring" />
+          <div className="refresh-loader-ring-inner" />
+          <div className="refresh-loader-dot" />
+        </div>
+        <span className="refresh-overlay-text">{refreshingText ?? 'Syncing your courses…'}</span>
+      </div>
+    )}
     <nav style={{
       background: 'rgba(10, 10, 15, 0.9)',
       backdropFilter: 'blur(12px)',
@@ -104,12 +119,18 @@ export default function NavBar({ scrapedAt, onRefresh, refreshing }: NavBarProps
             className="btn btn-secondary"
             onClick={onRefresh}
             disabled={refreshing}
-            style={{ fontSize: 13, padding: '6px 14px' }}
+            style={{
+              fontSize: 13,
+              padding: '6px 14px',
+              borderColor: refreshing ? 'rgba(99,102,241,0.4)' : undefined,
+              boxShadow: refreshing ? '0 0 12px rgba(99,102,241,0.25)' : undefined
+            }}
           >
             {refreshing ? <span className="spinner" /> : '↻'} Refresh
           </button>
         </div>
       </div>
     </nav>
+    </>
   )
 }

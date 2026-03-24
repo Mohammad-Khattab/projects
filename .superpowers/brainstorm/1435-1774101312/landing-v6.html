@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MKLL</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-system, 'SF Pro Display', system-ui, sans-serif; background: #1a0008; }
+
+/* ══════════════════════════════════════
+   LANDING
+   ══════════════════════════════════════ */
+#landing {
+  position: fixed; inset: 0; z-index: 10;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  transition: opacity 0.9s cubic-bezier(.4,0,.2,1), transform 0.9s cubic-bezier(.4,0,.2,1);
+}
+#landing.out { opacity: 0; transform: scale(0.96) translateY(-24px); pointer-events: none; }
+
+/* ── Background: clean crimson gradient + grain (like the video's pink bg) ── */
+.landing-bg {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 65% 0%, rgba(255, 80, 60, 0.55) 0%, transparent 55%),
+    radial-gradient(ellipse at 10% 100%, rgba(160, 0, 30, 0.7) 0%, transparent 55%),
+    radial-gradient(ellipse at 90% 85%, rgba(120, 0, 20, 0.5) 0%, transparent 45%),
+    linear-gradient(160deg, #2a0010 0%, #1a0008 40%, #0d0003 100%);
+  animation: bgBreath 10s ease-in-out infinite alternate;
+}
+@keyframes bgBreath {
+  0%   { filter: brightness(1)   hue-rotate(0deg);  }
+  100% { filter: brightness(1.08) hue-rotate(6deg); }
+}
+
+/* ── Grain texture overlay (critical for premium) ── */
+.grain {
+  position: absolute; inset: 0; pointer-events: none;
+  opacity: 0.45;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23g)' opacity='1'/%3E%3C/svg%3E");
+  mix-blend-mode: soft-light;
+}
+
+/* ── Small top label ── */
+.landing-label {
+  position: absolute; top: 30px; left: 50%; transform: translateX(-50%);
+  font-size: 9px; letter-spacing: 6px; font-weight: 500; text-transform: uppercase;
+  color: rgba(255, 180, 160, 0.4);
+  z-index: 2;
+}
+
+/* ── MKLL title (above device) ── */
+.mkll-title {
+  position: relative; z-index: 2; text-align: center;
+  margin-bottom: 28px;
+}
+.mkll-word {
+  font-size: 56px; font-weight: 900; letter-spacing: 18px;
+  font-family: -apple-system, system-ui;
+  color: rgba(255,255,255,0.92);
+  text-shadow:
+    0 0 80px rgba(255, 60, 60, 0.6),
+    0 0 160px rgba(200, 0, 0, 0.3);
+  animation: titleShimmer 4s ease-in-out infinite alternate;
+}
+@keyframes titleShimmer {
+  0%   { text-shadow: 0 0 80px rgba(255,60,60,0.6), 0 0 160px rgba(200,0,0,0.3); }
+  100% { text-shadow: 0 0 120px rgba(255,80,60,0.85), 0 0 200px rgba(220,0,0,0.4); }
+}
+.mkll-sub {
+  font-size: 10px; letter-spacing: 5px; font-weight: 300; text-transform: uppercase;
+  color: rgba(255, 160, 140, 0.35); margin-top: 10px;
+}
+
+/* ── Device mockup (the hero) ── */
+.device-wrap {
+  position: relative; z-index: 2;
+  perspective: 1400px;
+}
+.device {
+  width: 680px; height: 420px;
+  border-radius: 18px;
+  overflow: hidden;
+  /* Perspective tilt — like in the video */
+  transform: rotateX(5deg) rotateY(-3deg) rotateZ(0.5deg);
+  transform-style: preserve-3d;
+  animation: deviceFloat 7s ease-in-out infinite;
+  /* Premium drop shadow */
+  box-shadow:
+    0 2px 0 rgba(255,255,255,0.06),    /* top highlight */
+    0 70px 140px rgba(0,0,0,0.85),
+    0 30px 60px rgba(180,0,0,0.3),
+    inset 0 0 0 1px rgba(255,255,255,0.08);
+}
+@keyframes deviceFloat {
+  0%,100% { transform: rotateX(5deg) rotateY(-3deg) rotateZ(0.5deg) translateY(0); }
+  50%      { transform: rotateX(4deg) rotateY(-2.5deg) rotateZ(0.3deg) translateY(-10px); }
+}
+
+/* macOS chrome */
+.device-chrome {
+  height: 34px;
+  background: linear-gradient(180deg, rgba(40,8,12,0.95) 0%, rgba(20,4,6,0.98) 100%);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  display: flex; align-items: center; padding: 0 14px; gap: 6px;
+  flex-shrink: 0;
+}
+.dot { width: 11px; height: 11px; border-radius: 50%; }
+.dot-r { background: #ff5f56; }
+.dot-y { background: #ffbd2e; }
+.dot-g { background: #28c840; }
+.chrome-title {
+  flex: 1; text-align: center; margin-left: -33px;
+  font-size: 11px; color: rgba(255,255,255,0.2); font-weight: 400; letter-spacing: 0.5px;
+}
+
+/* ── Inside device: the MKLL dashboard preview ── */
+.device-body {
+  width: 100%; height: calc(100% - 34px);
+  position: relative; overflow: hidden;
+}
+
+/* Shader canvas inside device */
+#inner-canvas {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+}
+
+/* Mini topbar */
+.mini-bar {
+  position: absolute; top: 0; left: 0; right: 0; height: 38px;
+  background: rgba(0,0,0,0.4); backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(200,20,20,0.12);
+  display: flex; align-items: center; padding: 0 14px; gap: 10px;
+  z-index: 5;
+}
+.mini-logo-name {
+  font-size: 12px; font-weight: 800; letter-spacing: 2px; font-family: monospace;
+  background: linear-gradient(90deg, #ff7070, #cc0000);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.mini-logo-sub { font-size: 7px; color: rgba(200,80,80,0.5); letter-spacing: 0.5px; }
+.mini-pill {
+  height: 20px; background: rgba(255,255,255,0.05); border: 1px solid rgba(200,20,20,0.18);
+  border-radius: 10px; flex: 1; max-width: 180px; margin: 0 auto;
+}
+.mini-clk { font-size: 11px; font-family: monospace; color: rgba(255,100,100,0.75); font-weight: 700; }
+
+/* Mini cards inside device */
+.mini-content {
+  position: absolute; top: 46px; left: 14px; right: 14px; z-index: 4;
+}
+.mini-section-label {
+  font-size: 7px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+  color: rgba(200,60,60,0.5); margin-bottom: 8px;
+}
+.mini-cards-row {
+  display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; margin-bottom: 14px;
+}
+.mini-card {
+  aspect-ratio: 1;
+  background: rgba(255,255,255,0.065); backdrop-filter: blur(14px);
+  border: 1px solid rgba(200,20,20,0.22); border-radius: 12px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  position: relative; overflow: hidden;
+}
+.mini-card::before {
+  content: ''; position: absolute; top: 0; left: 10%; right: 10%; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,80,80,0.35), transparent);
+}
+.mini-card .mi { font-size: 18px; }
+.mini-card .mn { font-size: 7px; color: rgba(255,255,255,0.7); font-weight: 500; }
+.mini-add {
+  aspect-ratio: 1;
+  border: 1px dashed rgba(200,20,20,0.2); border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; color: rgba(200,60,60,0.35);
+}
+
+/* ── CTA below device ── */
+.cta-row {
+  position: relative; z-index: 2;
+  margin-top: 30px;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+}
+.cta-btn {
+  padding: 13px 60px;
+  background: rgba(255,255,255,0.07);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,80,80,0.3);
+  color: rgba(255,255,255,0.9);
+  font-size: 12px; font-weight: 600; letter-spacing: 4px; text-transform: uppercase;
+  border-radius: 40px; cursor: pointer;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,80,80,0.1);
+  transition: all 0.3s ease;
+  position: relative; overflow: hidden;
+  animation: ctaP 4s ease-in-out infinite;
+}
+.cta-btn::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,120,120,0.08), transparent);
+  transform: skewX(-20deg) translateX(-300%);
+  animation: sheen 5s ease-in-out 2s infinite;
+}
+@keyframes sheen { 0%{transform:skewX(-20deg) translateX(-300%)} 35%,100%{transform:skewX(-20deg) translateX(400%)} }
+@keyframes ctaP {
+  0%,100%{ box-shadow:0 8px 32px rgba(0,0,0,0.4),0 0 0 1px rgba(255,80,80,0.1); }
+  50%{ box-shadow:0 8px 40px rgba(0,0,0,0.5),0 0 0 1px rgba(255,100,100,0.25),0 0 60px rgba(200,0,0,0.12); }
+}
+.cta-btn:hover {
+  background: rgba(200,0,0,0.25);
+  border-color: rgba(255,80,80,0.55);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.5), 0 0 60px rgba(200,0,0,0.2);
+}
+.cta-sub { font-size: 9px; letter-spacing: 3px; color: rgba(255,255,255,0.18); text-transform: uppercase; }
+
+/* Bottom watermark */
+.btm { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 2;
+  font-size: 9px; letter-spacing: 4px; color: rgba(255,255,255,0.1); text-transform: uppercase; }
+
+/* ══════════════════════════════════════
+   DASHBOARD
+   ══════════════════════════════════════ */
+#dashboard {
+  position: fixed; inset: 0; z-index: 10;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.9s cubic-bezier(.4,0,.2,1);
+}
+#dashboard.in { opacity: 1; pointer-events: all; }
+
+/* Full shader behind dashboard */
+#dash-canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
+.dash-grain {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0.3;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23g)' opacity='1'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+}
+
+.topbar {
+  position: absolute; top:0;left:0;right:0;height:50px;
+  background: rgba(0,0,0,0.45); backdrop-filter: blur(24px);
+  border-bottom: 1px solid rgba(200,20,20,0.1);
+  display:flex;align-items:center;padding:0 22px;gap:16px;z-index:20;
+}
+.logo-name {
+  font-size:15px;font-weight:800;letter-spacing:3px;font-family:monospace;
+  background:linear-gradient(90deg,#ff7070,#cc0000,#ff5050);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  filter:drop-shadow(0 0 12px rgba(200,0,0,0.5));
+}
+.logo-sub{font-size:8px;color:rgba(200,80,80,0.45);letter-spacing:1px;}
+.srch{flex:1;max-width:320px;margin:0 auto;}
+.srch input{
+  width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(180,20,20,0.15);
+  border-radius:20px;padding:6px 15px;color:rgba(255,255,255,0.75);font-size:12px;outline:none;
+}
+.srch input::placeholder{color:rgba(255,255,255,0.2);}
+.ib{width:30px;height:30px;background:rgba(255,255,255,0.04);border:1px solid rgba(180,20,20,0.15);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;}
+.ct{font-size:14px;font-weight:700;font-family:monospace;color:rgba(255,100,100,0.85);}
+.cd{font-size:8px;color:rgba(255,255,255,0.25);text-align:right;}
+
+.apps-area {
+  position:absolute;top:50px;left:0;right:0;bottom:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:24px;overflow-y:auto;z-index:10;
+}
+
+/* Card pile */
+.pile{position:relative;width:100%;max-width:540px;height:210px;display:flex;align-items:center;justify-content:center;cursor:pointer;margin-bottom:16px;}
+.pc{
+  position:absolute;width:145px;height:145px;
+  background:rgba(255,255,255,0.055);backdrop-filter:blur(20px);
+  border:1px solid rgba(180,20,20,0.22);border-radius:22px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  box-shadow:0 16px 40px rgba(0,0,0,0.6),inset 0 1px 0 rgba(255,80,80,0.06);
+  transition:all 0.55s cubic-bezier(.34,1.56,.64,1);
+}
+.pc::before{content:'';position:absolute;top:0;left:12%;right:12%;height:1px;background:linear-gradient(90deg,transparent,rgba(255,80,80,0.35),transparent);}
+.pc:nth-child(1){transform:rotate(-13deg) translateX(-155px) translateY(18px);z-index:1;opacity:.7;}
+.pc:nth-child(2){transform:rotate(-5deg) translateX(-52px) translateY(4px);z-index:2;opacity:.85;}
+.pc:nth-child(3){transform:rotate(2deg) translateX(48px);z-index:3;}
+.pc:nth-child(4){transform:rotate(9deg) translateX(148px) translateY(14px);z-index:4;opacity:.85;}
+.pc:nth-child(5){transform:rotate(15deg) translateX(226px) translateY(28px);z-index:5;opacity:.65;}
+.pile:hover .pc:nth-child(3){transform:rotate(2deg) translateX(48px) translateY(-10px);}
+.pi{font-size:30px;}.pn{font-size:10.5px;color:rgba(255,255,255,0.85);font-weight:500;text-align:center;padding:0 6px;}.pt{font-size:8.5px;color:rgba(200,60,60,0.6);letter-spacing:1px;}
+
+.hint{font-size:10px;color:rgba(200,80,80,0.4);letter-spacing:3px;text-transform:uppercase;animation:hp 2s ease-in-out infinite;transition:opacity .3s;}
+.hint.gone{opacity:0;pointer-events:none;}
+@keyframes hp{0%,100%{opacity:.4}50%{opacity:.75}}
+
+.pile.expanded{height:auto;position:static;cursor:default;display:grid!important;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:14px;max-width:660px;margin-bottom:0;}
+.pile.expanded .pc{position:static!important;width:100%;height:112px;transform:none!important;opacity:1!important;}
+.pile.expanded .pc:hover{border-color:rgba(255,50,50,0.45);transform:translateY(-4px) scale(1.03)!important;}
+
+.back-b{display:none;align-items:center;gap:8px;background:rgba(150,0,0,0.08);border:1px solid rgba(180,20,20,0.2);color:rgba(255,100,100,0.65);padding:7px 18px;border-radius:20px;font-size:10px;font-weight:600;letter-spacing:2px;cursor:pointer;margin-bottom:22px;transition:background .2s;text-transform:uppercase;}
+.back-b.on{display:flex;}
+.back-b:hover{background:rgba(150,0,0,0.18);}
+
+.add-c{height:112px;background:rgba(150,0,0,0.04);border:1.5px dashed rgba(180,20,20,0.18);border-radius:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;transition:background .2s;}
+.add-c:hover{background:rgba(150,0,0,0.1);border-color:rgba(255,50,50,0.32);}
+.ap{font-size:20px;color:rgba(200,60,60,0.45);}
+.al{font-size:8.5px;color:rgba(200,60,60,0.4);letter-spacing:2px;text-transform:uppercase;}
+</style>
+</head>
+<body>
+
+<!-- ════ LANDING ════════════════════════════════ -->
+<div id="landing">
+  <div class="landing-bg"></div>
+  <div class="grain"></div>
+
+  <div class="landing-label">Personal Launchpad</div>
+
+  <!-- Title -->
+  <div class="mkll-title">
+    <div class="mkll-word">MKLL</div>
+    <div class="mkll-sub">Mo Khattab Lamba Land</div>
+  </div>
+
+  <!-- THE DEVICE — hero of the page -->
+  <div class="device-wrap">
+    <div class="device">
+      <!-- macOS chrome bar -->
+      <div class="device-chrome">
+        <div class="dot dot-r"></div>
+        <div class="dot dot-y"></div>
+        <div class="dot dot-g"></div>
+        <div class="chrome-title">mkll.app</div>
+      </div>
+
+      <!-- Inner app preview -->
+      <div class="device-body">
+        <canvas id="inner-canvas"></canvas>
+
+        <div class="mini-bar">
+          <div>
+            <div class="mini-logo-name">MKLL</div>
+            <div class="mini-logo-sub">Mo Khattab Lamba Land</div>
+          </div>
+          <div class="mini-pill"></div>
+          <div class="mini-clk" id="mclk">21:47</div>
+        </div>
+
+        <div class="mini-content">
+          <div class="mini-section-label">Games</div>
+          <div class="mini-cards-row">
+            <div class="mini-card"><div class="mi">🎮</div><div class="mn">XO Game</div></div>
+            <div class="mini-card"><div class="mi">🐍</div><div class="mn">Snake</div></div>
+            <div class="mini-add">＋</div>
+            <div style="opacity:0"></div><div style="opacity:0"></div>
+          </div>
+          <div class="mini-section-label">Tools</div>
+          <div class="mini-cards-row">
+            <div class="mini-card"><div class="mi">📚</div><div class="mn">Study Hub</div></div>
+            <div class="mini-card"><div class="mi">🌐</div><div class="mn">Browser</div></div>
+            <div class="mini-card"><div class="mi">💻</div><div class="mn">Dev</div></div>
+            <div class="mini-add">＋</div>
+            <div style="opacity:0"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-row">
+    <button class="cta-btn" onclick="go()">Get Started</button>
+    <div class="cta-sub">Your apps · one place · always ready</div>
+  </div>
+
+  <div class="btm">MKLL · Mo Khattab Lamba Land · 2026</div>
+</div>
+
+<!-- ════ DASHBOARD ══════════════════════════════ -->
+<div id="dashboard">
+  <canvas id="dash-canvas"></canvas>
+  <div class="dash-grain"></div>
+
+  <div class="topbar">
+    <div>
+      <div class="logo-name">MKLL</div>
+      <div class="logo-sub">Mo Khattab Lamba Land</div>
+    </div>
+    <div class="srch"><input placeholder="⌘K  Search apps…"/></div>
+    <div style="display:flex;gap:8px">
+      <div class="ib">＋</div>
+      <div class="ib">⚙</div>
+    </div>
+    <div>
+      <div class="ct" id="clk">--:--</div>
+      <div class="cd" id="clkd">—</div>
+    </div>
+  </div>
+
+  <div class="apps-area">
+    <button class="back-b" id="bb" onclick="col()">← Back</button>
+    <div class="pile" id="pile" onclick="exp()">
+      <div class="pc"><div class="pi">🎮</div><div class="pn">XO Game</div><div class="pt">Games</div></div>
+      <div class="pc"><div class="pi">🐍</div><div class="pn">Snake</div><div class="pt">Games</div></div>
+      <div class="pc"><div class="pi">📚</div><div class="pn">Study Hub</div><div class="pt">Tools</div></div>
+      <div class="pc"><div class="pi">🌐</div><div class="pn">Browser</div><div class="pt">Tools</div></div>
+      <div class="pc"><div class="pi">💻</div><div class="pn">Dev Tools</div><div class="pt">Tools</div></div>
+    </div>
+    <div class="hint" id="hint">Click to expand your apps</div>
+  </div>
+</div>
+
+<script>
+// ── Transitions ──────────────────────────────────
+function go(){
+  document.getElementById('landing').classList.add('out');
+  setTimeout(()=>document.getElementById('dashboard').classList.add('in'),250);
+}
+let isExp=false;
+function exp(){
+  if(isExp)return; isExp=true;
+  const p=document.getElementById('pile');
+  p.classList.add('expanded'); p.onclick=null;
+  const a=document.createElement('div'); a.className='add-c';
+  a.innerHTML='<div class="ap">＋</div><div class="al">Add App</div>';
+  p.appendChild(a);
+  document.getElementById('bb').classList.add('on');
+  document.getElementById('hint').classList.add('gone');
+}
+function col(){
+  isExp=false;
+  const p=document.getElementById('pile');
+  const a=p.querySelector('.add-c'); if(a)a.remove();
+  p.classList.remove('expanded'); p.onclick=exp;
+  document.getElementById('bb').classList.remove('on');
+  document.getElementById('hint').classList.remove('gone');
+}
+
+// ── Clock ────────────────────────────────────────
+function tick(){
+  const n=new Date(),h=String(n.getHours()).padStart(2,'0'),m=String(n.getMinutes()).padStart(2,'0');
+  const t=h+':'+m;
+  document.getElementById('clk').textContent=t;
+  document.getElementById('mclk').textContent=t;
+  const D=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('clkd').textContent=D[n.getDay()]+', '+M[n.getMonth()]+' '+n.getDate();
+}
+tick();setInterval(tick,1000);
+
+// ── WebGL: shared shader factory ─────────────────
+const VS=`#version 300 es\nprecision highp float;\nin vec4 position;\nvoid main(){gl_Position=position;}`;
+const FS=`#version 300 es
+precision highp float;
+out vec4 O;
+uniform vec2 resolution; uniform float time; uniform vec2 move; uniform vec2 touch;
+#define FC gl_FragCoord.xy
+#define T time
+#define R resolution
+#define MN min(R.x,R.y)
+float rnd(vec2 p){p=fract(p*vec2(12.9898,78.233));p+=dot(p,p+34.56);return fract(p.x*p.y);}
+float noise(in vec2 p){vec2 i=floor(p),f=fract(p),u=f*f*(3.-2.*f);float a=rnd(i),b=rnd(i+vec2(1,0)),c=rnd(i+vec2(0,1)),d=rnd(i+1.);return mix(mix(a,b,u.x),mix(c,d,u.x),u.y);}
+float fbm(vec2 p){float t=.0,a=1.;mat2 m=mat2(1.,-.5,.2,1.2);for(int i=0;i<5;i++){t+=a*noise(p);p*=2.*m;a*=.5;}return t;}
+float clouds(vec2 p){float d=1.,t=.0;for(float i=.0;i<3.;i++){float a=d*fbm(i*10.+p.x*.2+.2*(1.+i)*p.y+d+i*i+p);t=mix(t,d,a);d=a;p*=2./(i+1.);}return t;}
+void main(void){
+  vec2 uv=(FC-.5*R)/MN,st=uv*vec2(2,1);
+  vec3 col=vec3(0);
+  float bg=clouds(vec2(st.x+T*.5,-st.y));
+  uv*=1.-.3*(sin(T*.2)*.5+.5);
+  for(float i=1.;i<12.;i++){
+    uv+=.1*cos(i*vec2(.1+.01*i,.8)+i*i+T*.5+.1*uv.x);
+    vec2 p=uv;float d=length(p);
+    vec3 base=cos(sin(i)*vec3(1,2,3))+1.;
+    vec3 red=vec3(base.r*1.8+base.g*0.4,base.r*0.1,base.b*0.04);
+    col+=.00125/d*red;
+    float b=noise(i+p+bg*1.731);
+    col+=.002*b/length(max(p,vec2(b*p.x*.02,p.y)));
+    col=mix(col,vec3(bg*.32,bg*.02,bg*.02),d);
+  }
+  O=vec4(col,1);
+}`;
+
+function mkShader(canvas, mouse){
+  const gl=canvas.getContext('webgl2'); if(!gl) return;
+  function mkS(t,s){const sh=gl.createShader(t);gl.shaderSource(sh,s);gl.compileShader(sh);return sh;}
+  const v=mkS(gl.VERTEX_SHADER,VS),f=mkS(gl.FRAGMENT_SHADER,FS);
+  const pr=gl.createProgram();gl.attachShader(pr,v);gl.attachShader(pr,f);gl.linkProgram(pr);
+  const buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,1,-1,-1,1,1,1,-1]),gl.STATIC_DRAW);
+  const pos=gl.getAttribLocation(pr,'position');gl.enableVertexAttribArray(pos);gl.vertexAttribPointer(pos,2,gl.FLOAT,false,0,0);
+  const uR=gl.getUniformLocation(pr,'resolution'),uT=gl.getUniformLocation(pr,'time'),uM=gl.getUniformLocation(pr,'move'),uTh=gl.getUniformLocation(pr,'touch');
+  let mv=[0,0];
+  canvas.addEventListener('mousemove',e=>{mv=[mv[0]+e.movementX,mv[1]+e.movementY];});
+  function rsz(){const d=Math.max(1,.5*devicePixelRatio);canvas.width=canvas.offsetWidth*d;canvas.height=canvas.offsetHeight*d;gl.viewport(0,0,canvas.width,canvas.height);}
+  rsz(); new ResizeObserver(rsz).observe(canvas);
+  function draw(now){
+    gl.clearColor(0,0,0,1);gl.clear(gl.COLOR_BUFFER_BIT);gl.useProgram(pr);
+    gl.uniform2f(uR,canvas.width,canvas.height);gl.uniform1f(uT,now*1e-3);
+    gl.uniform2f(uM,mv[0],mv[1]);gl.uniform2f(uTh,mouse[0],mouse[1]);
+    gl.drawArrays(gl.TRIANGLE_STRIP,0,4);requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+}
+
+const globalMouse=[0,0];
+window.addEventListener('mousemove',e=>{globalMouse[0]=e.clientX;globalMouse[1]=innerHeight-e.clientY;});
+
+// Inner canvas (device preview on landing)
+mkShader(document.getElementById('inner-canvas'), globalMouse);
+// Dashboard canvas
+mkShader(document.getElementById('dash-canvas'), globalMouse);
+</script>
+</body>
+</html>

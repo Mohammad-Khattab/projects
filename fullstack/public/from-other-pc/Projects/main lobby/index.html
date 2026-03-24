@@ -1,0 +1,1785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <title>MHub</title>
+    <style>
+        :root {
+            --bg:        #000000;
+            --bg-card:   #141414;
+            --bg-dim:    #28282d;
+            --grid-line: #1e1e23;
+            --muted:     #50505a;
+            --secondary: #78788a;
+            --text:      #b4b4b4;
+            --border:    #28282d;
+            --row-hover: #0f0f12;
+
+            /* Accent — red by default, overridable */
+            --accent:    #ff1a2e;
+            --accent-lo: rgba(255,26,46,0.08);
+            --accent-md: rgba(255,26,46,0.15);
+            --accent-glow: 0 0 12px rgba(255,26,46,0.5), 0 0 28px rgba(255,26,46,0.15);
+
+            --green:  #00c864;
+            --amber:  #ffc800;
+            --red:    #ff5050;
+            --cyan:   #328cff;
+
+            --font:      'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            height: 100%;
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 13px;
+            overflow: hidden;
+            overscroll-behavior-y: contain;
+        }
+
+        /* Noise texture */
+        #app {
+            display: flex;
+            flex-direction: column;
+            height: 100svh;
+        }
+        #app::before {
+            content: '';
+            position: fixed; inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
+        }
+        #app > * { position: relative; z-index: 1; }
+
+        ::selection { background: var(--accent-md); color: #fff; }
+
+        /* ── Scrollbar ─────────────────────────────────────── */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--bg-dim); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+        /* ── Header ────────────────────────────────────────── */
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 0 16px;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg);
+            flex-shrink: 0;
+            height: 50px;
+            position: relative;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+            cursor: default;
+            user-select: none;
+        }
+        .header-logo {
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: var(--accent-glow);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            font-size: 13px;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.5px;
+        }
+        .header-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+            letter-spacing: 0.02em;
+        }
+
+        /* ── Tab bar (centered) ─────────────────────────────── */
+        .tab-bar {
+            display: flex;
+            gap: 6px;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .tab-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 18px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: transparent;
+            color: var(--secondary);
+            font-family: var(--font);
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+        .tab-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+        .tab-btn:hover {
+            color: var(--text);
+            border-color: var(--muted);
+            background: rgba(255,255,255,0.04);
+        }
+        .tab-btn.active {
+            color: var(--accent);
+            border-color: var(--accent);
+            background: var(--accent-lo);
+        }
+        .tab-btn.active svg { stroke: var(--accent); }
+
+        /* ── Header right + theme wrapper ───────────────────── */
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+            margin-left: auto;
+            position: relative;
+        }
+        .icon-btn {
+            width: 32px; height: 32px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: transparent;
+            color: var(--secondary);
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.15s;
+            font-size: 15px;
+            position: relative;
+        }
+        .icon-btn:hover { color: var(--text); border-color: var(--muted); background: rgba(255,255,255,0.04); }
+        .icon-btn.active { color: var(--accent); border-color: var(--accent); background: var(--accent-lo); }
+
+        /* ── Floating theme button (bottom-left) ─────────────── */
+        #themeBtn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 9997;
+            width: 38px; height: 38px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-card);
+            color: var(--secondary);
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.15s;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+        }
+        #themeBtn:hover { color: var(--text); border-color: var(--muted); }
+        #themeBtn.active { color: var(--accent); border-color: var(--accent); background: var(--accent-lo); }
+
+        /* ── Tab content ────────────────────────────────────── */
+        .tab-content { flex: 1; overflow: hidden; position: relative; }
+        .tab-panel {
+            display: none;
+            position: absolute; inset: 0;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .tab-panel.active { display: flex; flex-direction: column; }
+
+        /* ── Section header ─────────────────────────────────── */
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            flex-shrink: 0;
+        }
+        .section-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--muted);
+        }
+
+        /* ── Buttons ────────────────────────────────────────── */
+        .btn {
+            padding: 6px 14px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: transparent;
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+        .btn:hover { border-color: var(--muted); color: #fff; }
+        .btn-accent {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--accent-lo);
+        }
+        .btn-accent:hover { background: var(--accent-md); color: #fff; }
+        .btn-danger { border-color: rgba(255,80,80,0.4); color: var(--red); }
+        .btn-danger:hover { background: rgba(255,80,80,0.1); }
+
+        /* ── Cards grid ─────────────────────────────────────── */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+        }
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--accent);
+            border-radius: 6px;
+            padding: 14px;
+            cursor: pointer;
+            transition: all 0.15s;
+            position: relative;
+        }
+        .card:hover {
+            border-color: var(--muted);
+            border-left-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+        .card-thumb {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: var(--bg-dim);
+            border-radius: 4px;
+            margin-bottom: 10px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--muted);
+            font-size: 24px;
+            overflow: hidden;
+        }
+        .card-thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; }
+        .card-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .card-desc {
+            font-size: 11px;
+            color: var(--secondary);
+            line-height: 1.4;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+        .card-del {
+            position: absolute;
+            top: 8px; right: 8px;
+            width: 22px; height: 22px;
+            border: none;
+            background: transparent;
+            color: var(--muted);
+            cursor: pointer;
+            border-radius: 4px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px;
+            opacity: 0;
+            transition: all 0.15s;
+        }
+        .card:hover .card-del { opacity: 1; }
+        .card-del:hover { color: var(--red); background: rgba(255,80,80,0.1); }
+
+        .card-add {
+            border-style: dashed;
+            border-left-style: dashed;
+            border-left-width: 1px;
+            border-color: var(--bg-dim);
+            color: var(--muted);
+            display: flex; align-items: center; justify-content: center;
+            flex-direction: column;
+            gap: 6px;
+            min-height: 110px;
+            font-size: 12px;
+        }
+        .card-add:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.4); }
+        .card-add-icon { font-size: 22px; }
+
+        /* ── Empty state ────────────────────────────────────── */
+        .empty-state {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            color: var(--muted);
+            min-height: 200px;
+        }
+        .empty-state-icon { font-size: 36px; opacity: 0.4; }
+        .empty-state-text { font-size: 13px; }
+
+        /* ── Projects layout ────────────────────────────────── */
+        .projects-layout {
+            display: flex;
+            gap: 16px;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .proj-sidebar {
+            width: 240px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .proj-sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+        .proj-list {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .proj-item {
+            padding: 8px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.15s;
+            border: 1px solid transparent;
+        }
+        .proj-item:hover { background: var(--bg-card); border-color: var(--border); }
+        .proj-item.active { background: var(--accent-lo); border-color: var(--accent); }
+        .proj-item-row {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .proj-item-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #fff;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
+        }
+        .proj-item.active .proj-item-title { color: var(--accent); }
+        .proj-rename-btn {
+            flex-shrink: 0;
+            width: 18px; height: 18px;
+            border: none;
+            background: transparent;
+            color: var(--muted);
+            cursor: pointer;
+            border-radius: 3px;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0;
+            transition: all 0.12s;
+            padding: 0;
+        }
+        .proj-item:hover .proj-rename-btn { opacity: 1; }
+        .proj-rename-btn:hover { color: var(--text); background: var(--bg-dim); }
+        .proj-rename-input {
+            flex: 1;
+            background: var(--bg-dim);
+            border: 1px solid var(--accent);
+            border-radius: 3px;
+            color: #fff;
+            font-family: var(--font);
+            font-size: 12px;
+            font-weight: 600;
+            padding: 1px 5px;
+            outline: none;
+            min-width: 0;
+        }
+        .proj-item-preview {
+            font-size: 11px;
+            color: var(--secondary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-top: 2px;
+        }
+
+        .proj-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-width: 0;
+            min-height: 0;
+        }
+
+        /* Notes panel */
+        .notes-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        .notes-title-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-family: var(--font);
+            font-size: 15px;
+            font-weight: 600;
+            outline: none;
+        }
+        .notes-title-input::placeholder { color: var(--muted); }
+        .notes-textarea {
+            width: 100%;
+            background: var(--bg-dim);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 12px;
+            padding: 8px 10px;
+            resize: vertical;
+            min-height: 80px;
+            outline: none;
+            transition: border-color 0.15s;
+            line-height: 1.5;
+        }
+        .notes-textarea:focus { border-color: var(--accent); }
+        .notes-textarea::placeholder { color: var(--muted); }
+        .notes-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .notes-saved {
+            font-size: 11px;
+            color: var(--green);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .notes-saved.show { opacity: 1; }
+
+        /* Chat panel */
+        .chat-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+        .chat-header {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+        .chat-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--muted);
+        }
+        .model-pills {
+            display: flex;
+            gap: 4px;
+        }
+        .model-pill {
+            padding: 3px 10px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            background: transparent;
+            font-family: var(--font);
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.15s;
+            color: var(--secondary);
+        }
+        .model-pill:hover { border-color: var(--muted); color: var(--text); }
+        .model-pill.opus.active   { border-color: var(--cyan);  background: rgba(50,140,255,0.12); color: var(--cyan); }
+        .model-pill.sonnet.active { border-color: var(--green); background: rgba(0,200,100,0.12);  color: var(--green); }
+        .model-pill.haiku.active  { border-color: var(--amber); background: rgba(255,200,0,0.12);  color: var(--amber); }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .chat-msg {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        .chat-msg-role {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--muted);
+        }
+        .chat-msg.user .chat-msg-role { color: var(--accent); }
+        .chat-msg.assistant .chat-msg-role { color: var(--secondary); }
+        .chat-msg-text {
+            font-size: 12px;
+            color: var(--text);
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .chat-msg.user .chat-msg-text { color: #d4d4d4; }
+        .chat-streaming .chat-msg-text::after {
+            content: '▋';
+            animation: blink 1s step-end infinite;
+            color: var(--accent);
+        }
+
+        .chat-input-bar {
+            padding: 10px 14px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .chat-input {
+            flex: 1;
+            background: var(--bg-dim);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 12px;
+            padding: 6px 10px;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+        .chat-input:focus { border-color: var(--accent); }
+        .chat-input::placeholder { color: var(--muted); }
+        .chat-send-btn {
+            padding: 6px 16px;
+            border: 1px solid var(--accent);
+            border-radius: 4px;
+            background: var(--accent-lo);
+            color: var(--accent);
+            font-family: var(--font);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+        .chat-send-btn:hover { background: var(--accent-md); color: #fff; }
+        .chat-send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .chat-no-project {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        /* ── Theme backdrop (closes popover on outside click) ── */
+        #themeBackdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 9998;
+            background: transparent;
+        }
+        #themeBackdrop.open { display: block; }
+
+        /* ── Theme popover ──────────────────────────────────── */
+        .theme-popover {
+            position: fixed;
+            width: 230px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+            z-index: 9999;
+            padding: 14px;
+            display: none;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .theme-popover.open { display: flex; }
+        .theme-section-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+        .accent-swatches {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .swatch {
+            width: 24px; height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.15s;
+        }
+        .swatch:hover { transform: scale(1.15); }
+        .swatch.active { border-color: #fff; box-shadow: 0 0 0 2px var(--bg-card); }
+        .theme-pills {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .theme-pill {
+            padding: 4px 12px;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            background: transparent;
+            color: var(--secondary);
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: var(--font);
+        }
+        .theme-pill:hover { border-color: var(--muted); color: var(--text); }
+        .theme-pill.active { border-color: var(--accent); color: var(--accent); background: var(--accent-lo); }
+
+        /* ── Modal ──────────────────────────────────────────── */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            display: none;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            width: 380px;
+            max-width: calc(100vw - 32px);
+            box-shadow: 0 4px 24px rgba(0,0,0,0.6);
+        }
+        .modal-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 16px;
+        }
+        .modal-field {
+            margin-bottom: 12px;
+        }
+        .modal-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--muted);
+            margin-bottom: 4px;
+        }
+        .modal-input {
+            width: 100%;
+            background: var(--bg-dim);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 12px;
+            padding: 7px 10px;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+        .modal-input:focus { border-color: var(--accent); }
+        .modal-input::placeholder { color: var(--muted); }
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        /* ── Confirm modal ──────────────────────────────────── */
+        .confirm-modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            display: none;
+        }
+        .confirm-modal-overlay.open { display: flex; }
+        .confirm-modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            width: 320px;
+            max-width: calc(100vw - 32px);
+            box-shadow: 0 4px 24px rgba(0,0,0,0.6);
+        }
+        .confirm-modal-msg {
+            font-size: 13px;
+            color: var(--text);
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+        .confirm-modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        /* ── Animations ─────────────────────────────────────── */
+        @keyframes blink   { 0%,100%{opacity:1} 50%{opacity:0.3} }
+        @keyframes spin    { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+        @keyframes shimmer { from{transform:translateX(-100%)} to{transform:translateX(200%)} }
+
+        /* ── Splash overlay ─────────────────────────────────── */
+        #splash {
+            position: fixed; inset: 0;
+            background: var(--bg);
+            z-index: 99999;
+            display: flex; align-items: center; justify-content: center;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        #splash.hiding {
+            opacity: 0;
+            transform: scale(1.04);
+            pointer-events: none;
+        }
+        #splash.hidden { display: none; }
+
+        .splash-center {
+            position: relative;
+            width: 120px; height: 120px;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* Three concentric rings */
+        .splash-ring {
+            position: absolute;
+            border-radius: 50%;
+            border: 1.5px solid var(--accent);
+            animation: ring-pulse 1.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        .splash-ring:nth-child(1) { width: 40px;  height: 40px;  opacity: 0.9; animation-delay: 0s; }
+        .splash-ring:nth-child(2) { width: 70px;  height: 70px;  opacity: 0.55; animation-delay: 0.18s; }
+        .splash-ring:nth-child(3) { width: 100px; height: 100px; opacity: 0.25; animation-delay: 0.36s; }
+
+        @keyframes ring-pulse {
+            0%   { transform: scale(0.85); opacity: var(--base-op, 0.6); }
+            50%  { transform: scale(1.08); opacity: calc(var(--base-op, 0.6) * 1.4); }
+            100% { transform: scale(0.85); opacity: var(--base-op, 0.6); }
+        }
+
+        /* Rotating arc on outermost ring */
+        .splash-arc {
+            position: absolute;
+            width: 100px; height: 100px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            border-top-color: var(--accent);
+            animation: spin 0.9s linear infinite;
+        }
+
+        /* Center logo */
+        .splash-logo {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: var(--accent-glow);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 700; color: #fff;
+            letter-spacing: -0.5px;
+            z-index: 1;
+            animation: logo-beat 1.4s ease-in-out infinite;
+        }
+        @keyframes logo-beat {
+            0%,100% { transform: scale(1);    box-shadow: var(--accent-glow); }
+            50%      { transform: scale(1.12); box-shadow: var(--accent-glow), 0 0 32px var(--accent); }
+        }
+
+        /* ── Skeleton cards ─────────────────────────────────── */
+        .card-skel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--bg-dim);
+            border-radius: 6px;
+            padding: 14px;
+            overflow: hidden;
+            position: relative;
+        }
+        .card-skel::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(90deg,
+                transparent 0%,
+                rgba(255,255,255,0.04) 50%,
+                transparent 100%);
+            animation: shimmer 1.4s ease-in-out infinite;
+        }
+        .skel-thumb {
+            width: 100%; aspect-ratio: 16/9;
+            background: var(--bg-dim); border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .skel-line {
+            height: 10px; border-radius: 3px;
+            background: var(--bg-dim); margin-bottom: 6px;
+        }
+        .skel-line.short { width: 55%; }
+
+        /* ── Refresh spinner (section header) ───────────────── */
+        .refresh-arc {
+            width: 14px; height: 14px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            animation: spin 0.7s linear infinite;
+            flex-shrink: 0;
+            display: none;
+        }
+        .refreshing .refresh-arc { display: block; }
+
+        /* ── Mobile nav ─────────────────────────────────────── */
+        .mobile-nav {
+            display: none;
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            height: 56px;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            z-index: 9999;
+            justify-content: space-around;
+            align-items: center;
+        }
+        .mobile-nav-btn {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            background: none;
+            border: none;
+            color: var(--muted);
+            font-family: var(--font);
+            font-size: 9px;
+            cursor: pointer;
+            padding: 6px 0;
+            transition: color 0.15s;
+        }
+        .mobile-nav-btn.active { color: var(--accent); }
+        .mobile-nav-icon { font-size: 18px; }
+
+        @media (max-width: 600px) {
+            .mobile-nav { display: flex; }
+            .header .tab-bar { display: none; }
+            #themeBtn { display: none; }
+            .tab-panel { padding: 12px; padding-bottom: 68px; }
+            .projects-layout { flex-direction: column; }
+            .proj-sidebar { width: 100%; max-height: 180px; }
+        }
+    </style>
+</head>
+<body>
+<div id="splash">
+    <div class="splash-center">
+        <div class="splash-ring"></div>
+        <div class="splash-ring"></div>
+        <div class="splash-ring"></div>
+        <div class="splash-arc"></div>
+        <div class="splash-logo">M</div>
+    </div>
+</div>
+
+<div id="app">
+
+    <!-- ── Header ── -->
+    <header class="header">
+        <div class="header-brand">
+            <div class="header-logo">M</div>
+            <span class="header-name">MHub</span>
+        </div>
+
+        <div class="tab-bar">
+            <button class="tab-btn active" data-tab="games">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="6" width="20" height="12" rx="3"/>
+                    <path d="M8 12h4M10 10v4M16 11h.01M18 13h.01"/>
+                </svg>
+                Games
+            </button>
+            <button class="tab-btn" data-tab="projects">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2a7 7 0 0 1 7 7c0 3.5-2.5 6-4 7.5V18H9v-1.5C7.5 15 5 12.5 5 9a7 7 0 0 1 7-7z"/>
+                    <path d="M9 21h6M10 18v-3M14 18v-3"/>
+                </svg>
+                Projects
+            </button>
+            <button class="tab-btn" data-tab="sites">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                </svg>
+                Sites
+            </button>
+        </div>
+
+        <!-- theme btn is now a fixed float button below -->
+    </header>
+
+    <!-- ── Tab Content ── -->
+    <div class="tab-content">
+
+        <!-- Games Tab -->
+        <div class="tab-panel active" data-tab="games" id="gamesPanel">
+            <div class="section-header" id="gamesHeader">
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <span class="section-title">Games</span>
+                    <div class="refresh-arc" id="gamesArc"></div>
+                </div>
+                <button class="btn btn-accent" id="addGameBtn">+ Add Game</button>
+            </div>
+            <div class="card-grid" id="gamesGrid"></div>
+        </div>
+
+        <!-- Projects Tab -->
+        <div class="tab-panel" data-tab="projects" id="projectsPanel">
+            <div class="projects-layout">
+                <!-- Sidebar -->
+                <div class="proj-sidebar">
+                    <div class="proj-sidebar-header">
+                        <span class="section-title">Projects</span>
+                        <button class="btn btn-accent" id="newProjBtn" style="padding:4px 10px;font-size:11px;">+ New</button>
+                    </div>
+                    <div class="proj-list" id="projList"></div>
+                </div>
+
+                <!-- Main -->
+                <div class="proj-main" id="projMain">
+                    <div class="chat-no-project" id="projPlaceholder">
+                        Select a project or create a new one
+                    </div>
+
+                    <div id="projEditor" style="display:none;flex-direction:column;gap:12px;flex:1;min-height:0;">
+                        <!-- Notes -->
+                        <div class="notes-panel">
+                            <input class="notes-title-input" id="noteTitle" placeholder="Project title..." autocomplete="off">
+                            <div style="width:100%;height:1px;background:var(--border);"></div>
+                            <textarea class="notes-textarea" id="noteBody" placeholder="Write your ideas, plans, or notes here..." rows="4"></textarea>
+                            <div class="notes-footer">
+                                <span class="notes-saved" id="notesSaved">Saved</span>
+                                <div style="display:flex;gap:8px;">
+                                    <button class="btn btn-danger" id="delProjBtn" style="font-size:11px;padding:4px 10px;">Delete</button>
+                                    <button class="btn btn-accent" id="saveProjBtn">Save</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Chat -->
+                        <div class="chat-panel">
+                            <div class="chat-header">
+                                <span class="chat-title">Ask Claude</span>
+                                <div class="model-pills">
+                                    <button class="model-pill opus" data-model="opus">Opus</button>
+                                    <button class="model-pill sonnet active" data-model="sonnet">Sonnet</button>
+                                    <button class="model-pill haiku" data-model="haiku">Haiku</button>
+                                </div>
+                            </div>
+                            <div class="chat-messages" id="chatMessages"></div>
+                            <div class="chat-input-bar">
+                                <input class="chat-input" id="chatInput" placeholder="Ask about this project..." autocomplete="off">
+                                <button class="chat-send-btn" id="chatSendBtn">Send</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sites Tab -->
+        <div class="tab-panel" data-tab="sites" id="sitesPanel">
+            <div class="section-header" id="sitesHeader">
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <span class="section-title">Sites</span>
+                    <div class="refresh-arc" id="sitesArc"></div>
+                </div>
+                <button class="btn btn-accent" id="addSiteBtn">+ Add Site</button>
+            </div>
+            <div class="card-grid" id="sitesGrid"></div>
+        </div>
+
+    </div>
+
+    <!-- ── Mobile Nav ── -->
+    <nav class="mobile-nav">
+        <button class="mobile-nav-btn active" data-tab="games">
+            <span class="mobile-nav-icon">&#127918;</span>
+            Games
+        </button>
+        <button class="mobile-nav-btn" data-tab="projects">
+            <span class="mobile-nav-icon">&#128161;</span>
+            Projects
+        </button>
+        <button class="mobile-nav-btn" data-tab="sites">
+            <span class="mobile-nav-icon">&#127760;</span>
+            Sites
+        </button>
+        <button class="mobile-nav-btn" id="mobileThemeBtn">
+            <span class="mobile-nav-icon">&#9881;</span>
+            Theme
+        </button>
+    </nav>
+
+</div>
+
+<!-- ── Floating Theme Button ── -->
+<button id="themeBtn" title="Theme settings">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+    </svg>
+</button>
+
+<!-- ── Theme Popover ── -->
+<div class="theme-popover" id="themePopover">
+    <div>
+        <div class="theme-section-label">Accent Color</div>
+        <div class="accent-swatches" id="accentSwatches"></div>
+    </div>
+    <div>
+        <div class="theme-section-label">Theme</div>
+        <div class="theme-pills" id="themePills"></div>
+    </div>
+</div>
+
+<!-- ── Theme backdrop ── -->
+<div id="themeBackdrop"></div>
+
+<!-- ── Add Game Modal ── -->
+<div class="modal-overlay" id="addGameModal">
+    <div class="modal">
+        <div class="modal-title">Add Game</div>
+        <div class="modal-field">
+            <div class="modal-label">Name</div>
+            <input class="modal-input" id="gameNameInput" placeholder="My Game" autocomplete="off">
+        </div>
+        <div class="modal-field">
+            <div class="modal-label">URL / Path</div>
+            <input class="modal-input" id="gameUrlInput" placeholder="http://localhost:3000 or file path" autocomplete="off">
+        </div>
+        <div class="modal-field">
+            <div class="modal-label">Description</div>
+            <input class="modal-input" id="gameDescInput" placeholder="Optional short description" autocomplete="off">
+        </div>
+        <div class="modal-field">
+            <div class="modal-label">Thumbnail URL <span style="color:var(--muted)">(optional)</span></div>
+            <input class="modal-input" id="gameThumbInput" placeholder="https://..." autocomplete="off">
+        </div>
+        <div class="modal-footer">
+            <button class="btn" id="addGameCancel">Cancel</button>
+            <button class="btn btn-accent" id="addGameConfirm">Add Game</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Add Site Modal ── -->
+<div class="modal-overlay" id="addSiteModal">
+    <div class="modal">
+        <div class="modal-title">Add Site</div>
+        <div class="modal-field">
+            <div class="modal-label">Name</div>
+            <input class="modal-input" id="siteNameInput" placeholder="My Website" autocomplete="off">
+        </div>
+        <div class="modal-field">
+            <div class="modal-label">URL</div>
+            <input class="modal-input" id="siteUrlInput" placeholder="http://localhost:8080" autocomplete="off">
+        </div>
+        <div class="modal-field">
+            <div class="modal-label">Description</div>
+            <input class="modal-input" id="siteDescInput" placeholder="Optional short description" autocomplete="off">
+        </div>
+        <div class="modal-field">
+            <div class="modal-label">Thumbnail URL <span style="color:var(--muted)">(optional)</span></div>
+            <input class="modal-input" id="siteThumbInput" placeholder="https://..." autocomplete="off">
+        </div>
+        <div class="modal-footer">
+            <button class="btn" id="addSiteCancel">Cancel</button>
+            <button class="btn btn-accent" id="addSiteConfirm">Add Site</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Confirm Modal ── -->
+<div class="confirm-modal-overlay" id="confirmModal">
+    <div class="confirm-modal">
+        <div class="confirm-modal-msg" id="confirmMsg"></div>
+        <div class="confirm-modal-footer">
+            <button class="btn" id="confirmNo">Cancel</button>
+            <button class="btn btn-danger" id="confirmYes">Delete</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+const state = {
+    games: [],
+    sites: [],
+    projects: [],
+    activeTab: 'games',
+    activeProject: null,
+    chatModel: 'sonnet',
+    chatHistory: {},   // projectId -> [{role, content}]
+    streaming: false,
+};
+
+// ── Theme ──────────────────────────────────────────────────────────────────
+// Track active names in JS — never read back from CSS (unreliable)
+let activeAccentName = 'red';
+let activeThemeName  = 'black';
+
+const ACCENTS = [
+    { name: 'red',    hex: '#ff1a2e', r: 255, g: 26,  b: 46  },
+    { name: 'cyan',   hex: '#328cff', r: 50,  g: 140, b: 255 },
+    { name: 'green',  hex: '#00c864', r: 0,   g: 200, b: 100 },
+    { name: 'amber',  hex: '#ffc800', r: 255, g: 200, b: 0   },
+    { name: 'purple', hex: '#a259ff', r: 162, g: 89,  b: 255 },
+    { name: 'white',  hex: '#c8c8c8', r: 200, g: 200, b: 200 },
+];
+
+const THEMES = {
+    dark: {
+        '--bg':        '#000000',
+        '--bg-card':   '#141414',
+        '--bg-dim':    '#28282d',
+        '--grid-line': '#1e1e23',
+        '--muted':     '#50505a',
+        '--secondary': '#78788a',
+        '--text':      '#b4b4b4',
+        '--border':    '#28282d',
+        '--row-hover': '#0f0f12',
+    },
+    light: {
+        '--bg':        '#f0f2f5',
+        '--bg-card':   '#ffffff',
+        '--bg-dim':    '#e2e5ea',
+        '--grid-line': '#dde0e8',
+        '--muted':     '#9096a8',
+        '--secondary': '#606880',
+        '--text':      '#1c1e26',
+        '--border':    '#d8dce6',
+        '--row-hover': '#f7f8fa',
+    },
+};
+
+function applyAccent(a) {
+    activeAccentName = a.name;
+    const root = document.documentElement;
+    root.style.setProperty('--accent',      a.hex);
+    root.style.setProperty('--accent-lo',   `rgba(${a.r},${a.g},${a.b},0.08)`);
+    root.style.setProperty('--accent-md',   `rgba(${a.r},${a.g},${a.b},0.15)`);
+    root.style.setProperty('--accent-glow', `0 0 12px rgba(${a.r},${a.g},${a.b},0.5), 0 0 28px rgba(${a.r},${a.g},${a.b},0.15)`);
+    localStorage.setItem('hub_accent', a.name);
+    document.querySelectorAll('.swatch').forEach(el =>
+        el.classList.toggle('active', el.dataset.accentName === a.name)
+    );
+}
+
+function applyTheme(name) {
+    activeThemeName = name;
+    const vars = THEMES[name];
+    const root = document.documentElement;
+    Object.entries(vars).forEach(([k, v]) => root.style.setProperty(k, v));
+    localStorage.setItem('hub_theme', name);
+    document.querySelectorAll('.theme-pill').forEach(el =>
+        el.classList.toggle('active', el.dataset.themeName === name)
+    );
+}
+
+function initTheme() {
+    const savedAccent = localStorage.getItem('hub_accent');
+    const savedTheme  = localStorage.getItem('hub_theme');
+    const accent = ACCENTS.find(a => a.name === (savedAccent || 'red')) || ACCENTS[0];
+    applyAccent(accent);
+    applyTheme(savedTheme && THEMES[savedTheme] ? savedTheme : 'dark');
+    renderAccentSwatches();
+    renderThemePills();
+}
+
+function renderAccentSwatches() {
+    const container = document.getElementById('accentSwatches');
+    container.innerHTML = '';
+    ACCENTS.forEach(a => {
+        const el = document.createElement('div');
+        el.className = 'swatch' + (a.name === activeAccentName ? ' active' : '');
+        el.style.background = a.hex;
+        el.title = a.name;
+        el.dataset.accentName = a.name;
+        el.addEventListener('click', () => applyAccent(a));
+        container.appendChild(el);
+    });
+}
+
+function renderThemePills() {
+    const container = document.getElementById('themePills');
+    container.innerHTML = '';
+    ['dark', 'light'].forEach(name => {
+        const el = document.createElement('button');
+        el.className = 'theme-pill' + (name === activeThemeName ? ' active' : '');
+        el.textContent = name.charAt(0).toUpperCase() + name.slice(1);
+        el.dataset.themeName = name;
+        el.addEventListener('click', () => applyTheme(name));
+        container.appendChild(el);
+    });
+}
+
+// ── Tab switching ──────────────────────────────────────────────────────────
+function switchTab(name) {
+    state.activeTab = name;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.dataset.tab === name));
+    document.querySelectorAll('.mobile-nav-btn[data-tab]').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+}
+
+// ── API helpers ─────────────────────────────────────────────────────────────
+async function api(method, path, body) {
+    const opts = { method, headers: { 'Content-Type': 'application/json' } };
+    if (body) opts.body = JSON.stringify(body);
+    const res = await fetch(path, opts);
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+}
+
+// ── Relative time ──────────────────────────────────────────────────────────
+function relTime(ts) {
+    const secs = Math.floor(Date.now() / 1000 - ts);
+    if (secs < 60) return `${secs}s ago`;
+    if (secs < 3600) return `${Math.floor(secs/60)}m ago`;
+    if (secs < 86400) return `${Math.floor(secs/3600)}h ago`;
+    return `${Math.floor(secs/86400)}d ago`;
+}
+
+// ── Confirm modal ──────────────────────────────────────────────────────────
+function showConfirm(msg) {
+    return new Promise(resolve => {
+        document.getElementById('confirmMsg').textContent = msg;
+        document.getElementById('confirmModal').classList.add('open');
+        const yes = document.getElementById('confirmYes');
+        const no  = document.getElementById('confirmNo');
+        const cleanup = () => {
+            document.getElementById('confirmModal').classList.remove('open');
+            yes.removeEventListener('click', onYes);
+            no.removeEventListener('click', onNo);
+        };
+        const onYes = () => { cleanup(); resolve(true); };
+        const onNo  = () => { cleanup(); resolve(false); };
+        yes.addEventListener('click', onYes);
+        no.addEventListener('click', onNo);
+    });
+}
+
+// ── Splash ─────────────────────────────────────────────────────────────────
+function hideSplash() {
+    const splash = document.getElementById('splash');
+    splash.classList.add('hiding');
+    setTimeout(() => splash.classList.add('hidden'), 420);
+}
+
+// ── Skeleton helpers ───────────────────────────────────────────────────────
+function showSkeletons(gridId, count = 4) {
+    const grid = document.getElementById(gridId);
+    grid.innerHTML = '';
+    for (let i = 0; i < count; i++) {
+        grid.innerHTML += `
+            <div class="card-skel">
+                <div class="skel-thumb"></div>
+                <div class="skel-line"></div>
+                <div class="skel-line short"></div>
+            </div>`;
+    }
+}
+
+function setArc(id, on) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = on ? 'block' : 'none';
+}
+
+// ── Games ──────────────────────────────────────────────────────────────────
+async function loadGames() {
+    setArc('gamesArc', true);
+    state.games = await api('GET', '/api/games');
+    setArc('gamesArc', false);
+    renderGames();
+}
+
+function renderGames() {
+    const grid = document.getElementById('gamesGrid');
+    grid.innerHTML = '';
+    if (state.games.length === 0) {
+        grid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">&#127918;</div><div class="empty-state-text">No games yet — add your first one</div></div>';
+        return;
+    }
+    state.games.forEach(g => {
+        const card = makeItemCard(g, 'game');
+        grid.appendChild(card);
+    });
+    const addCard = document.createElement('div');
+    addCard.className = 'card card-add';
+    addCard.innerHTML = '<div class="card-add-icon">+</div><div>Add Game</div>';
+    addCard.addEventListener('click', () => openAddModal('game'));
+    grid.appendChild(addCard);
+}
+
+// ── Sites ──────────────────────────────────────────────────────────────────
+async function loadSites() {
+    setArc('sitesArc', true);
+    state.sites = await api('GET', '/api/sites');
+    setArc('sitesArc', false);
+    renderSites();
+}
+
+function renderSites() {
+    const grid = document.getElementById('sitesGrid');
+    grid.innerHTML = '';
+    if (state.sites.length === 0) {
+        grid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">&#127760;</div><div class="empty-state-text">No sites yet — add your first one</div></div>';
+        return;
+    }
+    state.sites.forEach(s => {
+        const card = makeItemCard(s, 'site');
+        grid.appendChild(card);
+    });
+    const addCard = document.createElement('div');
+    addCard.className = 'card card-add';
+    addCard.innerHTML = '<div class="card-add-icon">+</div><div>Add Site</div>';
+    addCard.addEventListener('click', () => openAddModal('site'));
+    grid.appendChild(addCard);
+}
+
+function faviconUrl(url) {
+    try {
+        const origin = new URL(url).origin;
+        return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(origin)}&sz=128`;
+    } catch { return null; }
+}
+
+function makeItemCard(item, type) {
+    const card = document.createElement('div');
+    card.className = 'card';
+    // Use provided thumb, then try favicon from URL, then fallback icon
+    const imgSrc = item.thumb || faviconUrl(item.url);
+    const fallback = type === 'game' ? '&#127918;' : '&#127760;';
+    const thumbHtml = imgSrc
+        ? `<img src="${escHtml(imgSrc)}" alt="" style="width:100%;height:100%;object-fit:contain;border-radius:4px;padding:8px;" onerror="this.style.display='none';this.parentElement.innerHTML='${fallback}'">`
+        : fallback;
+    card.innerHTML = `
+        <div class="card-thumb">${thumbHtml}</div>
+        <div class="card-name">${escHtml(item.name)}</div>
+        <div class="card-desc">${escHtml(item.desc || '')}</div>
+        <button class="card-del" title="Remove">&#215;</button>
+    `;
+    card.addEventListener('click', (e) => {
+        if (e.target.classList.contains('card-del')) return;
+        window.open(item.url, '_blank');
+    });
+    card.querySelector('.card-del').addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const ok = await showConfirm(`Remove "${item.name}"?`);
+        if (!ok) return;
+        await api('DELETE', `/api/${type}s/${item.id}`);
+        if (type === 'game') loadGames(); else loadSites();
+    });
+    return card;
+}
+
+// ── Add item modals ────────────────────────────────────────────────────────
+function openAddModal(type) {
+    const id = type === 'game' ? 'addGameModal' : 'addSiteModal';
+    document.getElementById(id).classList.add('open');
+    document.getElementById(type === 'game' ? 'gameNameInput' : 'siteNameInput').focus();
+}
+
+function closeAddModal(type) {
+    const id = type === 'game' ? 'addGameModal' : 'addSiteModal';
+    document.getElementById(id).classList.remove('open');
+    ['Name','Url','Desc','Thumb'].forEach(f => {
+        const el = document.getElementById(`${type}${f}Input`);
+        if (el) el.value = '';
+    });
+}
+
+async function submitAddItem(type) {
+    const name  = document.getElementById(`${type}NameInput`).value.trim();
+    const url   = document.getElementById(`${type}UrlInput`).value.trim();
+    const desc  = document.getElementById(`${type}DescInput`).value.trim();
+    const thumb = document.getElementById(`${type}ThumbInput`).value.trim();
+    if (!name || !url) return;
+    await api('POST', `/api/${type}s`, { name, url, desc, thumb });
+    closeAddModal(type);
+    if (type === 'game') loadGames(); else loadSites();
+}
+
+// ── Projects ───────────────────────────────────────────────────────────────
+async function loadProjects() {
+    state.projects = await api('GET', '/api/projects');
+    renderProjList();
+}
+
+function renderProjList() {
+    const list = document.getElementById('projList');
+    list.innerHTML = '';
+    if (state.projects.length === 0) {
+        list.innerHTML = '<div style="color:var(--muted);font-size:11px;padding:8px 4px;">No projects yet</div>';
+        return;
+    }
+    state.projects.forEach(p => {
+        const item = document.createElement('div');
+        item.className = 'proj-item' + (state.activeProject?.id === p.id ? ' active' : '');
+
+        // Title row with rename button
+        const row = document.createElement('div');
+        row.className = 'proj-item-row';
+
+        const titleEl = document.createElement('div');
+        titleEl.className = 'proj-item-title';
+        titleEl.textContent = p.title || 'Untitled';
+
+        const renameBtn = document.createElement('button');
+        renameBtn.className = 'proj-rename-btn';
+        renameBtn.title = 'Rename';
+        renameBtn.innerHTML = '<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+
+        const preview = document.createElement('div');
+        preview.className = 'proj-item-preview';
+        preview.textContent = (p.notes || '').split('\n')[0] || 'No notes';
+
+        row.appendChild(titleEl);
+        row.appendChild(renameBtn);
+        item.appendChild(row);
+        item.appendChild(preview);
+
+        // Click item → select project
+        item.addEventListener('click', () => selectProject(p));
+
+        // Rename button → inline edit
+        renameBtn.addEventListener('click', e => {
+            e.stopPropagation();
+            titleEl.style.display = 'none';
+            renameBtn.style.display = 'none';
+
+            const input = document.createElement('input');
+            input.className = 'proj-rename-input';
+            input.value = p.title || '';
+            row.insertBefore(input, renameBtn);
+            input.focus();
+            input.select();
+
+            async function commitRename() {
+                const newTitle = input.value.trim() || 'Untitled';
+                input.remove();
+                titleEl.style.display = '';
+                renameBtn.style.display = '';
+                if (newTitle === p.title) return;
+                const updated = await api('PATCH', `/api/projects/${p.id}`, { title: newTitle });
+                p.title = updated.title;
+                titleEl.textContent = updated.title;
+                if (state.activeProject?.id === p.id) {
+                    state.activeProject = updated;
+                    document.getElementById('noteTitle').value = updated.title;
+                }
+            }
+            function cancelRename() {
+                input.remove();
+                titleEl.style.display = '';
+                renameBtn.style.display = '';
+            }
+
+            input.addEventListener('keydown', e => {
+                if (e.key === 'Enter') { e.preventDefault(); commitRename(); }
+                if (e.key === 'Escape') cancelRename();
+            });
+            input.addEventListener('blur', commitRename);
+        });
+
+        list.appendChild(item);
+    });
+}
+
+function selectProject(p) {
+    state.activeProject = p;
+    document.getElementById('projPlaceholder').style.display = 'none';
+    const editor = document.getElementById('projEditor');
+    editor.style.display = 'flex';
+    document.getElementById('noteTitle').value = p.title || '';
+    document.getElementById('noteBody').value = p.notes || '';
+    renderProjList();
+    renderChat();
+}
+
+async function saveProject() {
+    if (!state.activeProject) return;
+    const title = document.getElementById('noteTitle').value.trim();
+    const notes = document.getElementById('noteBody').value;
+    const updated = await api('PATCH', `/api/projects/${state.activeProject.id}`, { title, notes });
+    state.activeProject = updated;
+    const idx = state.projects.findIndex(p => p.id === updated.id);
+    if (idx !== -1) state.projects[idx] = updated;
+    renderProjList();
+    const saved = document.getElementById('notesSaved');
+    saved.classList.add('show');
+    setTimeout(() => saved.classList.remove('show'), 2000);
+}
+
+async function deleteProject() {
+    if (!state.activeProject) return;
+    const ok = await showConfirm(`Delete project "${state.activeProject.title}"?`);
+    if (!ok) return;
+    await api('DELETE', `/api/projects/${state.activeProject.id}`);
+    state.activeProject = null;
+    document.getElementById('projEditor').style.display = 'none';
+    document.getElementById('projPlaceholder').style.display = 'flex';
+    await loadProjects();
+}
+
+async function newProject() {
+    const p = await api('POST', '/api/projects', { title: 'New Project', notes: '' });
+    state.projects.push(p);
+    renderProjList();
+    selectProject(p);
+}
+
+// ── Chat ───────────────────────────────────────────────────────────────────
+function renderChat() {
+    const msgs = document.getElementById('chatMessages');
+    msgs.innerHTML = '';
+    if (!state.activeProject) return;
+    const history = state.chatHistory[state.activeProject.id] || [];
+    history.forEach(m => appendChatMsg(m.role, m.content));
+}
+
+function appendChatMsg(role, content, streaming = false) {
+    const msgs = document.getElementById('chatMessages');
+    const div = document.createElement('div');
+    div.className = 'chat-msg ' + role + (streaming ? ' chat-streaming' : '');
+    div.innerHTML = `<div class="chat-msg-role">${role === 'user' ? 'You' : 'Claude'}</div><div class="chat-msg-text">${escHtml(content)}</div>`;
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+    return div;
+}
+
+async function sendChat() {
+    if (state.streaming || !state.activeProject) return;
+    const input = document.getElementById('chatInput');
+    const msg = input.value.trim();
+    if (!msg) return;
+    input.value = '';
+
+    // save to local project notes before sending (if unsaved)
+    await saveProject();
+
+    const projId = state.activeProject.id;
+    if (!state.chatHistory[projId]) state.chatHistory[projId] = [];
+    state.chatHistory[projId].push({ role: 'user', content: msg });
+    appendChatMsg('user', msg);
+
+    const sendBtn = document.getElementById('chatSendBtn');
+    state.streaming = true;
+    sendBtn.disabled = true;
+    sendBtn.textContent = '...';
+
+    const streamDiv = appendChatMsg('assistant', '', true);
+    const textEl = streamDiv.querySelector('.chat-msg-text');
+    let accumulated = '';
+
+    try {
+        const res = await fetch(`/api/projects/${projId}/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: msg, model: state.chatModel }),
+        });
+
+        if (!res.ok) throw new Error(await res.text());
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buf = '';
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buf += decoder.decode(value, { stream: true });
+            const lines = buf.split('\n');
+            buf = lines.pop();
+            for (const line of lines) {
+                if (!line.startsWith('data: ')) continue;
+                const data = line.slice(6);
+                if (data === '[DONE]') break;
+                if (data.startsWith('[ERROR]')) {
+                    textEl.textContent = data;
+                    break;
+                }
+                accumulated += data.replace(/\\n/g, '\n');
+                textEl.textContent = accumulated;
+                const msgs = document.getElementById('chatMessages');
+                msgs.scrollTop = msgs.scrollHeight;
+            }
+        }
+    } catch (e) {
+        textEl.textContent = '[Error: ' + e.message + ']';
+    }
+
+    streamDiv.classList.remove('chat-streaming');
+    state.chatHistory[projId].push({ role: 'assistant', content: accumulated });
+    state.streaming = false;
+    sendBtn.disabled = false;
+    sendBtn.textContent = 'Send';
+}
+
+// ── Utilities ──────────────────────────────────────────────────────────────
+function escHtml(str) {
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+function init() {
+    initTheme();
+
+    // Tab switching
+    document.querySelectorAll('.tab-btn, .mobile-nav-btn[data-tab]').forEach(btn => {
+        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+
+    // Theme popover — backdrop pattern (reliable across DOM re-renders)
+    const themeBtn    = document.getElementById('themeBtn');
+    const popover     = document.getElementById('themePopover');
+    const backdrop    = document.getElementById('themeBackdrop');
+
+    function openTheme() {
+        // Position the popover above the bottom-left float button
+        const rect = themeBtn.getBoundingClientRect();
+        popover.style.top   = '';
+        popover.style.right = '';
+        popover.style.bottom = (window.innerHeight - rect.top + 8) + 'px';
+        popover.style.left  = rect.left + 'px';
+        popover.classList.add('open');
+        backdrop.classList.add('open');
+        themeBtn.classList.add('active');
+    }
+    function closeTheme() {
+        popover.classList.remove('open');
+        backdrop.classList.remove('open');
+        themeBtn.classList.remove('active');
+    }
+    function toggleTheme() {
+        popover.classList.contains('open') ? closeTheme() : openTheme();
+    }
+
+    themeBtn.addEventListener('click', toggleTheme);
+    backdrop.addEventListener('click', closeTheme);
+    document.getElementById('mobileThemeBtn').addEventListener('click', toggleTheme);
+
+    // Add game
+    document.getElementById('addGameBtn').addEventListener('click', () => openAddModal('game'));
+    document.getElementById('addGameCancel').addEventListener('click', () => closeAddModal('game'));
+    document.getElementById('addGameConfirm').addEventListener('click', () => submitAddItem('game'));
+    document.getElementById('addGameModal').addEventListener('click', e => {
+        if (e.target === e.currentTarget) closeAddModal('game');
+    });
+    document.getElementById('gameNameInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter') submitAddItem('game');
+    });
+
+    // Add site
+    document.getElementById('addSiteBtn').addEventListener('click', () => openAddModal('site'));
+    document.getElementById('addSiteCancel').addEventListener('click', () => closeAddModal('site'));
+    document.getElementById('addSiteConfirm').addEventListener('click', () => submitAddItem('site'));
+    document.getElementById('addSiteModal').addEventListener('click', e => {
+        if (e.target === e.currentTarget) closeAddModal('site');
+    });
+    document.getElementById('siteNameInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter') submitAddItem('site');
+    });
+
+    // Projects
+    document.getElementById('newProjBtn').addEventListener('click', newProject);
+    document.getElementById('saveProjBtn').addEventListener('click', saveProject);
+    document.getElementById('delProjBtn').addEventListener('click', deleteProject);
+
+    // Chat
+    document.getElementById('chatSendBtn').addEventListener('click', sendChat);
+    document.getElementById('chatInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+    });
+
+    // Model pills
+    document.querySelectorAll('.model-pill').forEach(p => {
+        p.addEventListener('click', () => {
+            document.querySelectorAll('.model-pill').forEach(x => x.classList.remove('active'));
+            p.classList.add('active');
+            state.chatModel = p.dataset.model;
+        });
+    });
+
+    // Escape closes modals
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+            closeAddModal('game');
+            closeAddModal('site');
+            document.getElementById('confirmModal').classList.remove('open');
+            closeTheme();
+        }
+    });
+
+    // Load data — show skeletons, then dismiss splash when all done
+    showSkeletons('gamesGrid');
+    showSkeletons('sitesGrid');
+    Promise.all([loadGames(), loadSites(), loadProjects()])
+        .finally(hideSplash);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

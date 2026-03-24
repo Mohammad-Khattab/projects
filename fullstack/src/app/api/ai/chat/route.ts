@@ -1,27 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Anthropic from '@anthropic-ai/sdk'
-import type { ChatMessage } from '@/lib/types'
+import { claudeDaemon } from '@/lib/claude-daemon'
 
+/** POST — send a new message to the subject's persistent daemon session */
 export async function POST(req: NextRequest) {
-  const { messages, subjectName, context } = await req.json() as {
-    messages: ChatMessage[]
+  const { subjectId, subjectName, message, context } = await req.json() as {
+    subjectId: string
     subjectName: string
+    message: string
     context?: string
   }
 
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
+  if (!subjectId || !message?.trim()) {
+    return NextResponse.json({ error: 'subjectId and message are required' }, { status: 400 })
+  }
 
-  const systemPrompt = `You are a helpful study assistant for a university student studying "${subjectName}". ${
-    context ? `Here is relevant course material context:\n\n${context}` : ''
-  }\n\nProvide clear, concise answers. When explaining concepts, use examples. Format your responses with markdown.`
+  try {
+    const reply = await claudeDaemon.send(subjectId, subjectName, message.trim(), context)
+    return NextResponse.json({ reply, historyLength: claudeDaemon.historyLength(subjectId) })
+  } catch (err) {
+    return NextResponse.json({ error: `Claude daemon failed: ${String(err)}` }, { status: 500 })
+  }
+}
 
-  const message = await client.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 2048,
-    system: systemPrompt,
-    messages: messages.map(m => ({ role: m.role, content: m.content }))
-  })
-
-  const reply = message.content[0].type === 'text' ? message.content[0].text : ''
-  return NextResponse.json({ reply })
+/** DELETE — clear a subject's daemon conversation history */
+export async function DELETE(req: NextRequest) {
+  const { subjectId } = await req.json() as { subjectId: string }
+  if (subjectId) claudeDaemon.clear(subjectId)
+  return NextResponse.json({ ok: true })
 }

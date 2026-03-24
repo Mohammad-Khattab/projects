@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MKLL — Final Design</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #050005; font-family: system-ui, sans-serif; color: white; overflow: hidden; height: 100vh; }
+
+  /* ── Shader canvas always behind ─────────────────────────── */
+  #shader-canvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; }
+
+  /* ── Shared: views sit on top ─────────────────────────────── */
+  .view {
+    position: fixed; inset: 0; z-index: 10;
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .view.hidden { opacity: 0; pointer-events: none; transform: scale(0.97); }
+
+  /* ════════════════════════════════════
+     LANDING — cinematic, no preview cards
+     ════════════════════════════════════ */
+  #landing {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 0;
+  }
+
+  /* Ambient orb decorations (3D-inspired depth, no real cards) */
+  .orb {
+    position: absolute; border-radius: 50%;
+    filter: blur(60px); pointer-events: none;
+    animation: orbDrift 10s ease-in-out infinite alternate;
+  }
+  .orb-1 { width: 300px; height: 300px; background: radial-gradient(circle, rgba(180,0,0,0.35), transparent); top: 10%; left: 8%; animation-delay: 0s; }
+  .orb-2 { width: 200px; height: 200px; background: radial-gradient(circle, rgba(100,0,0,0.25), transparent); bottom: 20%; right: 10%; animation-delay: 3s; }
+  .orb-3 { width: 150px; height: 150px; background: radial-gradient(circle, rgba(220,30,30,0.2), transparent); top: 50%; left: 50%; animation-delay: 6s; }
+  @keyframes orbDrift { 0%{transform:translate(0,0) scale(1)} 50%{transform:translate(20px,-30px) scale(1.1)} 100%{transform:translate(-10px,20px) scale(0.95)} }
+
+  /* Fine grain overlay — adds premium texture like the Instagram ref */
+  #landing::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 1;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    background-size: 150px;
+    opacity: 0.35;
+  }
+
+  .landing-inner { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; text-align: center; }
+
+  /* Eyebrow tag */
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(180,0,0,0.12); border: 1px solid rgba(200,40,40,0.25);
+    padding: 6px 16px; border-radius: 20px; margin-bottom: 28px;
+    font-size: 11px; letter-spacing: 3px; font-weight: 600;
+    color: rgba(255,120,120,0.8); text-transform: uppercase;
+    backdrop-filter: blur(8px);
+  }
+
+  /* Big title */
+  .hero-title {
+    font-size: 88px; font-weight: 900; font-family: monospace;
+    letter-spacing: 12px; line-height: 0.95;
+    background: linear-gradient(160deg, #ff6b6b 0%, #cc0000 35%, #ff4444 60%, #880000 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    background-size: 200%; animation: gradShift 5s ease infinite alternate;
+    margin-bottom: 6px;
+    /* text-shadow doesn't work with background-clip, but the color already pops */
+    filter: drop-shadow(0 0 40px rgba(200,0,0,0.4));
+  }
+  @keyframes gradShift { 0%{background-position:0%} 100%{background-position:100%} }
+
+  .hero-full-name {
+    font-size: 12px; letter-spacing: 5px; font-weight: 400;
+    color: rgba(200,80,80,0.55); text-transform: uppercase; margin-bottom: 28px;
+  }
+
+  /* Divider line */
+  .divider {
+    width: 60px; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(200,40,40,0.5), transparent);
+    margin: 0 auto 24px;
+  }
+
+  .hero-desc {
+    font-size: 15px; color: rgba(255,255,255,0.4);
+    max-width: 320px; line-height: 1.7; margin-bottom: 44px;
+    font-weight: 300; letter-spacing: 0.3px;
+  }
+
+  .get-started-btn {
+    position: relative; overflow: hidden;
+    padding: 15px 52px;
+    background: linear-gradient(135deg, #9b0000, #cc0000, #ff4444);
+    color: white; font-size: 14px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; border: none; border-radius: 40px; cursor: pointer;
+    box-shadow: 0 0 0 1px rgba(255,80,80,0.2), 0 12px 40px rgba(160,0,0,0.5);
+    animation: btnGlow 3s ease-in-out infinite;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .get-started-btn::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+    transform: skewX(-20deg) translateX(-200%);
+    animation: btnSheen 4s ease-in-out 1s infinite;
+  }
+  @keyframes btnSheen { 0%{transform:skewX(-20deg) translateX(-200%)} 40%,100%{transform:skewX(-20deg) translateX(300%)} }
+  @keyframes btnGlow {
+    0%,100%{box-shadow:0 0 0 1px rgba(255,80,80,0.2),0 12px 40px rgba(160,0,0,0.5)}
+    50%{box-shadow:0 0 0 1px rgba(255,80,80,0.3),0 12px 60px rgba(180,0,0,0.7),0 0 80px rgba(200,0,0,0.15)}
+  }
+  .get-started-btn:hover { transform: translateY(-3px) scale(1.04); }
+
+  /* ════════════════════════════════════
+     DASHBOARD — expandable gallery
+     ════════════════════════════════════ */
+  #dashboard { opacity: 0; pointer-events: none; }
+  #dashboard.visible { opacity: 1; pointer-events: all; }
+
+  .topbar {
+    position: absolute; top:0;left:0;right:0;height:52px;
+    background: rgba(0,0,0,0.35); backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(180,20,20,0.15);
+    display: flex; align-items: center; padding: 0 20px; gap: 14px; z-index: 20;
+  }
+  .logo-block { display:flex; flex-direction:column; line-height:1; gap:2px; }
+  .logo-name {
+    font-size:16px; font-weight:800; font-family:monospace; letter-spacing:3px;
+    background: linear-gradient(90deg,#ff6b6b,#cc0000,#ff4444);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    filter: drop-shadow(0 0 8px rgba(200,0,0,0.5));
+  }
+  .logo-sub { font-size:8.5px; color:rgba(200,80,80,0.55); letter-spacing:.5px; }
+  .search-wrap { flex:1; max-width:340px; margin:0 auto; }
+  .search-wrap input {
+    width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(180,20,20,0.2);
+    border-radius:20px; padding:6px 14px; color:rgba(255,255,255,0.85); font-size:12.5px; outline:none;
+  }
+  .search-wrap input::placeholder { color:rgba(255,255,255,0.25); }
+  .icon-btn {
+    width:32px; height:32px; background:rgba(255,255,255,0.05);
+    border:1px solid rgba(180,20,20,0.2); border-radius:8px;
+    display:flex; align-items:center; justify-content:center; font-size:14px; cursor:pointer;
+  }
+  .clock-time { font-size:15px; font-weight:700; font-family:monospace; color:rgba(255,100,100,0.9); }
+  .clock-date { font-size:9px; color:rgba(255,255,255,0.3); text-align:right; }
+
+  /* Apps area */
+  .apps-area {
+    position: absolute; top:52px; left:0; right:0; bottom:0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 24px; overflow-y: auto;
+  }
+
+  /* Stacked pile — before expanding */
+  .apps-stack {
+    position: relative; width: 100%; max-width: 580px; height: 240px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.5s;
+    margin-bottom: 16px;
+  }
+  .pile-card {
+    position: absolute; width: 145px; height: 145px;
+    background: rgba(255,255,255,0.055); backdrop-filter: blur(20px);
+    border: 1px solid rgba(180,20,20,0.28); border-radius: 22px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,100,100,0.08);
+    transition: all 0.55s cubic-bezier(.34,1.56,.64,1);
+  }
+  .pile-card::before {
+    content: ''; position: absolute; top:0; left:12%; right:12%; height:1px;
+    background: linear-gradient(90deg, transparent, rgba(255,80,80,0.4), transparent);
+  }
+  .pile-card:nth-child(1) { transform: rotate(-13deg) translateX(-150px) translateY(18px); z-index:1; opacity:0.75; }
+  .pile-card:nth-child(2) { transform: rotate(-5deg) translateX(-50px) translateY(4px); z-index:2; opacity:0.85; }
+  .pile-card:nth-child(3) { transform: rotate(2deg) translateX(50px) translateY(0); z-index:3; }
+  .pile-card:nth-child(4) { transform: rotate(9deg) translateX(148px) translateY(14px); z-index:4; opacity:0.85; }
+  .pile-card:nth-child(5) { transform: rotate(15deg) translateX(228px) translateY(28px); z-index:5; opacity:0.65; }
+  .pile-card .p-icon { font-size:32px; }
+  .pile-card .p-name { font-size:11px; color:rgba(255,255,255,0.85); font-weight:500; text-align:center; padding:0 6px; }
+  .pile-card .p-cat { font-size:9px; color:rgba(200,60,60,0.65); letter-spacing:1px; }
+
+  /* Hover lift on the whole pile */
+  .apps-stack:hover .pile-card:nth-child(3) { transform: rotate(2deg) translateX(50px) translateY(-8px); }
+
+  /* EXPANDED state */
+  .apps-stack.expanded {
+    height: auto; position: static; cursor: default;
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(130px,1fr));
+    gap: 14px; max-width: 680px;
+    margin-bottom: 0;
+  }
+  .apps-stack.expanded .pile-card {
+    position: static !important; width: 100%; height: 115px;
+    transform: none !important; opacity: 1 !important;
+  }
+  .apps-stack.expanded .pile-card:hover {
+    border-color: rgba(255,60,60,0.5);
+    transform: translateY(-4px) scale(1.03) !important;
+    box-shadow: 0 12px 40px rgba(180,0,0,0.3), inset 0 1px 0 rgba(255,100,100,0.1) !important;
+  }
+
+  .stack-hint {
+    font-size: 12px; color: rgba(200,80,80,0.45);
+    letter-spacing: 2px; text-transform: uppercase; text-align:center;
+    animation: hintPulse 2s ease-in-out infinite;
+    transition: opacity 0.3s;
+  }
+  .stack-hint.gone { opacity: 0; pointer-events: none; }
+  @keyframes hintPulse { 0%,100%{opacity:0.45} 50%{opacity:0.8} }
+
+  .back-btn {
+    display: none; align-items: center; gap: 8px;
+    background: rgba(150,0,0,0.1); border: 1px solid rgba(180,20,20,0.25);
+    color: rgba(255,100,100,0.75); padding: 7px 18px; border-radius: 20px;
+    font-size: 12px; font-weight: 600; letter-spacing: 1px; cursor: pointer;
+    margin-bottom: 20px; transition: background 0.2s; text-transform: uppercase;
+  }
+  .back-btn.visible { display: flex; }
+  .back-btn:hover { background: rgba(150,0,0,0.2); }
+
+  .add-card {
+    height: 115px; background: rgba(150,0,0,0.04);
+    border: 1.5px dashed rgba(180,20,20,0.22); border-radius: 22px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    cursor: pointer; transition: background 0.2s;
+  }
+  .add-card:hover { background: rgba(150,0,0,0.1); border-color: rgba(255,60,60,0.35); }
+  .add-plus { font-size: 22px; color: rgba(200,60,60,0.5); }
+  .add-label { font-size: 9.5px; color: rgba(200,60,60,0.45); letter-spacing: 1px; text-transform: uppercase; }
+</style>
+</head>
+<body>
+
+<canvas id="shader-canvas"></canvas>
+
+<!-- ── LANDING ───────────────────────────────────── -->
+<div id="landing" class="view">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="landing-inner">
+    <div class="eyebrow">✦ Personal Launchpad</div>
+    <div class="hero-title">MKLL</div>
+    <div class="hero-full-name">Mo Khattab Lamba Land</div>
+    <div class="divider"></div>
+    <div class="hero-desc">All your apps, tools, and games — one place, always ready.</div>
+    <button class="get-started-btn" onclick="enterDashboard()">Get Started</button>
+  </div>
+</div>
+
+<!-- ── DASHBOARD ─────────────────────────────────── -->
+<div id="dashboard" class="view">
+  <div class="topbar">
+    <div class="logo-block">
+      <span class="logo-name">MKLL</span>
+      <span class="logo-sub">Mo Khattab Lamba Land</span>
+    </div>
+    <div class="search-wrap"><input placeholder="⌘K  Search apps…"/></div>
+    <div style="display:flex;gap:8px">
+      <div class="icon-btn">＋</div>
+      <div class="icon-btn">⚙</div>
+    </div>
+    <div>
+      <div class="clock-time" id="clk">00:00</div>
+      <div class="clock-date" id="clkd">—</div>
+    </div>
+  </div>
+
+  <div class="apps-area">
+    <button class="back-btn" id="backBtn" onclick="collapseCards()">← Back</button>
+
+    <div class="apps-stack" id="appsStack" onclick="expandCards()">
+      <div class="pile-card"><div class="p-icon">🎮</div><div class="p-name">XO Game</div><div class="p-cat">Games</div></div>
+      <div class="pile-card"><div class="p-icon">🐍</div><div class="p-name">Snake</div><div class="p-cat">Games</div></div>
+      <div class="pile-card"><div class="p-icon">📚</div><div class="p-name">Study Hub</div><div class="p-cat">Tools</div></div>
+      <div class="pile-card"><div class="p-icon">🌐</div><div class="p-name">Browser</div><div class="p-cat">Tools</div></div>
+      <div class="pile-card"><div class="p-icon">💻</div><div class="p-name">Dev Tools</div><div class="p-cat">Tools</div></div>
+    </div>
+
+    <div class="stack-hint" id="stackHint">Click to expand your apps</div>
+  </div>
+</div>
+
+<script>
+// ── Transitions ────────────────────────────────────
+function enterDashboard() {
+  document.getElementById('landing').classList.add('hidden');
+  setTimeout(() => document.getElementById('dashboard').classList.add('visible'), 150);
+}
+let expanded = false;
+function expandCards() {
+  if (expanded) return;
+  expanded = true;
+  const stack = document.getElementById('appsStack');
+  stack.classList.add('expanded');
+  stack.onclick = null;
+  const add = document.createElement('div');
+  add.className='add-card';
+  add.innerHTML='<div class="add-plus">＋</div><div class="add-label">Add App</div>';
+  stack.appendChild(add);
+  document.getElementById('backBtn').classList.add('visible');
+  document.getElementById('stackHint').classList.add('gone');
+}
+function collapseCards() {
+  expanded = false;
+  const stack = document.getElementById('appsStack');
+  const add = stack.querySelector('.add-card');
+  if(add) add.remove();
+  stack.classList.remove('expanded');
+  stack.onclick = expandCards;
+  document.getElementById('backBtn').classList.remove('visible');
+  document.getElementById('stackHint').classList.remove('gone');
+}
+
+// ── Clock ──────────────────────────────────────────
+function tick() {
+  const n=new Date();
+  document.getElementById('clk').textContent=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
+  const D=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('clkd').textContent=D[n.getDay()]+', '+M[n.getMonth()]+' '+n.getDate();
+}
+tick(); setInterval(tick,1000);
+
+// ── WebGL Shader (deep red nebula) ─────────────────
+const canvas=document.getElementById('shader-canvas');
+const gl=canvas.getContext('webgl2');
+let prog,uR,uT,uMv,uTch;
+let mouse=[0,0],mv=[0,0];
+
+function resize(){
+  const d=Math.max(1,.5*window.devicePixelRatio);
+  canvas.width=innerWidth*d;canvas.height=innerHeight*d;
+  canvas.style.width=innerWidth+'px';canvas.style.height=innerHeight+'px';
+  if(gl)gl.viewport(0,0,canvas.width,canvas.height);
+}
+const vs=`#version 300 es
+precision highp float;
+in vec4 position;
+void main(){gl_Position=position;}`;
+
+const fs=`#version 300 es
+precision highp float;
+out vec4 O;
+uniform vec2 resolution;
+uniform float time;
+uniform vec2 move;
+uniform vec2 touch;
+#define FC gl_FragCoord.xy
+#define T time
+#define R resolution
+#define MN min(R.x,R.y)
+float rnd(vec2 p){p=fract(p*vec2(12.9898,78.233));p+=dot(p,p+34.56);return fract(p.x*p.y);}
+float noise(in vec2 p){vec2 i=floor(p),f=fract(p),u=f*f*(3.-2.*f);float a=rnd(i),b=rnd(i+vec2(1,0)),c=rnd(i+vec2(0,1)),d=rnd(i+1.);return mix(mix(a,b,u.x),mix(c,d,u.x),u.y);}
+float fbm(vec2 p){float t=.0,a=1.;mat2 m=mat2(1.,-.5,.2,1.2);for(int i=0;i<5;i++){t+=a*noise(p);p*=2.*m;a*=.5;}return t;}
+float clouds(vec2 p){float d=1.,t=.0;for(float i=.0;i<3.;i++){float a=d*fbm(i*10.+p.x*.2+.2*(1.+i)*p.y+d+i*i+p);t=mix(t,d,a);d=a;p*=2./(i+1.);}return t;}
+void main(void){
+  vec2 uv=(FC-.5*R)/MN,st=uv*vec2(2,1);
+  vec3 col=vec3(0);
+  float bg=clouds(vec2(st.x+T*.5,-st.y));
+  uv*=1.-.3*(sin(T*.2)*.5+.5);
+  for(float i=1.;i<12.;i++){
+    uv+=.1*cos(i*vec2(.1+.01*i,.8)+i*i+T*.5+.1*uv.x);
+    vec2 p=uv;float d=length(p);
+    vec3 base=cos(sin(i)*vec3(1,2,3))+1.;
+    // Heavily red-shift: boost red, kill green/blue
+    vec3 red=vec3(base.r*1.6+base.g*0.5, base.r*0.12, base.b*0.05);
+    col+=.00125/d*red;
+    float b=noise(i+p+bg*1.731);
+    col+=.002*b/length(max(p,vec2(b*p.x*.02,p.y)));
+    col=mix(col,vec3(bg*.3,bg*.03,bg*.03),d);
+  }
+  O=vec4(col,1);
+}`;
+
+function mk(t,s){const sh=gl.createShader(t);gl.shaderSource(sh,s);gl.compileShader(sh);return sh;}
+function init(){
+  const v=mk(gl.VERTEX_SHADER,vs),f=mk(gl.FRAGMENT_SHADER,fs);
+  prog=gl.createProgram();gl.attachShader(prog,v);gl.attachShader(prog,f);gl.linkProgram(prog);
+  const buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,1,-1,-1,1,1,1,-1]),gl.STATIC_DRAW);
+  const pos=gl.getAttribLocation(prog,'position');gl.enableVertexAttribArray(pos);gl.vertexAttribPointer(pos,2,gl.FLOAT,false,0,0);
+  uR=gl.getUniformLocation(prog,'resolution');uT=gl.getUniformLocation(prog,'time');
+  uMv=gl.getUniformLocation(prog,'move');uTch=gl.getUniformLocation(prog,'touch');
+}
+function draw(now){
+  gl.clearColor(0,0,0,1);gl.clear(gl.COLOR_BUFFER_BIT);gl.useProgram(prog);
+  gl.uniform2f(uR,canvas.width,canvas.height);gl.uniform1f(uT,now*1e-3);
+  gl.uniform2f(uMv,mv[0],mv[1]);gl.uniform2f(uTch,mouse[0],mouse[1]);
+  gl.drawArrays(gl.TRIANGLE_STRIP,0,4);requestAnimationFrame(draw);
+}
+canvas.addEventListener('mousemove',e=>{mv=[mv[0]+e.movementX,mv[1]+e.movementY];mouse=[e.clientX,canvas.height-e.clientY];});
+resize();window.addEventListener('resize',resize);
+init();requestAnimationFrame(draw);
+</script>
+</body>
+</html>

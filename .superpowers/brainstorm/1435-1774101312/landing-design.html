@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MKLL — Landing + Dashboard Preview</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #111; font-family: system-ui, sans-serif; color: white; overflow: hidden; }
+
+  .label-bar {
+    background: #1a1a1a;
+    border-bottom: 1px solid #333;
+    padding: 8px 20px;
+    font-size: 12px;
+    color: #888;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 36px;
+  }
+  .label-bar strong { color: #fff; }
+  .tab {
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid #444;
+    color: #aaa;
+  }
+  .tab.active { background: rgba(255,140,40,0.2); border-color: rgba(255,140,40,0.5); color: #ffb347; }
+
+  /* ===== SHARED ===== */
+  .view {
+    position: absolute;
+    inset: 36px 0 0 0;
+    overflow: hidden;
+  }
+  .shader-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 15% 35%, rgba(255,90,10,0.38) 0%, transparent 45%),
+      radial-gradient(ellipse at 80% 20%, rgba(200,60,0,0.28) 0%, transparent 40%),
+      radial-gradient(ellipse at 55% 75%, rgba(255,140,0,0.22) 0%, transparent 45%),
+      radial-gradient(ellipse at 90% 80%, rgba(180,40,0,0.2) 0%, transparent 40%),
+      #0d0008;
+    animation: shaderPulse 8s ease-in-out infinite alternate;
+  }
+  @keyframes shaderPulse {
+    0%   { filter: hue-rotate(0deg) brightness(1); }
+    50%  { filter: hue-rotate(8deg) brightness(1.1); }
+    100% { filter: hue-rotate(-5deg) brightness(0.95); }
+  }
+
+  /* ===== LANDING ===== */
+  #landing { display: block; }
+  #dashboard { display: none; }
+
+  .landing-content {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    z-index: 10;
+  }
+
+  /* Stacked app preview — expandable gallery inspired */
+  .stack-area {
+    position: relative;
+    height: 200px;
+    width: 500px;
+    margin-bottom: 40px;
+  }
+  .stack-card {
+    position: absolute;
+    width: 130px;
+    height: 130px;
+    background: rgba(255,255,255,0.07);
+    backdrop-filter: blur(18px);
+    border: 1px solid rgba(255,150,60,0.22);
+    border-radius: 22px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+    transition: transform 0.4s cubic-bezier(.34,1.56,.64,1);
+    animation: floatCard 4s ease-in-out infinite;
+  }
+  .stack-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 10%; right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,180,60,0.4), transparent);
+  }
+  .stack-card:nth-child(1) { left: 20px; top: 20px; transform: rotate(-14deg) translateY(10px); z-index: 10; animation-delay: 0s; }
+  .stack-card:nth-child(2) { left: 50%; top: 5px; transform: translateX(-50%) rotate(-2deg); z-index: 20; animation-delay: 0.5s; }
+  .stack-card:nth-child(3) { right: 20px; top: 20px; transform: rotate(12deg) translateY(10px); z-index: 30; animation-delay: 1s; }
+  @keyframes floatCard {
+    0%,100% { transform-origin: center bottom; }
+    50% { margin-top: -8px; }
+  }
+  /* Preserve rotation + add float */
+  .stack-card:nth-child(1) { animation: floatCard1 5s ease-in-out infinite; }
+  .stack-card:nth-child(2) { animation: floatCard2 5s ease-in-out infinite; }
+  .stack-card:nth-child(3) { animation: floatCard3 5s ease-in-out infinite; }
+  @keyframes floatCard1 { 0%,100% { transform: rotate(-14deg) translateY(10px); } 50% { transform: rotate(-14deg) translateY(-2px); } }
+  @keyframes floatCard2 { 0%,100% { transform: translateX(-50%) rotate(-2deg) translateY(0); } 50% { transform: translateX(-50%) rotate(-2deg) translateY(-10px); } }
+  @keyframes floatCard3 { 0%,100% { transform: rotate(12deg) translateY(10px); } 50% { transform: rotate(12deg) translateY(-2px); } }
+
+  .stack-icon { font-size: 32px; }
+  .stack-name { font-size: 11px; color: rgba(255,255,255,0.8); font-weight: 500; }
+
+  /* Hero text */
+  .hero-eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: rgba(255,160,60,0.7);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .hero-eyebrow::before, .hero-eyebrow::after {
+    content: '';
+    display: block;
+    width: 30px;
+    height: 1px;
+    background: rgba(255,160,60,0.4);
+  }
+
+  .hero-title {
+    font-size: 62px;
+    font-weight: 900;
+    font-family: monospace;
+    letter-spacing: 6px;
+    background: linear-gradient(135deg, #ffb347 0%, #ff6a00 40%, #ffcb69 70%, #ff8c00 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+    margin-bottom: 6px;
+    animation: gradShift 4s ease infinite alternate;
+    background-size: 200% 200%;
+  }
+  @keyframes gradShift {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+  }
+
+  .hero-sub {
+    font-size: 13px;
+    color: rgba(255,160,60,0.6);
+    letter-spacing: 3px;
+    margin-bottom: 28px;
+  }
+
+  .hero-desc {
+    font-size: 15px;
+    color: rgba(255,255,255,0.55);
+    max-width: 380px;
+    text-align: center;
+    line-height: 1.6;
+    margin-bottom: 36px;
+  }
+
+  .get-started-btn {
+    padding: 14px 40px;
+    background: linear-gradient(135deg, #ff6a00, #ffb347);
+    color: #0d0008;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    border: none;
+    border-radius: 40px;
+    cursor: pointer;
+    box-shadow: 0 8px 32px rgba(255,100,0,0.35), 0 0 0 1px rgba(255,180,60,0.3);
+    transition: transform 0.2s, box-shadow 0.2s;
+    animation: btnPulse 3s ease-in-out infinite;
+  }
+  @keyframes btnPulse {
+    0%,100% { box-shadow: 0 8px 32px rgba(255,100,0,0.35), 0 0 0 1px rgba(255,180,60,0.3); }
+    50% { box-shadow: 0 8px 40px rgba(255,100,0,0.55), 0 0 0 4px rgba(255,180,60,0.15); }
+  }
+  .get-started-btn:hover { transform: translateY(-2px) scale(1.04); }
+
+  /* ===== DASHBOARD ===== */
+  .topbar {
+    position: absolute; top: 0; left: 0; right: 0; height: 54px;
+    background: rgba(0,0,0,0.3);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255,150,50,0.12);
+    display: flex; align-items: center; padding: 0 20px; gap: 14px; z-index: 10;
+  }
+  .logo-block { display: flex; flex-direction: column; line-height: 1; gap: 2px; }
+  .logo-name {
+    font-size: 16px; font-weight: 800; font-family: monospace; letter-spacing: 3px;
+    background: linear-gradient(90deg,#ffb347,#ff6a00,#ffcb69);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .logo-sub { font-size: 8.5px; color: rgba(255,160,60,0.55); letter-spacing: 0.5px; }
+  .search-wrap { flex: 1; max-width: 340px; margin: 0 auto; }
+  .search-wrap input {
+    width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,140,40,0.18);
+    border-radius: 20px; padding: 6px 14px; color: rgba(255,255,255,0.85); font-size: 12.5px; outline: none;
+  }
+  .search-wrap input::placeholder { color: rgba(255,255,255,0.3); }
+  .icon-btn {
+    width: 32px; height: 32px; background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,140,40,0.18); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; font-size: 14px;
+  }
+  .clock-block { text-align: right; line-height: 1.2; }
+  .clock-time { font-size: 15px; font-weight: 700; font-family: monospace; color: rgba(255,190,80,0.9); }
+  .clock-date { font-size: 9px; color: rgba(255,255,255,0.35); }
+  .main { position: absolute; top: 54px; left: 0; right: 0; bottom: 0; padding: 28px 24px; overflow-y: auto; z-index: 5; }
+  .category-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; color: rgba(255,160,60,0.55); text-transform: uppercase; margin-bottom: 12px; }
+  .app-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; margin-bottom: 28px; }
+  .app-card {
+    height: 100px; background: rgba(255,255,255,0.055); backdrop-filter: blur(18px);
+    border: 1px solid rgba(255,140,50,0.18); border-radius: 14px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+    cursor: pointer; position: relative; overflow: hidden; transition: transform 0.2s, border-color 0.2s;
+  }
+  .app-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg,transparent,rgba(255,180,60,0.35),transparent);
+  }
+  .app-card:hover { border-color: rgba(255,160,60,0.45); transform: translateY(-3px) scale(1.02); }
+  .app-icon { font-size: 28px; }
+  .app-name { font-size: 10.5px; color: rgba(255,255,255,0.82); font-weight: 500; text-align: center; padding: 0 6px; }
+  .add-card {
+    height: 100px; background: rgba(255,140,30,0.04); border: 1.5px dashed rgba(255,140,40,0.22);
+    border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; cursor: pointer;
+  }
+  .add-plus { font-size: 22px; color: rgba(255,160,60,0.5); }
+  .add-label { font-size: 9.5px; color: rgba(255,160,60,0.4); }
+</style>
+</head>
+<body>
+
+<div class="label-bar">
+  <strong>MKLL Design Preview</strong>
+  <span style="color:#555">|</span>
+  <span class="tab active" onclick="showView('landing',this)">Landing Page</span>
+  <span class="tab" onclick="showView('dashboard',this)">Dashboard</span>
+  <span style="margin-left:auto;color:#666;font-size:11px;">Click tabs to switch views · "Get Started" also works</span>
+</div>
+
+<!-- LANDING VIEW -->
+<div id="landing" class="view">
+  <div class="shader-bg"></div>
+  <div class="landing-content">
+
+    <!-- Stacked app cards (expandable gallery inspired) -->
+    <div class="stack-area">
+      <div class="stack-card">
+        <div class="stack-icon">🎮</div>
+        <div class="stack-name">XO Game</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-icon">📚</div>
+        <div class="stack-name">Study Hub</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-icon">🐍</div>
+        <div class="stack-name">Snake</div>
+      </div>
+    </div>
+
+    <div class="hero-eyebrow">Your personal launchpad</div>
+    <div class="hero-title">MKLL</div>
+    <div class="hero-sub">Mo Khattab Lamba Land</div>
+    <div class="hero-desc">All your apps, tools, and games — one place, one click.</div>
+
+    <button class="get-started-btn" onclick="showView('dashboard', null)">
+      Get Started →
+    </button>
+
+  </div>
+</div>
+
+<!-- DASHBOARD VIEW -->
+<div id="dashboard" class="view">
+  <div class="shader-bg"></div>
+  <div class="topbar">
+    <div class="logo-block">
+      <span class="logo-name">MKLL</span>
+      <span class="logo-sub">Mo Khattab Lamba Land</span>
+    </div>
+    <div class="search-wrap"><input type="text" placeholder="⌘K  Search apps…" /></div>
+    <div style="display:flex;gap:8px">
+      <div class="icon-btn">＋</div>
+      <div class="icon-btn">⚙</div>
+    </div>
+    <div class="clock-block">
+      <div class="clock-time">21:47</div>
+      <div class="clock-date">Sat, Mar 21</div>
+    </div>
+  </div>
+  <div class="main">
+    <div class="category-label">Games</div>
+    <div class="app-grid">
+      <div class="app-card"><div class="app-icon">🎮</div><div class="app-name">XO Game</div></div>
+      <div class="app-card"><div class="app-icon">🐍</div><div class="app-name">Snake</div></div>
+      <div class="add-card"><div class="add-plus">＋</div><div class="add-label">Add app</div></div>
+    </div>
+    <div class="category-label">Tools</div>
+    <div class="app-grid">
+      <div class="app-card"><div class="app-icon">📚</div><div class="app-name">GJU Study Hub</div></div>
+      <div class="app-card"><div class="app-icon">🌐</div><div class="app-name">Browser</div></div>
+      <div class="add-card"><div class="add-plus">＋</div><div class="add-label">Add app</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showView(name, tabEl) {
+  document.getElementById('landing').style.display = name === 'landing' ? 'block' : 'none';
+  document.getElementById('dashboard').style.display = name === 'dashboard' ? 'block' : 'none';
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  if (tabEl) tabEl.classList.add('active');
+  else {
+    const tabs = document.querySelectorAll('.tab');
+    tabs[name === 'landing' ? 0 : 1].classList.add('active');
+  }
+}
+</script>
+</body>
+</html>
