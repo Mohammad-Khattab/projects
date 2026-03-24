@@ -56,7 +56,7 @@ export async function POST() {
     // Wait for MFA + user to complete login (up to 3 minutes)
     // User sees the browser window and completes MFA manually
     await page.waitForURL(
-      url => url.includes('teams.microsoft.com') && !url.includes('login') && !url.includes('microsoftonline'),
+      url => url.href.includes('teams.microsoft.com') && !url.href.includes('login') && !url.href.includes('microsoftonline'),
       { timeout: 180000 }
     ).catch(() => {})
 
