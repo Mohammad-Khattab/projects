@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import NavBar from '@/components/NavBar'
-import AIPanel from '@/components/AIPanel'
+import NavBar from '@/components/study-hub/NavBar'
+import AIPanel from '@/components/study-hub/AIPanel'
 import type { ScrapedData } from '@/lib/types'
 
 export default function AIStudioPage() {

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import NavBar from '@/components/NavBar'
+import NavBar from '@/components/study-hub/NavBar'
 import type { ScrapedData, CourseSchedule } from '@/lib/types'
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu'] as const

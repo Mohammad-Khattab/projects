@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import NavBar from '@/components/NavBar'
-import SubjectCard from '@/components/SubjectCard'
+import NavBar from '@/components/study-hub/NavBar'
+import SubjectCard from '@/components/study-hub/SubjectCard'
 import type { ScrapedData } from '@/lib/types'
 
 function SkeletonCard() {
