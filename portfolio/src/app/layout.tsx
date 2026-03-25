@@ -3,6 +3,8 @@ import { Cormorant_Garamond, Jost } from "next/font/google";
 import "./globals.css";
 import CustomCursor from "@/components/ui/CustomCursor";
 import LenisProvider from "@/components/ui/LenisProvider";
+import PageLogger from "@/components/ui/PageLogger";
+import ErrorBoundary from "@/components/ui/ErrorBoundary";
 
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
@@ -36,10 +38,13 @@ export default function RootLayout({
       className={`${cormorant.variable} ${jost.variable}`}
     >
       <body>
-        <LenisProvider>
-          <CustomCursor />
-          {children}
-        </LenisProvider>
+        <ErrorBoundary name="Root">
+          <PageLogger />
+          <LenisProvider>
+            <CustomCursor />
+            {children}
+          </LenisProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

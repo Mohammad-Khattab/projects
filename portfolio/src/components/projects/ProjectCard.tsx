@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import { motion } from "framer-motion";
+import { log } from "@/lib/logger";
 import { useTilt } from "@/hooks/useTilt";
 import type { Project } from "@/data/projects";
 
@@ -60,6 +61,7 @@ export default function ProjectCard({
           const el = e.currentTarget as HTMLDivElement;
           el.style.borderColor = "var(--color-gold)";
           el.style.boxShadow = "0 0 32px rgba(196,168,130,0.1), 0 8px 40px rgba(0,0,0,0.4)";
+          log.info("INTERACT", `Project card hover: "${project.title}"`);
         }}
         onMouseOut={(e) => {
           const el = e.currentTarget as HTMLDivElement;
@@ -197,6 +199,7 @@ export default function ProjectCard({
           {/* CTA */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <button
+              onClick={() => log.info("INTERACT", `Project CTA clicked: "${project.title}"`, { id: project.id })}
               style={{
                 display: "inline-flex",
                 alignItems: "center",

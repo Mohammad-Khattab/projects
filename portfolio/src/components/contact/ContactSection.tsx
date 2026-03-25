@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { log } from "@/lib/logger";
 import { useMagnetic } from "@/hooks/useMagnetic";
 
 const SOCIALS = [
@@ -17,6 +18,7 @@ export default function ContactSection() {
   const ctaBtnRef  = useMagnetic<HTMLAnchorElement>(0.4, 100);
 
   useEffect(() => {
+    log.info("INIT", "ContactSection mounted");
     const init = async () => {
       const gsap = (await import("gsap")).default;
       const { ScrollTrigger } = await import("gsap/ScrollTrigger");
@@ -117,6 +119,7 @@ export default function ContactSection() {
             (emailRef as React.MutableRefObject<HTMLAnchorElement | null>).current = el;
             (ctaBtnRef as React.MutableRefObject<HTMLAnchorElement | null>).current = el;
           }}
+          onClick={() => log.info("INTERACT", "Contact email link clicked")}
           href="mailto:hello@yourname.com"
           style={{
             display: "inline-block",
@@ -177,6 +180,7 @@ export default function ContactSection() {
           {SOCIALS.map(({ label, href, symbol }) => (
             <a
               key={label}
+              onClick={() => log.info("INTERACT", `Social link clicked: ${label}`)}
               href={href}
               style={{
                 fontFamily: "var(--font-body)",

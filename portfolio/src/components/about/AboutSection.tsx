@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { log } from "@/lib/logger";
 import dynamic from "next/dynamic";
 import MarqueeStrip from "./MarqueeStrip";
 
@@ -14,10 +15,12 @@ export default function AboutSection() {
   const labelRef    = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
+    log.info("INIT", "AboutSection mounted");
     const initGsap = async () => {
       const gsap = (await import("gsap")).default;
       const { ScrollTrigger } = await import("gsap/ScrollTrigger");
       gsap.registerPlugin(ScrollTrigger);
+      log.info("ANIM", "AboutSection ScrollTrigger ready");
 
       const heading = headingRef.current;
       const bio1    = bio1Ref.current;
@@ -26,6 +29,7 @@ export default function AboutSection() {
       if (!heading || !bio1 || !bio2 || !label) return;
 
       // Clip-path reveal on heading
+      log.info("ANIM", "About heading ScrollTrigger set");
       gsap.fromTo(
         heading,
         { clipPath: "inset(0 100% 0 0)", opacity: 1 },
@@ -37,6 +41,7 @@ export default function AboutSection() {
             trigger: heading,
             start: "top 80%",
             toggleActions: "play none none none",
+            onEnter: () => log.info("ANIM", "About heading clip-path reveal fired"),
           },
         }
       );

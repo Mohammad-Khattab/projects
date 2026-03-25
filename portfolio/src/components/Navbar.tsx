@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { log } from "@/lib/logger";
 
 const NAV_LINKS = [
   { label: "About",    href: "#about" },
@@ -13,13 +14,25 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 60);
+    log.info("INIT", "Navbar mounted");
+    const onScroll = () => {
+      const isScrolled = window.scrollY > 60;
+      if (isScrolled !== scrolled) {
+        log.info("NAV", isScrolled ? "Navbar: frosted glass ON" : "Navbar: transparent");
+      }
+      setScrolled(isScrolled);
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      log.info("NAV", "Navbar unmounted");
+      window.removeEventListener("scroll", onScroll);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleNav = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
+    log.info("NAV", `Nav link clicked: ${href}`);
     document.querySelector(href)?.scrollIntoView({ behavior: "smooth" });
   };
 

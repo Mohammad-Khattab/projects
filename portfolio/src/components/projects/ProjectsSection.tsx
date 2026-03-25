@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { log } from "@/lib/logger";
 import { motion } from "framer-motion";
 import { PROJECTS } from "@/data/projects";
 import ProjectCard from "./ProjectCard";
@@ -11,6 +12,7 @@ export default function ProjectsSection() {
   const lineRef    = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    log.info("INIT", "ProjectsSection mounted", { count: PROJECTS.length });
     const init = async () => {
       const gsap = (await import("gsap")).default;
       const { ScrollTrigger } = await import("gsap/ScrollTrigger");

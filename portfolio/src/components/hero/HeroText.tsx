@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useMagnetic } from "@/hooks/useMagnetic";
+import { log } from "@/lib/logger";
 
 export default function HeroText() {
   const nameRef    = useRef<HTMLHeadingElement>(null);
@@ -15,12 +16,16 @@ export default function HeroText() {
 
     const init = async () => {
       gsap = (await import("gsap")).default;
+      log.info("INIT", "HeroText GSAP loaded");
 
       const name     = nameRef.current;
       const line     = lineRef.current;
       const sub      = subRef.current;
       const ctaWrap  = ctaWrapRef.current;
-      if (!name || !line || !sub || !ctaWrap) return;
+      if (!name || !line || !sub || !ctaWrap) {
+        log.error("ANIM", "HeroText refs not ready");
+        return;
+      }
 
       // ── Split name into per-char spans ──
       const raw = name.dataset.text || name.textContent || "";
@@ -39,7 +44,13 @@ export default function HeroText() {
       gsap.set(sub,     { y: 24, opacity: 0 });
       gsap.set(ctaWrap, { y: 20, opacity: 0 });
 
-      const tl = gsap.timeline({ delay: 0.5 });
+      log.info("ANIM", "HeroText reveal starting", { chars: chars.length, delay: "0.5s" });
+      const t0 = performance.now();
+      const tl = gsap.timeline({
+        delay: 0.5,
+        onStart: () => log.info("ANIM", "HeroText timeline started"),
+        onComplete: () => log.perf("HeroText full reveal", performance.now() - t0),
+      });
 
       tl.to(chars,   { y: "0%", opacity: 1, duration: 0.9, stagger: 0.035, ease: "power3.out" })
         .to(line,    { scaleX: 1, duration: 0.7, ease: "power2.inOut" }, "-=0.5")
@@ -51,6 +62,7 @@ export default function HeroText() {
   }, []);
 
   const handleScrollToWork = () => {
+    log.info("INTERACT", "CTA 'View My Work' clicked — scrolling to #projects");
     document.getElementById("projects")?.scrollIntoView({ behavior: "smooth" });
   };
 
