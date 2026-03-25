@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { motion } from "framer-motion";
 import { PROJECTS } from "@/data/projects";
 import ProjectCard from "./ProjectCard";
 
 export default function ProjectsSection() {
   const labelRef   = useRef<HTMLSpanElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
+  const lineRef    = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const init = async () => {
@@ -14,17 +16,23 @@ export default function ProjectsSection() {
       const { ScrollTrigger } = await import("gsap/ScrollTrigger");
       gsap.registerPlugin(ScrollTrigger);
 
-      [labelRef.current, headingRef.current].forEach((el) => {
+      const els = [labelRef.current, headingRef.current];
+      els.forEach((el, i) => {
         if (!el) return;
-        gsap.fromTo(
-          el,
-          { y: 30, opacity: 0 },
-          {
-            y: 0, opacity: 1, duration: 0.8, ease: "power2.out",
-            scrollTrigger: { trigger: el, start: "top 85%" },
-          }
+        gsap.fromTo(el,
+          { y: 28, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.8, delay: i * 0.1, ease: "power2.out",
+            scrollTrigger: { trigger: el, start: "top 88%" } }
         );
       });
+
+      if (lineRef.current) {
+        gsap.fromTo(lineRef.current,
+          { scaleX: 0, transformOrigin: "left center" },
+          { scaleX: 1, duration: 1, ease: "power3.inOut",
+            scrollTrigger: { trigger: lineRef.current, start: "top 88%" } }
+        );
+      }
     };
     init();
   }, []);
@@ -32,12 +40,10 @@ export default function ProjectsSection() {
   return (
     <section
       id="projects"
-      style={{
-        padding: "8rem 6vw",
-        backgroundColor: "var(--color-bg)",
-      }}
+      style={{ padding: "8rem 6vw", backgroundColor: "var(--color-bg)" }}
     >
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+
         {/* Header */}
         <span
           ref={labelRef}
@@ -49,33 +55,62 @@ export default function ProjectsSection() {
             letterSpacing: "0.4em",
             textTransform: "uppercase",
             color: "var(--color-brown)",
-            marginBottom: "1.5rem",
+            marginBottom: "1.25rem",
           }}
         >
           02 — Selected Work
         </span>
 
-        <h2
-          ref={headingRef}
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: "3.5rem", flexWrap: "wrap", gap: "1rem" }}>
+          <h2
+            ref={headingRef}
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: "clamp(2.5rem, 5vw, 4.5rem)",
+              fontWeight: 300,
+              letterSpacing: "-0.02em",
+              color: "var(--color-ivory)",
+              lineHeight: 1.1,
+            }}
+          >
+            Things I&apos;ve built.
+          </h2>
+
+          {/* Animated count */}
+          <motion.span
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.4, duration: 0.6 }}
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: "clamp(1rem, 2vw, 1.25rem)",
+              fontStyle: "italic",
+              fontWeight: 300,
+              color: "var(--color-border)",
+            }}
+          >
+            {PROJECTS.length} projects
+          </motion.span>
+        </div>
+
+        {/* Animated divider line */}
+        <div
+          ref={lineRef}
           style={{
-            fontFamily: "var(--font-display)",
-            fontSize: "clamp(2.5rem, 5vw, 4.5rem)",
-            fontWeight: 300,
-            letterSpacing: "-0.02em",
-            color: "var(--color-ivory)",
-            marginBottom: "4rem",
-            lineHeight: 1.1,
+            height: "1px",
+            backgroundColor: "var(--color-border)",
+            marginBottom: "3rem",
           }}
-        >
-          Things I&apos;ve built.
-        </h2>
+        />
 
         {/* Cards grid */}
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))",
-            gap: "1.5rem",
+            gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
+            gap: "1.25rem",
+            alignItems: "stretch",
           }}
         >
           {PROJECTS.map((project, i) => (

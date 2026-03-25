@@ -41,7 +41,7 @@ export function useTilt<T extends HTMLElement>({
     [maxTilt, perspective, scale]
   );
 
-  const onMouseLeave = useCallback(() => {
+  const onMouseLeave = useCallback((_e?: React.MouseEvent<T>) => {
     const el = ref.current;
     if (!el) return;
     el.style.transform = `perspective(${perspective}px) rotateX(0deg) rotateY(0deg) scale(1)`;
