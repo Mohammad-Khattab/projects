@@ -5,6 +5,7 @@ import CustomCursor from "@/components/ui/CustomCursor";
 import LenisProvider from "@/components/ui/LenisProvider";
 import PageLogger from "@/components/ui/PageLogger";
 import ErrorBoundary from "@/components/ui/ErrorBoundary";
+import PageBar from "@/components/ui/PageBar";
 
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
@@ -39,6 +40,7 @@ export default function RootLayout({
     >
       <body>
         <ErrorBoundary name="Root">
+          <PageBar />
           <PageLogger />
           <LenisProvider>
             <CustomCursor />

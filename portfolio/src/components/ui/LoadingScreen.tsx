@@ -141,7 +141,7 @@ export default function LoadingScreen() {
           flexDirection: "column",
           alignItems: "center",
           gap: "1.4rem",
-          zIndex: 1,
+          zIndex: 3,
         }}
       >
 

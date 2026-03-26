@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+/* ─── Surgena (self-hosted) ──────────────────────── */
+@font-face {
+  font-family: "Surgena";
+  src: url("/fonts/Surgena-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ─── Palette tokens ─────────────────────────────── */
 :root {
   --color-bg:      #1C1410;
@@ -17,8 +26,9 @@
   --color-brown:   #A79277;
   --color-gold:    #C4A882;
   --color-ivory:   #F5EFE6;
-  --font-display:  var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
-  --font-body:     var(--font-jost), "Jost", system-ui, sans-serif;
+  --font-display:  "Surgena", var(--font-cormorant), Georgia, serif;
+  --font-body:     "Surgena", var(--font-jost), system-ui, sans-serif;
+  --font-surgena:  "Surgena", Georgia, serif;
 }
 
 /* ─── Reset ──────────────────────────────────────── */
@@ -113,6 +123,43 @@ body::after {
 @keyframes fadeIn {
   from { opacity: 0; }
   to   { opacity: 1; }
+}
+
+/* ─── Loading screen scan-line sweep ────────────── */
+@keyframes scan-sweep {
+  0%   { transform: translateY(-100%); opacity: 0.6; }
+  50%  { opacity: 0.6; }
+  100% { transform: translateY(400px); opacity: 0; }
+}
+.loading-scan-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(196, 168, 130, 0.15) 20%,
+    rgba(196, 168, 130, 0.55) 50%,
+    rgba(196, 168, 130, 0.15) 80%,
+    transparent 100%
+  );
+  animation: scan-sweep 2.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ─── Page curtain ───────────────────────────────── */
+@keyframes page-curtain {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(-100%); }
+}
+.page-curtain {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background-color: var(--color-bg);
+  pointer-events: none;
+  animation: page-curtain 0.75s cubic-bezier(0.76, 0, 0.24, 1) 0.1s forwards;
 }
 
 /* ─── Reduced motion ─────────────────────────────── */

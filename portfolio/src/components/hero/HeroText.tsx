@@ -27,13 +27,14 @@ export default function HeroText() {
         return;
       }
 
-      // ── Split name into per-char spans ──
-      const raw = name.dataset.text || name.textContent || "";
+      // ── Split name into per-char spans, \n becomes a line break ──
+      const raw = name.dataset.text || "";
       name.innerHTML = raw
         .split("")
-        .map((ch) =>
-          `<span class="char-wrap" style="display:inline-block;overflow:hidden;vertical-align:bottom"><span class="char" style="display:inline-block">${ch === " " ? "&nbsp;" : ch}</span></span>`
-        )
+        .map((ch) => {
+          if (ch === "\n") return `<br />`;
+          return `<span class="char-wrap" style="display:inline-block;overflow:hidden;vertical-align:bottom"><span class="char" style="display:inline-block">${ch === " " ? "&nbsp;" : ch}</span></span>`;
+        })
         .join("");
 
       const chars = name.querySelectorAll<HTMLElement>(".char");
@@ -74,18 +75,18 @@ export default function HeroText() {
       {/* Name */}
       <h1
         ref={nameRef}
-        data-text="YOUR NAME"
+        data-text={"Mohammad\nKhattab"}
         style={{
-          fontFamily: "var(--font-display)",
-          fontSize: "clamp(3.5rem, 10vw, 9rem)",
-          fontWeight: 300,
+          fontFamily: "var(--font-surgena)",
+          fontSize: "clamp(3rem, 6.5vw, 6.5rem)",
+          fontWeight: 600,
           letterSpacing: "-0.02em",
           lineHeight: 0.95,
           color: "var(--color-ivory)",
           marginBottom: "1.2rem",
         }}
       >
-        YOUR NAME
+        Mohammad<br />Khattab
       </h1>
 
       {/* Divider line */}
@@ -113,7 +114,7 @@ export default function HeroText() {
           marginBottom: "3rem",
         }}
       >
-        Full Stack Developer &amp; Designer
+        Industrial Engineer · Web Designer
       </p>
 
       {/* CTA */}

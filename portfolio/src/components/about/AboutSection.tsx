@@ -123,7 +123,7 @@ export default function AboutSection() {
             clipPath: "inset(0 100% 0 0)",
           }}
         >
-          Crafting digital experiences at the intersection of code &amp; design.
+          Engineering systems, building software, and solving real problems.
         </h2>
 
         <About3DOrb />
@@ -149,7 +149,7 @@ export default function AboutSection() {
             opacity: 0.85,
           }}
         >
-          I'm a full-stack developer and designer who builds things that feel as good as they look. I work across the entire stack — from data models to pixel-perfect interfaces — with a bias towards clean architecture and expressive design.
+          Industrial Engineering student at the German Jordanian University with a strong bias toward building things. I bridge structured engineering thinking with modern software — designing systems that are as functional as they are clean.
         </p>
         <p
           ref={bio2Ref}
@@ -161,7 +161,7 @@ export default function AboutSection() {
             color: "var(--color-brown)",
           }}
         >
-          Based in the intersection between engineering and craft, I believe the best digital products are built by people who respect both disciplines equally. Every line of code is a design decision.
+          Driven by curiosity and a project management mindset, I bring discipline to every build. Currently deepening my skills through Google&apos;s Project Management and Generative AI certifications — fluent in Arabic and English, learning German.
         </p>
       </div>
 

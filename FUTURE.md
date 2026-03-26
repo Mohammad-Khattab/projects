@@ -9,7 +9,7 @@ This file tracks planned features that must be implemented. Claude should remind
 **Priority:** Must implement
 **Status:** Not started
 **Requested:** 2026-03-20
-**Last reminded:** 2026-03-22
+**Last reminded:** 2026-03-26
 
 ### What it is
 Integrate Google's Gemini Embedding 2 model into the GJU Study Hub for semantic search and smarter AI features — e.g. finding related course materials, semantic similarity between notes, and better context retrieval for the AI chat.

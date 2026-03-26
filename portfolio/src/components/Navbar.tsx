@@ -70,7 +70,7 @@ export default function Navbar() {
           cursor: "none",
         }}
       >
-        YN<span style={{ color: "var(--color-gold)" }}>.</span>
+        MK<span style={{ color: "var(--color-gold)" }}>.</span>
       </a>
 
       {/* Links */}

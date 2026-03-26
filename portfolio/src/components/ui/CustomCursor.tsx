@@ -20,11 +20,18 @@ export default function CustomCursor() {
     let ringY = mouseY;
     let rafId: number;
 
+    let revealed = false;
     const onMove = (e: MouseEvent) => {
       mouseX = e.clientX;
       mouseY = e.clientY;
       // Dot follows instantly
       dot.style.transform = `translate(${mouseX - 4}px, ${mouseY - 4}px)`;
+      // Reveal on first real mouse move
+      if (!revealed) {
+        revealed = true;
+        dot.style.opacity = "1";
+        ring.style.opacity = "1";
+      }
     };
 
     const animateRing = () => {
@@ -78,7 +85,9 @@ export default function CustomCursor() {
           backgroundColor: "var(--color-ivory)",
           pointerEvents: "none",
           zIndex: 10001,
+          opacity: 0,
           mixBlendMode: "difference",
+          transition: "opacity 0.3s ease",
         }}
       />
       {/* Ring */}
@@ -92,9 +101,10 @@ export default function CustomCursor() {
           width: "32px",
           height: "32px",
           borderRadius: "50%",
-          border: "1px solid var(--color-border)",
+          border: "1px solid rgba(245,239,230,0.35)",
           pointerEvents: "none",
           zIndex: 10000,
+          opacity: 0,
           transition: "width 0.3s ease, height 0.3s ease, border-color 0.3s ease, opacity 0.3s ease",
         }}
       />

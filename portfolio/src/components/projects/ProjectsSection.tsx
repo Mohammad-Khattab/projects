@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { log } from "@/lib/logger";
 import { motion } from "framer-motion";
 import { PROJECTS } from "@/data/projects";
-import ProjectCard from "./ProjectCard";
+import SpotlightDeck from "./SpotlightDeck";
 
 export default function ProjectsSection() {
   const labelRef   = useRef<HTMLSpanElement>(null);
@@ -106,19 +106,7 @@ export default function ProjectsSection() {
           }}
         />
 
-        {/* Cards grid */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
-            gap: "1.25rem",
-            alignItems: "stretch",
-          }}
-        >
-          {PROJECTS.map((project, i) => (
-            <ProjectCard key={project.id} project={project} index={i} />
-          ))}
-        </div>
+        <SpotlightDeck />
       </div>
     </section>
   );
