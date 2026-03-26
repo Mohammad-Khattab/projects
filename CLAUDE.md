@@ -2,6 +2,17 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Memory System
+
+At the start of every session, read these files:
+- `memory/user.md` — who the user is
+- `memory/decisions.md` — past decisions and why
+- `memory/people.md` — relevant people
+- `memory/preferences.md` — how the user likes to work
+- `memory/personality.md` — how to think, communicate, and make decisions with this user
+
+At the end of every session, update any of these files with new information learned during the session.
+
 ## Structure
 
 This is an npm workspaces monorepo with one active package:
