@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import type { Task, Priority, Category } from '../types'
 
 const STORAGE_KEY = 'agents_tasks'
@@ -8,7 +8,7 @@ type NewTask = Omit<Task, 'id' | 'createdAt' | 'completedAt' | 'completed'>
 
 export function useTasks() {
   const [tasks, setTasks] = useState<Task[]>([])
-  const isFirstRun = useRef(true)
+  const [loaded, setLoaded] = useState(false)
 
   // Load on mount
   useEffect(() => {
@@ -16,13 +16,14 @@ export function useTasks() {
       const raw = localStorage.getItem(STORAGE_KEY)
       if (raw) setTasks(JSON.parse(raw))
     } catch {}
+    setLoaded(true)
   }, [])
 
-  // Persist on every change — skip the very first run (tasks = []) to avoid wiping localStorage
+  // Persist — but never before the load effect has completed on this mount
   useEffect(() => {
-    if (isFirstRun.current) { isFirstRun.current = false; return }
+    if (!loaded) return
     localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks))
-  }, [tasks])
+  }, [tasks, loaded])
 
   const addTask = (data: NewTask): Task => {
     const task: Task = {
