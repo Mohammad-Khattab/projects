@@ -20,7 +20,10 @@
     },
     "setupFilesAfterEnv": [
       "<rootDir>/jest.setup.ts"
-    ]
+    ],
+    "fakeTimers": {
+      "doNotFake": ["nextTick", "setImmediate", "queueMicrotask"]
+    }
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.80.0",
