@@ -1,3 +1,4 @@
+/** @jest-environment jsdom */
 import { renderHook, act } from '@testing-library/react'
 import { useTasks } from '../../src/app/agents/hooks/useTasks'
 

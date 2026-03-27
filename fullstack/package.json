@@ -11,7 +11,7 @@
   },
   "jest": {
     "preset": "ts-jest",
-    "testEnvironment": "jsdom",
+    "testEnvironment": "node",
     "testMatch": [
       "**/__tests__/**/*.test.ts"
     ],
