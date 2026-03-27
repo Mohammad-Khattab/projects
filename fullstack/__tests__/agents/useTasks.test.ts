@@ -25,6 +25,10 @@ beforeEach(() => {
   })
 })
 
+afterEach(() => {
+  jest.useRealTimers()
+})
+
 describe('useTasks', () => {
   it('starts empty', () => {
     const { result } = renderHook(() => useTasks())
@@ -105,7 +109,6 @@ describe('useTasks', () => {
     })
 
     expect(result.current.tasks.some(t => t.id === 'remote1')).toBe(true)
-    jest.useRealTimers()
   }, 15000)
 
   it('does not add duplicate tasks from poll', async () => {
@@ -131,6 +134,5 @@ describe('useTasks', () => {
 
     // Still only 1 task — no duplicate
     expect(result.current.tasks).toHaveLength(1)
-    jest.useRealTimers()
   }, 15000)
 })
