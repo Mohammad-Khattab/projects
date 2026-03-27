@@ -10,8 +10,8 @@ interface Props {
 
 const NAV: { id: View; icon: string; label: string }[] = [
   { id: 'dashboard', icon: '⊞', label: 'Dashboard' },
-  { id: 'tasks',     icon: '✓', label: 'Tasks' },
-  { id: 'calendar',  icon: '⊙', label: 'Calendar' },
+  { id: 'tasks',     icon: '✓', label: 'Tasks'     },
+  { id: 'calendar',  icon: '⊙', label: 'Calendar'  },
   { id: 'analytics', icon: '↗', label: 'Analytics' },
 ]
 
@@ -20,36 +20,41 @@ export default function Sidebar({ view, onView, userName, onUserNameChange }: Pr
 
   return (
     <nav className="agents-sidebar">
-      <div className="agents-logo">T</div>
+      {/* Logo */}
+      <div className="agents-logo-wrap">
+        <div className="agents-logo-icon">T</div>
+        <span className="agents-logo-text">TaskFlow</span>
+      </div>
+
       <div className="agents-divider" />
-      {NAV.map(n => (
+
+      {/* Nav items */}
+      {NAV.map(item => (
         <button
-          key={n.id}
-          className={`agents-nav-icon ${view === n.id ? 'active' : ''}`}
-          onClick={() => onView(n.id)}
-          title={n.label}
-          aria-label={n.label}
+          key={item.id}
+          className={`agents-nav-item ${view === item.id ? 'active' : ''}`}
+          onClick={() => onView(item.id)}
         >
-          {n.icon}
-          <span className="tooltip">{n.label}</span>
+          <span>{item.icon}</span>
+          <span className="agents-nav-label">{item.label}</span>
         </button>
       ))}
-      <div className="agents-divider" />
-      <button
-        className="agents-nav-icon"
-        title="Settings"
-        onClick={() => {
-          const name = prompt('Your name:', userName)
-          if (name?.trim()) {
-            localStorage.setItem('agents_username', name.trim())
-            onUserNameChange(name.trim())
-          }
-        }}
-      >
-        ⚙
-        <span className="tooltip">Settings</span>
-      </button>
-      <div className="agents-avatar">{initials}</div>
+
+      {/* Bottom: avatar */}
+      <div className="agents-sidebar-bottom">
+        <div className="agents-divider" />
+        <button
+          className="agents-nav-item"
+          title={userName}
+          onClick={() => {
+            const name = window.prompt('Your name:', userName)
+            if (name?.trim()) onUserNameChange(name.trim())
+          }}
+        >
+          <div className="agents-avatar">{initials}</div>
+          <span className="agents-nav-label">{userName}</span>
+        </button>
+      </div>
     </nav>
   )
 }
