@@ -1,7 +1,6 @@
 'use client'
-import { useState } from 'react'
-import TaskRow from '../TaskRow'
-import { getToday } from '../../lib/utils'
+import { useState, useEffect, useRef } from 'react'
+import TaskCard from '../TaskCard'
 import type { Task, FilterTab, Category } from '../../types'
 
 interface Props {
@@ -13,8 +12,8 @@ interface Props {
 }
 
 const FILTERS: { id: FilterTab; label: string }[] = [
-  { id: 'all', label: 'All' },
-  { id: 'priority', label: 'Priority' },
+  { id: 'all',       label: 'All'       },
+  { id: 'priority',  label: 'Priority'  },
   { id: 'scheduled', label: 'Scheduled' },
   { id: 'completed', label: 'Completed' },
 ]
@@ -23,13 +22,24 @@ const CATEGORIES: Category[] = ['Work', 'Personal', 'Creative', 'Health']
 export default function TasksView({ tasks, onToggle, onEdit, onDelete, onOpenNew }: Props) {
   const [filter, setFilter] = useState<FilterTab>('all')
   const [activeCategory, setActiveCategory] = useState<Category | null>(null)
+  const [newTaskIds, setNewTaskIds] = useState<Set<string>>(new Set())
+  const prevLengthRef = useRef(tasks.length)
+
+  useEffect(() => {
+    if (tasks.length > prevLengthRef.current && tasks[0]) {
+      const id = tasks[0].id
+      setNewTaskIds(prev => new Set([...prev, id]))
+      setTimeout(() => setNewTaskIds(prev => { const n = new Set(prev); n.delete(id); return n }), 600)
+    }
+    prevLengthRef.current = tasks.length
+  }, [tasks])
 
   const filtered = tasks
     .filter(t => {
-      if (filter === 'priority') return ['high', 'medium'].includes(t.priority) && !t.completed
+      if (filter === 'priority')  return ['high', 'medium'].includes(t.priority) && !t.completed
       if (filter === 'scheduled') return !!t.dueDate && !t.completed
       if (filter === 'completed') return t.completed
-      return !t.completed // 'all' hides completed
+      return !t.completed
     })
     .filter(t => !activeCategory || t.category === activeCategory)
     .sort((a, b) => {
@@ -40,15 +50,21 @@ export default function TasksView({ tasks, onToggle, onEdit, onDelete, onOpenNew
   const totalVisible = tasks.filter(t => !t.completed).length
 
   return (
-    <div className="agents-view-enter">
+    <div>
       <div className="agents-main-header">
         <div className="agents-greeting">My Tasks</div>
-        <div className="agents-sub">{totalVisible} active task{totalVisible !== 1 ? 's' : ''} across all categories.</div>
+        <div className="agents-sub">
+          {totalVisible} active task{totalVisible !== 1 ? 's' : ''} across all categories.
+        </div>
       </div>
       <div className="agents-content">
         <div className="agents-tabs">
           {FILTERS.map(f => (
-            <button key={f.id} className={`agents-tab ${filter === f.id ? 'active' : ''}`} onClick={() => setFilter(f.id)}>
+            <button
+              key={f.id}
+              className={`agents-tab ${filter === f.id ? 'active' : ''}`}
+              onClick={() => setFilter(f.id)}
+            >
               {f.label}
             </button>
           ))}
@@ -56,9 +72,16 @@ export default function TasksView({ tasks, onToggle, onEdit, onDelete, onOpenNew
         </div>
 
         <div className="agents-tags">
-          <button className={`agents-tag ${!activeCategory ? 'active' : ''}`} onClick={() => setActiveCategory(null)}>All</button>
+          <button
+            className={`agents-tag ${!activeCategory ? 'active' : ''}`}
+            onClick={() => setActiveCategory(null)}
+          >All</button>
           {CATEGORIES.map(c => (
-            <button key={c} className={`agents-tag ${activeCategory === c ? 'active' : ''}`} onClick={() => setActiveCategory(c === activeCategory ? null : c)}>
+            <button
+              key={c}
+              className={`agents-tag ${activeCategory === c ? 'active' : ''}`}
+              onClick={() => setActiveCategory(c === activeCategory ? null : c)}
+            >
               {c}
             </button>
           ))}
@@ -66,12 +89,25 @@ export default function TasksView({ tasks, onToggle, onEdit, onDelete, onOpenNew
 
         {filtered.length === 0 && (
           <div style={{ color: 'var(--a-muted)', fontSize: 13, fontStyle: 'italic', padding: '12px 0' }}>
-            No tasks here. {filter === 'completed' ? 'Complete a task to see it here.' : 'Click "+ New Task" to add one.'}
+            No tasks here.{' '}
+            {filter === 'completed'
+              ? 'Complete a task to see it here.'
+              : 'Click "+ New Task" to add one.'}
           </div>
         )}
-        {filtered.map(t => (
-          <TaskRow key={t.id} task={t} onToggle={onToggle} onEdit={onEdit} onDelete={onDelete} />
-        ))}
+
+        <div className="agents-task-grid">
+          {filtered.map(t => (
+            <TaskCard
+              key={t.id}
+              task={t}
+              onToggle={onToggle}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              isNew={newTaskIds.has(t.id)}
+            />
+          ))}
+        </div>
       </div>
     </div>
   )
