@@ -22,12 +22,17 @@
       "<rootDir>/jest.setup.ts"
     ],
     "fakeTimers": {
-      "doNotFake": ["nextTick", "setImmediate", "queueMicrotask"]
+      "doNotFake": [
+        "nextTick",
+        "setImmediate",
+        "queueMicrotask"
+      ]
     }
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.80.0",
     "@google/generative-ai": "^0.24.1",
+    "lucide-react": "^1.7.0",
     "mammoth": "^1.12.0",
     "marked": "^17.0.5",
     "next": "^14.2.5",
