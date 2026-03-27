@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { getTodayLabel, calcStreak, getToday } from '../../lib/utils'
 import TaskRow from '../TaskRow'
 import type { Task } from '../../types'
@@ -15,7 +15,12 @@ interface Props {
 
 export default function DashboardView({ tasks, userName, onToggle, onEdit, onDelete, onAdd }: Props) {
   const [quickTitle, setQuickTitle] = useState('')
+  const [greeting, setGreeting] = useState('Good morning')
   const today = getToday()
+
+  useEffect(() => {
+    setGreeting(getTodayLabel())
+  }, [])
   const todayTasks = tasks.filter(t => t.dueDate === today)
   const totalTasks = tasks.length
   const dueTodayCount = todayTasks.filter(t => !t.completed).length
@@ -31,7 +36,7 @@ export default function DashboardView({ tasks, userName, onToggle, onEdit, onDel
   return (
     <div className="agents-view-enter">
       <div className="agents-main-header">
-        <div className="agents-greeting">{getTodayLabel()}, {userName}.</div>
+        <div className="agents-greeting">{greeting}, {userName}.</div>
         <div className="agents-sub">
           You have <strong>{dueTodayCount} focus area{dueTodayCount !== 1 ? 's' : ''}</strong> for today.
         </div>

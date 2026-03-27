@@ -1,5 +1,5 @@
 'use client'
-import { useState, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { getToday } from '../lib/utils'
 import type { ParsedTask } from '../types'
 
@@ -10,10 +10,12 @@ export function useVoice() {
   const [transcript, setTranscript] = useState('')
   const [parsed, setParsed] = useState<ParsedTask | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [isSupported, setIsSupported] = useState(false)
   const recognitionRef = useRef<any>(null)
 
-  const isSupported = typeof window !== 'undefined' &&
-    ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)
+  useEffect(() => {
+    setIsSupported('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)
+  }, [])
 
   const startRecording = useCallback(() => {
     if (!isSupported) return

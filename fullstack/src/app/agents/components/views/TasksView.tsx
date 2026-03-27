@@ -66,7 +66,7 @@ export default function TasksView({ tasks, onToggle, onEdit, onDelete, onOpenNew
 
         {filtered.length === 0 && (
           <div style={{ color: 'var(--a-muted)', fontSize: 13, fontStyle: 'italic', padding: '12px 0' }}>
-            No tasks here. {filter === 'completed' ? 'Complete a task to see it here.' : 'Click &quot;+ New Task&quot; to add one.'}
+            No tasks here. {filter === 'completed' ? 'Complete a task to see it here.' : 'Click "+ New Task" to add one.'}
           </div>
         )}
         {filtered.map(t => (
