@@ -48,7 +48,7 @@ export default function AgentsPage() {
 
   return (
     <div className="agents-root">
-      <Sidebar view={view} onView={setView} userName={userName} />
+      <Sidebar view={view} onView={setView} userName={userName} onUserNameChange={setUserName} />
 
       <div className="agents-main" style={{ position: 'relative' }}>
         {view === 'dashboard' && (

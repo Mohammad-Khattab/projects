@@ -5,6 +5,7 @@ interface Props {
   view: View
   onView: (v: View) => void
   userName: string
+  onUserNameChange: (name: string) => void
 }
 
 const NAV: { id: View; icon: string; label: string }[] = [
@@ -14,7 +15,7 @@ const NAV: { id: View; icon: string; label: string }[] = [
   { id: 'analytics', icon: '↗', label: 'Analytics' },
 ]
 
-export default function Sidebar({ view, onView, userName }: Props) {
+export default function Sidebar({ view, onView, userName, onUserNameChange }: Props) {
   const initials = userName.slice(0, 2).toUpperCase()
 
   return (
@@ -39,7 +40,10 @@ export default function Sidebar({ view, onView, userName }: Props) {
         title="Settings"
         onClick={() => {
           const name = prompt('Your name:', userName)
-          if (name?.trim()) localStorage.setItem('agents_username', name.trim())
+          if (name?.trim()) {
+            localStorage.setItem('agents_username', name.trim())
+            onUserNameChange(name.trim())
+          }
         }}
       >
         ⚙
