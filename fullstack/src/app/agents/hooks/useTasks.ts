@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type { Task, Priority, Category } from '../types'
 
 const STORAGE_KEY = 'agents_tasks'
@@ -8,6 +8,7 @@ type NewTask = Omit<Task, 'id' | 'createdAt' | 'completedAt' | 'completed'>
 
 export function useTasks() {
   const [tasks, setTasks] = useState<Task[]>([])
+  const isFirstRun = useRef(true)
 
   // Load on mount
   useEffect(() => {
@@ -17,8 +18,9 @@ export function useTasks() {
     } catch {}
   }, [])
 
-  // Persist on every change
+  // Persist on every change — skip the very first run (tasks = []) to avoid wiping localStorage
   useEffect(() => {
+    if (isFirstRun.current) { isFirstRun.current = false; return }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks))
   }, [tasks])
 
