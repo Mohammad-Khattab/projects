@@ -1,36 +1,31 @@
-export type TodoStatus = 'pending' | 'in_progress' | 'completed' | 'failed'
-export type TodoPriority = 'low' | 'medium' | 'high' | 'critical'
-export type AgentName = 'Researcher' | 'Builder' | 'Planner' | 'Agent-1' | 'Agent-2' | 'Writer'
+export type Priority = 'high' | 'medium' | 'low' | 'none'
+export type Category = 'Work' | 'Personal' | 'Creative' | 'Health'
+export type View = 'dashboard' | 'tasks' | 'calendar' | 'analytics'
+export type FilterTab = 'all' | 'priority' | 'scheduled' | 'completed'
 
-export interface Todo {
+export interface Task {
   id: string
   title: string
-  status: TodoStatus
-  priority: TodoPriority
-  assigned_agent: AgentName | null
-  updated_at: string
+  description: string
+  completed: boolean
+  priority: Priority
+  category: Category
+  dueDate: string | null   // 'YYYY-MM-DD'
+  createdAt: string        // ISO timestamp
+  completedAt: string | null
 }
 
-export interface TokenUsage {
-  session_id: string
-  context_used: number
-  context_limit: number
-  rate_limit_tokens: number | null
-  rate_remaining_tokens: number | null
-  rate_reset_at: string | null
-  updated_at: string
+export interface TimerState {
+  mode: 'work' | 'short-break' | 'long-break'
+  remaining: number        // seconds
+  running: boolean
+  sessions: number         // completed work sessions this page-load
 }
 
-export interface TokenApiResponse {
-  context: {
-    used: number
-    limit: number
-    pct: number
-  }
-  rateLimit: {
-    limit: number | null
-    remaining: number | null
-    resetAt: string | null
-    windowLabel: string
-  }
+export interface ParsedTask {
+  title: string
+  dueDate: string | null
+  priority: Priority
+  category: Category
+  confidence: number       // 0–1
 }
