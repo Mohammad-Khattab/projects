@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { priorityColor, getToday } from '../../lib/utils'
-import TaskRow from '../TaskRow'
+import TaskCard from '../TaskCard'
 import type { Task } from '../../types'
 
 interface Props {
@@ -12,7 +12,7 @@ interface Props {
   onOpenNew: () => void
 }
 
-const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+const DAYS   = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December']
 
 export default function CalendarView({ tasks, onToggle, onEdit, onDelete, onOpenNew }: Props) {
@@ -22,9 +22,9 @@ export default function CalendarView({ tasks, onToggle, onEdit, onDelete, onOpen
   })
   const [selectedDate, setSelectedDate] = useState<string | null>(today)
 
-  const firstDay = new Date(cursor.year, cursor.month, 1).getDay()
-  const daysInMonth = new Date(cursor.year, cursor.month + 1, 0).getDate()
-  const daysInPrev = new Date(cursor.year, cursor.month, 0).getDate()
+  const firstDay     = new Date(cursor.year, cursor.month, 1).getDay()
+  const daysInMonth  = new Date(cursor.year, cursor.month + 1, 0).getDate()
+  const daysInPrev   = new Date(cursor.year, cursor.month, 0).getDate()
 
   const cells: { date: string; isCurrentMonth: boolean }[] = []
   for (let i = firstDay - 1; i >= 0; i--) {
@@ -73,14 +73,14 @@ export default function CalendarView({ tasks, onToggle, onEdit, onDelete, onOpen
           <div className="agents-cal-grid">
             {DAYS.map(d => <div key={d} className="agents-cal-header">{d}</div>)}
             {cells.map(({ date, isCurrentMonth }) => {
-              const dayTasks = tasksByDate[date] ?? []
-              const isToday = date === today
+              const dayTasks  = tasksByDate[date] ?? []
+              const isToday   = date === today
               const isSelected = date === selectedDate
               return (
                 <div
                   key={date}
                   className={`agents-cal-cell ${isToday ? 'today' : ''} ${!isCurrentMonth ? 'other-month' : ''}`}
-                  style={isSelected && !isToday ? { background: 'rgba(71,45,31,0.08)', outline: '2px solid var(--a-espresso)' } : {}}
+                  style={isSelected && !isToday ? { background: 'rgba(99,102,241,0.1)', outline: '2px solid rgba(99,102,241,0.6)' } : {}}
                   onClick={() => setSelectedDate(date)}
                 >
                   <span>{new Date(date + 'T00:00:00').getDate()}</span>
@@ -98,15 +98,15 @@ export default function CalendarView({ tasks, onToggle, onEdit, onDelete, onOpen
         </div>
 
         {selectedDate && (
-          <div style={{ width: 220, flexShrink: 0 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--a-espresso)', marginBottom: 10 }}>
+          <div style={{ width: 240, flexShrink: 0 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--a-text)', marginBottom: 10 }}>
               {new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
             </div>
             {selectedTasks.length === 0 && (
               <div style={{ color: 'var(--a-muted)', fontSize: 12, fontStyle: 'italic' }}>No tasks this day.</div>
             )}
             {selectedTasks.map(t => (
-              <TaskRow key={t.id} task={t} onToggle={onToggle} onEdit={onEdit} onDelete={onDelete} />
+              <TaskCard key={t.id} task={t} onToggle={onToggle} onEdit={onEdit} onDelete={onDelete} />
             ))}
           </div>
         )}
