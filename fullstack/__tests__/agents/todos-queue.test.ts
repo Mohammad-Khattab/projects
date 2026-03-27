@@ -1,7 +1,6 @@
 import fs from 'fs'
 import path from 'path'
 
-// queue.ts is not created yet — these tests will fail
 import { readQueue, appendToQueue, drainQueue } from '../../src/app/api/todos/queue'
 
 const QUEUE_PATH = path.join(process.cwd(), 'data', 'pending-tasks.json')
