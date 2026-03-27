@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react'
 import { useTasks } from './hooks/useTasks'
 import Sidebar from './components/Sidebar'
-import RightPanel from './components/RightPanel'
 import TaskModal from './components/TaskModal'
 import VoiceFab from './components/VoiceFab'
 import DashboardView from './components/views/DashboardView'
@@ -11,10 +10,14 @@ import CalendarView from './components/views/CalendarView'
 import AnalyticsView from './components/views/AnalyticsView'
 import type { View, Task } from './types'
 
+const VIEW_ORDER: View[] = ['dashboard', 'tasks', 'calendar', 'analytics']
+
 export default function AgentsPage() {
-  const [view, setView] = useState<View>('dashboard')
-  const [userName, setUserName] = useState('Alex')
-  const [modalTask, setModalTask] = useState<Task | 'new' | null>(null)
+  const [view, setView]               = useState<View>('dashboard')
+  const [prevView, setPrevView]       = useState<View | null>(null)
+  const [transitioning, setTransitioning] = useState(false)
+  const [userName, setUserName]       = useState('Alex')
+  const [modalTask, setModalTask]     = useState<Task | 'new' | null>(null)
   const { tasks, addTask, updateTask, deleteTask, toggleComplete } = useTasks()
 
   useEffect(() => {
@@ -22,16 +25,21 @@ export default function AgentsPage() {
     if (stored) setUserName(stored)
   }, [])
 
-  const openNew = () => setModalTask('new')
-  const openEdit = (t: Task) => setModalTask(t)
+  const handleViewChange = (newView: View) => {
+    if (newView === view || transitioning) return
+    setPrevView(view)
+    setTransitioning(true)
+    setView(newView)
+    setTimeout(() => { setPrevView(null); setTransitioning(false) }, 300)
+  }
+
+  const openNew   = () => setModalTask('new')
+  const openEdit  = (t: Task) => setModalTask(t)
   const closeModal = () => setModalTask(null)
 
   const handleSave = (data: Omit<Task, 'id' | 'createdAt' | 'completedAt' | 'completed'>) => {
-    if (modalTask === 'new' || modalTask === null) {
-      addTask(data)
-    } else {
-      updateTask(modalTask.id, data)
-    }
+    if (modalTask === 'new' || modalTask === null) { addTask(data) }
+    else { updateTask(modalTask.id, data) }
   }
 
   const handleQuickAdd = (title: string) => {
@@ -46,30 +54,34 @@ export default function AgentsPage() {
 
   const props = { tasks, onToggle: toggleComplete, onEdit: openEdit, onDelete: deleteTask }
 
+  const direction = prevView
+    ? VIEW_ORDER.indexOf(view) > VIEW_ORDER.indexOf(prevView) ? 'right' : 'left'
+    : 'right'
+
   return (
     <div className="agents-root">
-      <Sidebar view={view} onView={setView} userName={userName} onUserNameChange={setUserName} />
+      <Sidebar view={view} onView={handleViewChange} userName={userName} onUserNameChange={setUserName} />
 
-      <div className="agents-main" style={{ position: 'relative' }}>
-        {view === 'dashboard' && (
-          <DashboardView {...props} userName={userName} onAdd={handleQuickAdd} />
-        )}
-        {view === 'tasks' && (
-          <TasksView {...props} onOpenNew={openNew} />
-        )}
-        {view === 'calendar' && (
-          <CalendarView {...props} onOpenNew={openNew} />
-        )}
-        {view === 'analytics' && (
-          <AnalyticsView tasks={tasks} />
+      <div className="agents-main">
+        {/* Outgoing view */}
+        {prevView && (
+          <div className={`agents-view-container agents-view-exit-${direction === 'right' ? 'left' : 'right'}`}>
+            {prevView === 'dashboard' && <DashboardView {...props} userName={userName} onAdd={handleQuickAdd} />}
+            {prevView === 'tasks'     && <TasksView {...props} onOpenNew={openNew} />}
+            {prevView === 'calendar'  && <CalendarView {...props} onOpenNew={openNew} />}
+            {prevView === 'analytics' && <AnalyticsView tasks={tasks} />}
+          </div>
         )}
 
-        {view !== 'calendar' && (
-          <VoiceFab onConfirm={handleVoiceConfirm} />
-        )}
+        {/* Incoming view */}
+        <div className={`agents-view-container ${prevView ? `agents-view-enter-${direction}` : ''}`}>
+          {view === 'dashboard' && <DashboardView {...props} userName={userName} onAdd={handleQuickAdd} />}
+          {view === 'tasks'     && <TasksView {...props} onOpenNew={openNew} />}
+          {view === 'calendar'  && <CalendarView {...props} onOpenNew={openNew} />}
+          {view === 'analytics' && <AnalyticsView tasks={tasks} />}
+          {view !== 'calendar'  && <VoiceFab onConfirm={handleVoiceConfirm} />}
+        </div>
       </div>
-
-      <RightPanel tasks={tasks} />
 
       {modalTask !== null && (
         <TaskModal
