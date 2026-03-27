@@ -1,4 +1,4 @@
-import { getToday, getTodayLabel, calcStreak, getDaysRemaining, priorityColor } from '../../src/app/agents/lib/utils'
+import { getToday, getTodayLabel, calcStreak, getDaysRemaining, priorityColor, formatDueLabel } from '../../src/app/agents/lib/utils'
 import type { Task } from '../../src/app/agents/types'
 
 const makeTask = (overrides: Partial<Task> = {}): Task => ({
@@ -71,5 +71,29 @@ describe('priorityColor', () => {
   })
   it('maps none to stone', () => {
     expect(priorityColor('none')).toBe('#BEB9A9')
+  })
+})
+
+describe('formatDueLabel', () => {
+  it('returns empty string for null', () => {
+    expect(formatDueLabel(null)).toBe('')
+  })
+
+  it('returns "Today" for today', () => {
+    expect(formatDueLabel(getToday())).toBe('Today')
+  })
+
+  it('returns "Xd overdue" for past dates', () => {
+    const past = new Date()
+    past.setDate(past.getDate() - 3)
+    const pastStr = `${past.getFullYear()}-${String(past.getMonth()+1).padStart(2,'0')}-${String(past.getDate()).padStart(2,'0')}`
+    expect(formatDueLabel(pastStr)).toBe('3d overdue')
+  })
+
+  it('returns "in Xd" for future dates beyond tomorrow', () => {
+    const future = new Date()
+    future.setDate(future.getDate() + 5)
+    const futureStr = `${future.getFullYear()}-${String(future.getMonth()+1).padStart(2,'0')}-${String(future.getDate()).padStart(2,'0')}`
+    expect(formatDueLabel(futureStr)).toBe('in 5d')
   })
 })

@@ -1,7 +1,8 @@
 import type { Task, Priority } from '../types'
 
 export function getToday(): string {
-  return new Date().toISOString().slice(0, 10)
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
 }
 
 export function getTodayLabel(): string {
@@ -11,16 +12,22 @@ export function getTodayLabel(): string {
   return 'Good evening'
 }
 
+function toLocalDate(iso: string): string {
+  const d = new Date(iso)
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+}
+
 export function calcStreak(tasks: Task[]): number {
   const completedDays = new Set(
     tasks
       .filter(t => t.completed && t.completedAt)
-      .map(t => t.completedAt!.slice(0, 10))
+      .map(t => toLocalDate(t.completedAt!))
   )
   let streak = 0
   const cursor = new Date()
+  cursor.setHours(0, 0, 0, 0)
   while (true) {
-    const dateStr = cursor.toISOString().slice(0, 10)
+    const dateStr = toLocalDate(cursor.toISOString())
     if (!completedDays.has(dateStr)) break
     streak++
     cursor.setDate(cursor.getDate() - 1)
@@ -37,7 +44,8 @@ export function getDaysRemaining(dueDate: string | null): number | null {
 }
 
 export function priorityColor(p: Priority): string {
-  return { high: '#ef4444', medium: '#f59e0b', low: '#22c55e', none: '#BEB9A9' }[p]
+  const colors: Record<Priority, string> = { high: '#ef4444', medium: '#f59e0b', low: '#22c55e', none: '#BEB9A9' }
+  return colors[p]
 }
 
 export function formatDueLabel(dueDate: string | null): string {
@@ -46,5 +54,5 @@ export function formatDueLabel(dueDate: string | null): string {
   if (days < 0) return `${Math.abs(days)}d overdue`
   if (days === 0) return 'Today'
   if (days === 1) return 'Tomorrow'
-  return dueDate!
+  return `in ${days}d`
 }
