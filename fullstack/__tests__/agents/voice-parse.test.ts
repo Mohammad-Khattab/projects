@@ -20,7 +20,7 @@ jest.mock('@anthropic-ai/sdk', () => {
 
 describe('parseTranscript', () => {
   it('extracts task fields from transcript', async () => {
-    const { parseTranscript } = await import('../../src/app/api/voice-parse/route')
+    const { parseTranscript } = await import('../../src/app/api/voice-parse/parse')
     const result = await parseTranscript('Tomorrow I have an English assignment I need to do', '2026-03-27')
     expect(result.title).toBe('English assignment')
     expect(result.dueDate).toBe('2026-03-28')
