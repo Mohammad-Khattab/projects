@@ -11,5 +11,18 @@
       "Bash(uvx --refresh voice-mode --help)",
       "Bash(uvx --python 3.12 voice-mode --help)"
     ]
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo SESSION END: Review and update memory/user.md, memory/decisions.md, memory/people.md, memory/preferences.md with anything new from this session."
+          }
+        ]
+      }
+    ]
   }
 }

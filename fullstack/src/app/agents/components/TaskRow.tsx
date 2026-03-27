@@ -1,4 +1,5 @@
 'use client'
+import { useState, useEffect, useRef } from 'react'
 import { priorityColor, formatDueLabel } from '../lib/utils'
 import type { Task } from '../types'
 
@@ -7,11 +8,39 @@ interface Props {
   onToggle: (id: string) => void
   onEdit: (task: Task) => void
   onDelete: (id: string) => void
+  isNew?: boolean
 }
 
-export default function TaskRow({ task, onToggle, onEdit, onDelete }: Props) {
+export default function TaskRow({ task, onToggle, onEdit, onDelete, isNew }: Props) {
+  const [deleting, setDeleting] = useState(false)
+  const [justCompleted, setJustCompleted] = useState(false)
+  const prevCompleted = useRef(task.completed)
+
+  useEffect(() => {
+    if (!prevCompleted.current && task.completed) {
+      setJustCompleted(true)
+      const t = setTimeout(() => setJustCompleted(false), 500)
+      return () => clearTimeout(t)
+    }
+    prevCompleted.current = task.completed
+  }, [task.completed])
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setDeleting(true)
+    setTimeout(() => onDelete(task.id), 320)
+  }
+
+  const classes = [
+    'agents-task-row',
+    task.completed ? 'done' : '',
+    deleting ? 'deleting' : '',
+    justCompleted ? 'agents-just-completed' : '',
+    isNew ? 'agents-task-entering' : '',
+  ].filter(Boolean).join(' ')
+
   return (
-    <div className={`agents-task-row ${task.completed ? 'done' : ''}`}>
+    <div className={classes}>
       <div
         className={`agents-check ${task.completed ? 'checked' : ''}`}
         onClick={e => { e.stopPropagation(); onToggle(task.id) }}
@@ -42,7 +71,7 @@ export default function TaskRow({ task, onToggle, onEdit, onDelete }: Props) {
         >✎</button>
         <button
           className="agents-icon-btn danger"
-          onClick={e => { e.stopPropagation(); onDelete(task.id) }}
+          onClick={handleDelete}
           title="Delete"
         >×</button>
       </div>
