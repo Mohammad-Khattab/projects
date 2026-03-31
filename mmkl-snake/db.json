@@ -1,6 +1,6 @@
 {
-  "lamps": 5282,
-  "equippedSkin": "dark_pulse",
+  "lamps": 5329,
+  "equippedSkin": "rgb_chroma",
   "ownedSkins": [
     "classic_neon",
     "abyssal_blue",
@@ -59,7 +59,7 @@
       "hard": false,
       "highScores": {
         "easy": 200,
-        "medium": 0,
+        "medium": 90,
         "hard": 0
       }
     },
@@ -79,7 +79,7 @@
       "hard": false,
       "highScores": {
         "easy": 130,
-        "medium": 0,
+        "medium": 120,
         "hard": 0
       }
     },
@@ -109,7 +109,7 @@
       "hard": false,
       "highScores": {
         "easy": 0,
-        "medium": 0,
+        "medium": 70,
         "hard": 0
       }
     }

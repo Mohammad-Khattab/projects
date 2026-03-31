@@ -4,13 +4,13 @@ const path = require('path');
 const fs = require('fs');
 
 const app = express();
-const PORT = 3000;
+const PORT = 3004;
 
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-const DB_FILE = path.join(__dirname, 'db.json');
+const DB_FILE = process.env.VERCEL ? '/tmp/db.json' : path.join(__dirname, 'db.json');
 
 function loadDB() { return JSON.parse(fs.readFileSync(DB_FILE, 'utf8')); }
 function saveDB(data) { fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2)); }
@@ -132,4 +132,8 @@ app.post('/api/save-highscore', (req, res) => {
   } catch(e) { res.status(500).json({ error: 'DB error' }); }
 });
 
-app.listen(PORT, () => console.log(`MKLL Snake server → http://localhost:${PORT}`));
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => console.log(`MKLL Snake server → http://localhost:${PORT}`));
+}
+
+module.exports = app;
