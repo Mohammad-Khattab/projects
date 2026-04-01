@@ -9,7 +9,8 @@ import {
 
 /* ── Contact ─────────────────────────────────────────────── */
 const TALABAT_HREF = 'https://www.talabat.com/jordan/restaurant/740221/zghairon-cafe-al-rjoum';
-const IG_HREF      = 'https://www.instagram.com/zghairon_cafe/';
+const IG_HREF      = 'https://www.instagram.com/zghairon_cafe';
+const MAPS_HREF    = 'https://maps.google.com/?q=Zghairon+Cafe+Al-Khalha+Stairs+Downtown+Amman+Jordan';
 const PHONE        = '+962 7 9777 3388';
 
 /* ── Slideshow ───────────────────────────────────────────── */
@@ -21,68 +22,68 @@ const SLIDES = [
   { url: 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2b/08/c2/3f/amazing-place-to-visit.jpg',   pos: 'center center' },
 ];
 
-/* ── Menu data (bilingual, kept as-is) ──────────────────── */
+/* ── Menu data — names always bilingual, descs translate ─── */
 const MENU_DATA = [
   {
     category: 'Hot Drinks', arabic: 'مشروبات ساخنة', Icon: Coffee,
     accent: '#8B5E3C', tint: 'rgba(139,94,60,.07)',
     items: [
-      { name: 'Arabic Coffee',   arabic: 'قهوة عربية',  desc: 'Cardamom-spiced, served with dates',               price: '1.500' },
-      { name: 'Turkish Coffee',  arabic: 'قهوة تركية',  desc: 'Dark roast · your choice of sweetness',            price: '1.500' },
-      { name: 'Espresso',                                desc: 'Single or double shot',                            price: '2.000' },
-      { name: 'Americano',                               desc: 'Espresso with hot water',                          price: '2.000' },
-      { name: 'Cappuccino',                              desc: 'Espresso · steamed milk · foam',                   price: '2.500' },
-      { name: 'Latte',                                   desc: 'Espresso with velvety steamed milk',               price: '2.500' },
-      { name: 'Karak Tea',       arabic: 'شاي كرك',     desc: 'Spiced milk tea, strong and sweet',                price: '1.500' },
-      { name: 'Mint Tea',        arabic: 'شاي نعنع',    desc: 'Fresh mint leaves · black tea base',               price: '1.500' },
-      { name: 'Herbal Tea',      arabic: 'شاي أعشاب',   desc: 'Chamomile, hibiscus, or sage — your pick',         price: '2.000' },
-      { name: 'Sahlab',          arabic: 'سحلب',         desc: 'Warm milk · orchid starch · cinnamon · coconut',  price: '2.500' },
+      { name: 'Arabic Coffee',   arabic: 'قهوة عربية',  desc: 'Cardamom-spiced, served with dates',              descAr: 'بالهيل، تُقدَّم مع التمر',                          price: '1.500' },
+      { name: 'Turkish Coffee',  arabic: 'قهوة تركية',  desc: 'Dark roast · your choice of sweetness',           descAr: 'تحميص غامق · حلاوة حسب الطلب',                     price: '1.500' },
+      { name: 'Espresso',        arabic: 'إسبريسو',     desc: 'Single or double shot',                           descAr: 'شوت مفرد أو مزدوج',                                 price: '2.000' },
+      { name: 'Americano',       arabic: 'أمريكانو',    desc: 'Espresso with hot water',                         descAr: 'إسبريسو مع ماء ساخن',                               price: '2.000' },
+      { name: 'Cappuccino',      arabic: 'كابتشينو',    desc: 'Espresso · steamed milk · foam',                  descAr: 'إسبريسو · حليب مبخر · رغوة',                        price: '2.500' },
+      { name: 'Latte',           arabic: 'لاتيه',       desc: 'Espresso with velvety steamed milk',              descAr: 'إسبريسو مع حليب مخملي مبخر',                        price: '2.500' },
+      { name: 'Karak Tea',       arabic: 'شاي كرك',     desc: 'Spiced milk tea, strong and sweet',               descAr: 'شاي بالحليب والبهارات، قوي وحلو',                   price: '1.500' },
+      { name: 'Mint Tea',        arabic: 'شاي نعنع',    desc: 'Fresh mint leaves · black tea base',              descAr: 'أوراق نعنع طازجة · قاعدة شاي أسود',                 price: '1.500' },
+      { name: 'Herbal Tea',      arabic: 'شاي أعشاب',   desc: 'Chamomile, hibiscus, or sage — your pick',        descAr: 'بابونج، كركديه، أو مرمية — اختيارك',                price: '2.000' },
+      { name: 'Sahlab',          arabic: 'سحلب',         desc: 'Warm milk · orchid starch · cinnamon · coconut', descAr: 'حليب دافئ · نشا السحلب · قرفة · جوز هند',          price: '2.500' },
     ],
   },
   {
     category: 'Cold Drinks', arabic: 'مشروبات باردة', Icon: Droplets,
     accent: '#4A6741', tint: 'rgba(74,103,65,.07)',
     items: [
-      { name: 'Iced Latte',         desc: 'Espresso over ice with milk',               price: '3.000' },
-      { name: 'Cold Brew',          desc: '18h slow-steep · hint of cardamom',         price: '3.000' },
-      { name: 'Fresh Lemonade',     arabic: 'ليموناضة',     desc: 'Squeezed lemon · mint · honey',   price: '2.500' },
-      { name: 'Tamarind',           arabic: 'تمرهندي',       desc: 'House-made · sweet and tangy',    price: '2.000' },
-      { name: 'Jallab',             arabic: 'جلاب',           desc: 'Rose water · grape juice · pine nuts', price: '2.000' },
-      { name: 'Carob Juice',        arabic: 'عصير خروب',     desc: 'Traditional Levantine · served cold', price: '2.000' },
-      { name: 'Fresh Orange Juice', arabic: 'عصير برتقال',   desc: 'Squeezed to order',               price: '2.500' },
+      { name: 'Iced Latte',         arabic: 'آيس لاتيه',    desc: 'Espresso over ice with milk',               descAr: 'إسبريسو على الثلج مع الحليب',              price: '3.000' },
+      { name: 'Cold Brew',          arabic: 'كولد برو',     desc: '18h slow-steep · hint of cardamom',         descAr: 'تخمير بطيء ١٨ ساعة · لمسة هيل',           price: '3.000' },
+      { name: 'Fresh Lemonade',     arabic: 'ليموناضة',     desc: 'Squeezed lemon · mint · honey',             descAr: 'ليمون طازج · نعنع · عسل',                  price: '2.500' },
+      { name: 'Tamarind',           arabic: 'تمرهندي',      desc: 'House-made · sweet and tangy',              descAr: 'منزلي الصنع · حلو وحامض',                  price: '2.000' },
+      { name: 'Jallab',             arabic: 'جلاب',          desc: 'Rose water · grape juice · pine nuts',      descAr: 'ماء ورد · عصير عنب · صنوبر',               price: '2.000' },
+      { name: 'Carob Juice',        arabic: 'عصير خروب',    desc: 'Traditional Levantine · served cold',       descAr: 'تراثي شامي · يُقدَّم بارداً',              price: '2.000' },
+      { name: 'Fresh Orange Juice', arabic: 'عصير برتقال',  desc: 'Squeezed to order',                         descAr: 'يُعصَر عند الطلب',                          price: '2.500' },
     ],
   },
   {
     category: 'Breakfast', arabic: 'فطور', Icon: Sun,
     accent: '#B5891A', tint: 'rgba(181,137,26,.07)',
     items: [
-      { name: 'Labneh Plate',   arabic: 'لبنة',       desc: 'Strained yogurt · olive oil · zaatar · olives', price: '3.000' },
-      { name: 'Hummus',         arabic: 'حمص',         desc: 'Stone-ground · warm olive oil · paprika',       price: '3.000' },
-      { name: 'Foul Mudammas',  arabic: 'فول مدمس',    desc: 'Stewed fava beans · lemon · cumin · herbs',     price: '2.500' },
-      { name: 'Eggs & Zaatar',  arabic: 'بيض وزعتر',   desc: 'Fried eggs · wild zaatar butter · bread',       price: '3.500' },
-      { name: 'Full Breakfast', arabic: 'فطور كامل',   desc: 'Labneh · hummus · eggs · olives · bread · tea', price: '5.500' },
+      { name: 'Labneh Plate',   arabic: 'لبنة',        desc: 'Strained yogurt · olive oil · zaatar · olives', descAr: 'لبنة مصفاة · زيت زيتون · زعتر · زيتون',            price: '3.000' },
+      { name: 'Hummus',         arabic: 'حمص',          desc: 'Stone-ground · warm olive oil · paprika',       descAr: 'مطحون على الحجر · زيت زيتون دافئ · فلفل حلو',      price: '3.000' },
+      { name: 'Foul Mudammas',  arabic: 'فول مدمس',    desc: 'Stewed fava beans · lemon · cumin · herbs',     descAr: 'فول مطبوخ · ليمون · كمون · أعشاب',                  price: '2.500' },
+      { name: 'Eggs & Zaatar',  arabic: 'بيض وزعتر',   desc: 'Fried eggs · wild zaatar butter · bread',       descAr: 'بيض مقلي · زبدة زعتر بري · خبز',                   price: '3.500' },
+      { name: 'Full Breakfast', arabic: 'فطور كامل',   desc: 'Labneh · hummus · eggs · olives · bread · tea', descAr: 'لبنة · حمص · بيض · زيتون · خبز · شاي',             price: '5.500' },
     ],
   },
   {
     category: 'Bites', arabic: 'وجبات خفيفة', Icon: UtensilsCrossed,
     accent: '#6B4226', tint: 'rgba(107,66,38,.07)',
     items: [
-      { name: 'Zaatar Manakish', arabic: 'مناقيش زعتر', desc: 'Freshly baked flatbread · wild zaatar',       price: '2.000' },
-      { name: 'Cheese Manakish', arabic: 'مناقيش جبنة', desc: 'Akkawi cheese · nigella seeds',               price: '2.500' },
-      { name: 'Halloumi Toast',                          desc: 'Sourdough · grilled halloumi · tomato jam',   price: '3.750' },
-      { name: 'Chicken Wrap',    arabic: 'لفة دجاج',    desc: 'Grilled chicken · garlic sauce · pickles',    price: '4.000' },
-      { name: 'Mixed Meze',      arabic: 'مزة مشكلة',   desc: 'Hummus · labneh · olives · veggies · pita',  price: '5.000' },
+      { name: 'Zaatar Manakish', arabic: 'مناقيش زعتر', desc: 'Freshly baked flatbread · wild zaatar',       descAr: 'مناقيش طازجة · زعتر بري',                          price: '2.000' },
+      { name: 'Cheese Manakish', arabic: 'مناقيش جبنة', desc: 'Akkawi cheese · nigella seeds',               descAr: 'جبنة عكاوي · حبة بركة',                            price: '2.500' },
+      { name: 'Halloumi Toast',  arabic: 'توست حلومي',  desc: 'Sourdough · grilled halloumi · tomato jam',   descAr: 'خبز الحامض · حلومي مشوي · مربى طماطم',             price: '3.750' },
+      { name: 'Chicken Wrap',    arabic: 'لفة دجاج',    desc: 'Grilled chicken · garlic sauce · pickles',    descAr: 'دجاج مشوي · صوص ثوم · مخللات',                     price: '4.000' },
+      { name: 'Mixed Meze',      arabic: 'مزة مشكلة',   desc: 'Hummus · labneh · olives · veggies · pita',  descAr: 'حمص · لبنة · زيتون · خضار · خبز عربي',             price: '5.000' },
     ],
   },
   {
     category: 'Sweets', arabic: 'حلويات', Icon: Flame,
     accent: '#9B3510', tint: 'rgba(155,53,16,.07)',
     items: [
-      { name: 'Chocolate Cake', desc: 'Dense fudge cake · dark chocolate ganache',             price: '2.500' },
-      { name: 'Cheesecake',     desc: 'Creamy NY style · seasonal fruit compote',              price: '3.000' },
-      { name: 'Knafeh',         arabic: 'كنافة',  desc: 'Shredded pastry · sweet cheese · orange blossom', price: '2.000' },
-      { name: 'Um Ali',         arabic: 'أم علي', desc: 'Egyptian bread pudding · cream · mixed nuts',     price: '3.000' },
-      { name: 'Baklava',        arabic: 'بقلاوة', desc: 'Filo · pistachios · rose water syrup · 3 pcs',   price: '1.500' },
+      { name: 'Chocolate Cake', arabic: 'كيك شوكولاتة', desc: 'Dense fudge cake · dark chocolate ganache',             descAr: 'كيك فاج كثيف · غاناش شوكولاتة داكنة',            price: '2.500' },
+      { name: 'Cheesecake',     arabic: 'تشيزكيك',      desc: 'Creamy NY style · seasonal fruit compote',              descAr: 'نيويورك ستايل · كومبوت فواكه موسمية',             price: '3.000' },
+      { name: 'Knafeh',         arabic: 'كنافة',         desc: 'Shredded pastry · sweet cheese · orange blossom',       descAr: 'عجينة مبشورة · جبنة حلوة · زهر ليمون',           price: '2.000' },
+      { name: 'Um Ali',         arabic: 'أم علي',        desc: 'Egyptian bread pudding · cream · mixed nuts',           descAr: 'بودينغ خبز مصري · قشطة · مكسرات مشكلة',          price: '3.000' },
+      { name: 'Baklava',        arabic: 'بقلاوة',        desc: 'Filo · pistachios · rose water syrup · 3 pcs',          descAr: 'فيلو · فستق حلبي · شربات ماء ورد · ٣ قطع',       price: '1.500' },
     ],
   },
 ];
@@ -97,7 +98,7 @@ const T = {
       eyebrow: 'Downtown Amman · Al-Balad',
       sub: 'Your cozy escape in Downtown Amman.',
       subsub: 'Art · Coffee · Balad views.',
-      cta1: 'View Menu', cta2: 'Order on Talabat', scroll: 'Scroll',
+      cta1: 'View Menu', scroll: 'Scroll',
     },
     about: {
       eyebrow: 'Our Story',
@@ -125,7 +126,7 @@ const T = {
       eyebrow: 'وسط البلد · عمّان',
       sub: 'ملجأك الدافئ في قلب وسط البلد.',
       subsub: 'فن · قهوة · إطلالة البلد.',
-      cta1: 'اعرض المنيو', cta2: 'اطلب عبر طلبات', scroll: 'تمرير',
+      cta1: 'اعرض المنيو', scroll: 'تمرير',
     },
     about: {
       eyebrow: 'قصتنا',
@@ -219,10 +220,8 @@ const CSS = `
 .zc-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 26px;border-radius:2px;cursor:pointer;font-family:inherit;font-size:.76rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;transition:all .28s ease;white-space:nowrap;}
 .zc-terra{background:#C1440E;color:#F5ECD7;border:1.5px solid #C1440E;}
 .zc-terra:hover{background:#A33A0C;border-color:#A33A0C;transform:translateY(-1px);box-shadow:0 5px 18px rgba(193,68,14,.35);}
-.zc-ghost{background:rgba(255,107,0,.16);color:#fff;border:1.5px solid rgba(255,107,0,.65);}
-.zc-ghost:hover{background:rgba(255,107,0,.3);border-color:#FF6B00;box-shadow:0 0 18px rgba(255,107,0,.22);}
-.zc-talabat{background:#FF6B00;color:#fff;border:none;box-shadow:0 4px 20px rgba(255,107,0,.32);}
-.zc-talabat:hover{background:#e05e00;transform:translateY(-2px);box-shadow:0 8px 28px rgba(255,107,0,.45);}
+.zc-talabat{background:#FF6B00;color:#fff;border:none;box-shadow:0 4px 20px rgba(255,107,0,.4);}
+.zc-talabat:hover{background:#e05e00;transform:translateY(-2px);box-shadow:0 8px 28px rgba(255,107,0,.55);}
 .zc-btn-sm{padding:9px 18px;font-size:.69rem;}
 
 /* ── divider ── */
@@ -260,6 +259,8 @@ const CSS = `
 .zc-footer-grid{display:grid;grid-template-columns:1fr;gap:40px;}
 @media(min-width:640px){.zc-footer-grid{grid-template-columns:repeat(2,1fr);}}
 @media(min-width:1024px){.zc-footer-grid{grid-template-columns:2fr 1.2fr 1.1fr 1.5fr;gap:48px;}}
+.zc-maps-link{transition:color .2s;}
+.zc-maps-link:hover{color:rgba(245,236,215,.85)!important;}
 
 /* ── animations ── */
 @keyframes zc-rise{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
@@ -285,7 +286,11 @@ export default function ZghaironCafe() {
 
   const t = T[lang];
   const isAr = lang === 'ar';
-  const toggleLang = () => setLang(l => l === 'en' ? 'ar' : 'en');
+
+  const toggleLang = () => {
+    setLang(l => l === 'en' ? 'ar' : 'en');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 50);
@@ -356,7 +361,7 @@ export default function ZghaironCafe() {
             ))}
             <LangBtn className={scrolled ? 'on-scroll' : 'on-hero'} />
             <a href={TALABAT_HREF} target="_blank" rel="noopener noreferrer"
-               className={`zc-btn zc-btn-sm ${scrolled ? 'zc-terra' : 'zc-ghost'}`}>
+               className="zc-btn zc-btn-sm zc-talabat">
               <ShoppingBag size={13} /> {t.nav.wa}
             </a>
           </div>
@@ -385,10 +390,10 @@ export default function ZghaironCafe() {
             <span style={{ width:28, height:1, background:'rgba(245,236,215,.3)' }} />
           </div>
 
-          <h1 className="zc-d zc-r1" style={{ fontSize:'clamp(3.8rem,14vw,9.5rem)', fontWeight:300, color:'#F5ECD7', lineHeight:.94, letterSpacing:'-.025em', marginBottom:4, textAlign:'center', width:'100%' }}>
+          <h1 className="zc-d zc-r1" style={{ fontSize:'clamp(3.8rem,14vw,9.5rem)', fontWeight:300, color:'#F5ECD7', lineHeight:.94, letterSpacing:'-.025em', marginBottom:4 }}>
             {isAr ? 'صغيرون' : 'Zghairon'}
           </h1>
-          <p className="zc-d zc-r1" style={{ fontSize:'clamp(3.8rem,14vw,9.5rem)', fontWeight:700, fontStyle: isAr ? 'normal' : 'italic', color:'#E8845A', lineHeight:1, letterSpacing:'-.028em', marginTop:0, marginBottom:36, textAlign:'center', width:'100%' }}>
+          <p className="zc-d zc-r1" style={{ fontSize:'clamp(3.8rem,14vw,9.5rem)', fontWeight:700, fontStyle: isAr ? 'normal' : 'italic', color:'#E8845A', lineHeight:1, letterSpacing:'-.028em', marginBottom:36 }}>
             {isAr ? 'كافيه' : 'Café'}
           </p>
 
@@ -404,9 +409,6 @@ export default function ZghaironCafe() {
             <button onClick={() => goto('menu')} className="zc-btn zc-terra">
               <Coffee size={15} /> {t.hero.cta1}
             </button>
-            <a href={TALABAT_HREF} target="_blank" rel="noopener noreferrer" className="zc-btn zc-ghost">
-              <ShoppingBag size={15} /> {t.hero.cta2}
-            </a>
           </div>
         </div>
 
@@ -516,13 +518,11 @@ export default function ZghaironCafe() {
                       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:10, marginBottom:5 }}>
                         <span className="zc-item-name">
                           {item.name}
-                          {'arabic' in item && item.arabic && (
-                            <span className="zc-item-arabic">{item.arabic}</span>
-                          )}
+                          <span className="zc-item-arabic">{item.arabic}</span>
                         </span>
                         <span className="zc-item-price" style={{ color:accent }}>{item.price}</span>
                       </div>
-                      <p className="zc-item-desc">{item.desc}</p>
+                      <p className="zc-item-desc">{isAr ? item.descAr : item.desc}</p>
                     </div>
                   ))}
                 </div>
@@ -552,12 +552,14 @@ export default function ZghaironCafe() {
                 {t.footer.visitLabel}
               </div>
               <div style={{ display:'flex', flexDirection:'column', gap:13 }}>
-                <div style={{ display:'flex', gap:11, alignItems:'flex-start' }}>
+                <a href={MAPS_HREF} target="_blank" rel="noopener noreferrer"
+                   className="zc-maps-link"
+                   style={{ display:'flex', gap:11, alignItems:'flex-start', color:'rgba(245,236,215,.52)' }}>
                   <MapPin size={14} color="#C1440E" style={{ marginTop:3, flexShrink:0 }} />
-                  <span style={{ fontSize:'.84rem', color:'rgba(245,236,215,.52)', lineHeight:1.65, fontWeight:300 }}>
+                  <span style={{ fontSize:'.84rem', lineHeight:1.65, fontWeight:300 }}>
                     {t.footer.address[0]}<br />{t.footer.address[1]}
                   </span>
-                </div>
+                </a>
                 <div style={{ display:'flex', gap:11, alignItems:'center' }}>
                   <Clock size={14} color="#C1440E" style={{ flexShrink:0 }} />
                   <span style={{ fontSize:'.84rem', color:'rgba(245,236,215,.52)', fontWeight:300 }}>
@@ -576,8 +578,8 @@ export default function ZghaironCafe() {
                 <AtSign size={15} /> zghairon_cafe
               </a>
               <div style={{ marginTop:12 }}>
-                <a href={`tel:${PHONE}`}
-                   style={{ display:'inline-flex', alignItems:'center', gap:10, color:'rgba(245,236,215,.35)', fontSize:'.82rem', fontWeight:300 }}>
+                <a href={`tel:${PHONE}`} dir="ltr"
+                   style={{ display:'inline-flex', alignItems:'center', gap:10, color:'rgba(245,236,215,.35)', fontSize:'.82rem', fontWeight:300, fontFamily:"'DM Sans',sans-serif", unicodeBidi:'embed' }}>
                   {PHONE}
                 </a>
               </div>
@@ -600,13 +602,9 @@ export default function ZghaironCafe() {
 
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:10 }}>
             <span style={{ fontSize:'.7rem', color:'rgba(245,236,215,.18)', fontWeight:300 }}>
-              {(() => {
-                const [year, setYear] = useState('');
-                useEffect(() => setYear(new Date().getFullYear().toString()), []);
-                return isAr
-                  ? `© ${year} صغيرون كافيه · عمّان`
-                  : `© ${year} Zghairon Café · Amman`;
-              })()}
+              {isAr
+                ? `© ${new Date().getFullYear()} صغيرون كافيه · عمّان`
+                : `© ${new Date().getFullYear()} Zghairon Café · Amman`}
             </span>
             <span style={{ fontSize:'.88rem', fontStyle:'italic', color:'rgba(245,236,215,.18)', fontFamily:"'Cairo',sans-serif" }}>
               صغيرون
