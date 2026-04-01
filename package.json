@@ -3,11 +3,17 @@
   "version": "1.0.0",
   "private": true,
   "workspaces": [
-    "fullstack"
+    "fullstack",
+    "zghairon",
+    "telehealth"
   ],
   "scripts": {
     "dev": "npm run dev:fullstack",
     "dev:fullstack": "npm -w fullstack run dev",
+    "dev:zghairon": "npm -w zghairon run dev",
+    "dev:telehealth": "npm -w telehealth run dev",
+    "dev:portfolio": "npm --prefix portfolio run dev",
+    "dev:snake": "node mmkl-snake/server.js",
     "build": "npm -ws run build",
     "lint": "npm -ws run lint"
   },
