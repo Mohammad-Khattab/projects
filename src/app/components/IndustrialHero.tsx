@@ -76,7 +76,7 @@ export function IndustrialHero() {
         />
         
         {/* Main Content Grid - Asymmetric */}
-        <div className="relative z-10 w-full max-w-[1600px] mx-auto px-8 py-32 grid grid-cols-12 gap-12 items-center">
+        <div className="relative z-10 w-full max-w-[1600px] mx-auto px-4 sm:px-8 pt-28 pb-12 lg:py-32 grid grid-cols-12 gap-8 lg:gap-12 items-center">
           {/* Left Column - Large Text */}
           <div className="col-span-12 lg:col-span-7">
             <motion.div
@@ -90,7 +90,7 @@ export function IndustrialHero() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.5 }}
-                  className="text-[5rem] lg:text-[9rem] font-black tracking-[-0.02em]"
+                  className="text-[2.2rem] sm:text-[3.5rem] lg:text-[9rem] font-black tracking-[-0.02em]"
                 >
                   MOHAMMAD
                 </motion.div>
@@ -98,7 +98,7 @@ export function IndustrialHero() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.7 }}
-                  className="text-[5rem] lg:text-[9rem] font-black tracking-[-0.02em] text-[#7F8C8D]"
+                  className="text-[2.2rem] sm:text-[3.5rem] lg:text-[9rem] font-black tracking-[-0.02em] text-[#7F8C8D]"
                 >
                   KHATTAB
                 </motion.div>
@@ -106,12 +106,12 @@ export function IndustrialHero() {
 
               {/* Subtitle with improved spacing */}
               <motion.div
-                className="mb-14"
+                className="mb-6 lg:mb-14"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.9 }}
               >
-                <p className="text-2xl lg:text-3xl text-[#ECF0F1] font-light leading-relaxed max-w-xl">
+                <p className="text-base sm:text-xl lg:text-3xl text-[#ECF0F1] font-light leading-relaxed max-w-xl">
                   {portfolioContent.hero.subtitle}
                 </p>
               </motion.div>
@@ -125,7 +125,7 @@ export function IndustrialHero() {
               >
                 <Button 
                   size="lg"
-                  className="bg-white text-[#2C3E50] hover:bg-[#ECF0F1] px-12 py-8 text-xl font-bold group shadow-2xl"
+                  className="bg-white text-[#2C3E50] hover:bg-[#ECF0F1] px-6 py-4 lg:px-12 lg:py-8 text-base lg:text-xl font-bold group shadow-2xl"
                   onClick={() => document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' })}
                 >
                   View Work
@@ -134,7 +134,7 @@ export function IndustrialHero() {
                 
                 <Button 
                   size="lg"
-                  className="bg-[#34495E] text-white hover:bg-[#2C3E50] px-12 py-8 text-xl font-bold group shadow-2xl border-2 border-white/20"
+                  className="bg-[#34495E] text-white hover:bg-[#2C3E50] px-6 py-4 lg:px-12 lg:py-8 text-base lg:text-xl font-bold group shadow-2xl border-2 border-white/20"
                   onClick={() => {
                     const link = document.createElement('a');
                     link.href = cvFile;
@@ -153,13 +153,13 @@ export function IndustrialHero() {
           </div>
 
           {/* Right Column - Image and Floating Skills */}
-          <div className="col-span-12 lg:col-span-5 relative h-[650px]">
+          <div className="col-span-12 lg:col-span-5 relative h-[260px] sm:h-[380px] lg:h-[650px]">
             {/* Main Image - Clean Card */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.6, duration: 0.8 }}
-              className="absolute top-8 right-0 w-full max-w-[500px] h-[600px] rounded-2xl overflow-hidden shadow-2xl"
+              className="absolute top-2 lg:top-8 right-0 w-full max-w-[500px] h-full rounded-2xl overflow-hidden shadow-2xl"
               whileHover={{ scale: 1.02 }}
             >
               <ImageWithFallback
@@ -183,7 +183,7 @@ export function IndustrialHero() {
               return (
                 <motion.div
                   key={index}
-                  className="absolute z-20"
+                  className="absolute z-20 hidden lg:block"
                   style={positions[index]}
                   initial={{ opacity: 0, scale: 0 }}
                   animate={{ 

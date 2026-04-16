@@ -25,11 +25,11 @@ export function Expertise() {
         >
           <div className="flex items-center gap-6 mb-4">
             <div className="w-24 h-1 bg-[#2C3E50]" />
-            <h2 className="text-6xl font-black text-[#2C3E50] tracking-tight">
+            <h2 className="text-4xl lg:text-6xl font-black text-[#2C3E50] tracking-tight">
               EXPERTISE
             </h2>
           </div>
-          <p className="text-xl text-[#7F8C8D] ml-[136px] max-w-2xl">
+          <p className="text-base lg:text-xl text-[#7F8C8D] ml-0 lg:ml-[136px] max-w-2xl mt-2">
             Engineering Innovation Through AI & Design
           </p>
         </motion.div>
@@ -45,7 +45,7 @@ export function Expertise() {
             transition={{ duration: 0.6, delay: 0.1 }}
           >
             <Card className="h-full bg-gradient-to-br from-[#2C3E50] to-[#34495E] border-0 shadow-2xl rounded-3xl overflow-hidden group">
-              <div className="relative h-full p-10 flex flex-col">
+              <div className="relative h-full p-5 lg:p-10 flex flex-col">
                 {/* Background Icon */}
                 <div className="absolute top-0 right-0 w-96 h-96 opacity-5 transform translate-x-20 -translate-y-20">
                   {icons[0] && <Factory className="w-full h-full" />}
@@ -57,10 +57,10 @@ export function Expertise() {
                     <div className="w-20 h-20 bg-white/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
                       {icons[0] && <Factory className="w-10 h-10 text-white" />}
                     </div>
-                    <h3 className="text-4xl font-black text-white mb-4">
+                    <h3 className="text-2xl lg:text-4xl font-black text-white mb-3 lg:mb-4">
                       {portfolioContent.expertise[0].title}
                     </h3>
-                    <p className="text-xl text-white/80 leading-relaxed">
+                    <p className="text-base lg:text-xl text-white/80 leading-relaxed">
                       {portfolioContent.expertise[0].description}
                     </p>
                   </div>
@@ -72,7 +72,7 @@ export function Expertise() {
                       {portfolioContent.expertise[0].skills.map((skill, idx) => (
                         <motion.div
                           key={idx}
-                          className="px-6 py-5 bg-white/10 backdrop-blur-sm rounded-2xl text-lg font-bold text-white border-2 border-white/20 hover:bg-white/20 hover:border-white/40 transition-all cursor-default"
+                          className="px-4 py-3 lg:px-6 lg:py-5 bg-white/10 backdrop-blur-sm rounded-2xl text-base lg:text-lg font-bold text-white border-2 border-white/20 hover:bg-white/20 hover:border-white/40 transition-all cursor-default"
                           initial={{ x: -20, opacity: 0 }}
                           whileInView={{ x: 0, opacity: 1 }}
                           viewport={{ once: true }}
@@ -113,7 +113,7 @@ export function Expertise() {
                     <div className="w-16 h-16 bg-[#2C3E50] rounded-2xl flex items-center justify-center mb-4 group-hover:bg-[#34495E] transition-colors duration-500">
                       {icons[1] && <Brain className="w-8 h-8 text-white" />}
                     </div>
-                    <h3 className="text-3xl font-black text-[#2C3E50] mb-3">
+                    <h3 className="text-xl lg:text-3xl font-black text-[#2C3E50] mb-3">
                       {portfolioContent.expertise[1].title}
                     </h3>
                     <p className="text-[#7F8C8D] leading-relaxed">
@@ -165,7 +165,7 @@ export function Expertise() {
                     <div className="w-16 h-16 bg-[#2C3E50] rounded-2xl flex items-center justify-center mb-4 group-hover:rotate-12 transition-transform duration-500">
                       {icons[2] && <Code className="w-8 h-8 text-white" />}
                     </div>
-                    <h3 className="text-3xl font-black text-[#2C3E50] mb-3">
+                    <h3 className="text-xl lg:text-3xl font-black text-[#2C3E50] mb-3">
                       {portfolioContent.expertise[2].title}
                     </h3>
                     <p className="text-[#7F8C8D] leading-relaxed mb-6">

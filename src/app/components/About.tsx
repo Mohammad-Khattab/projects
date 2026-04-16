@@ -34,7 +34,7 @@ export function About() {
   ];
 
   return (
-    <section id="about" ref={containerRef} className="relative py-32 px-4 bg-[#2C3E50] overflow-hidden">
+    <section id="about" ref={containerRef} className="relative py-16 lg:py-32 px-4 bg-[#2C3E50] overflow-hidden">
       {/* Rotating Circle Background */}
       <motion.div
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] border-[2px] border-white/5 rounded-full"
@@ -48,7 +48,7 @@ export function About() {
       <div className="relative max-w-[1600px] mx-auto">
         {/* Header */}
         <motion.div
-          className="text-center mb-24"
+          className="text-center mb-10 lg:mb-24"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: false }}
@@ -59,11 +59,11 @@ export function About() {
             <span className="text-[#7F8C8D] text-sm font-bold uppercase tracking-[0.3em]">Who I Am</span>
             <div className="h-px w-16 bg-[#7F8C8D]" />
           </div>
-          <h2 className="text-6xl lg:text-8xl font-black text-white mb-8 leading-none">
+          <h2 className="text-4xl lg:text-8xl font-black text-white mb-6 lg:mb-8 leading-none">
             ABOUT ME
           </h2>
           <motion.p
-            className="text-xl lg:text-2xl text-[#BDC3C7] max-w-4xl mx-auto leading-relaxed font-light"
+            className="text-base lg:text-2xl text-[#BDC3C7] max-w-4xl mx-auto leading-relaxed font-light"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: false }}
@@ -106,7 +106,7 @@ export function About() {
                     </motion.div>
 
                     {/* Title */}
-                    <h3 className="text-3xl font-black text-white mb-6 leading-tight">
+                    <h3 className="text-2xl lg:text-3xl font-black text-white mb-4 lg:mb-6 leading-tight">
                       {highlight.title}
                     </h3>
 

@@ -27,7 +27,7 @@ export function Footer() {
 
           {/* Quick Links */}
           <motion.nav
-            className="flex items-center gap-8"
+            className="flex flex-wrap justify-center items-center gap-4 md:gap-8"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false }}

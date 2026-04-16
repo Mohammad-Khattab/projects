@@ -18,7 +18,7 @@ export function Contact() {
   };
 
   return (
-    <section id="contact" className="relative py-20 px-4 bg-[#ECF0F1] overflow-hidden">
+    <section id="contact" className="relative py-12 lg:py-20 px-4 bg-[#ECF0F1] overflow-hidden">
       {/* Large Background Text */}
       <div className="absolute top-10 right-0 text-[15rem] font-black text-white/50 leading-none pointer-events-none select-none">
         CONTACT
@@ -37,10 +37,10 @@ export function Contact() {
             <span className="text-[#7F8C8D] text-sm font-bold uppercase tracking-[0.3em]">Let's Connect</span>
             <div className="h-px w-24 bg-[#7F8C8D]" />
           </div>
-          <h2 className="text-6xl lg:text-8xl font-black text-[#2C3E50] leading-none mb-6">
+          <h2 className="text-4xl lg:text-8xl font-black text-[#2C3E50] leading-none mb-4 lg:mb-6">
             GET IN<br />TOUCH
           </h2>
-          <p className="text-xl text-[#7F8C8D] max-w-2xl font-light">
+          <p className="text-base lg:text-xl text-[#7F8C8D] max-w-2xl font-light">
             Have a project in mind or want to collaborate? Drop me a message!
           </p>
         </motion.div>
@@ -55,10 +55,10 @@ export function Contact() {
             viewport={{ once: false }}
             transition={{ duration: 0.6 }}
           >
-            <div className="bg-white rounded-3xl p-10 shadow-xl border-4 border-[#2C3E50]">
+            <div className="bg-white rounded-3xl p-5 lg:p-10 shadow-xl border-4 border-[#2C3E50]">
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Name & Email Row */}
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid sm:grid-cols-2 gap-4 lg:gap-6">
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}

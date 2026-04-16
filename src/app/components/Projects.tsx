@@ -30,7 +30,7 @@ export function Projects() {
       <div className="relative max-w-[1600px] mx-auto">
         {/* Section Header - Right Aligned */}
         <motion.div
-          className="flex flex-col items-end mb-20"
+          className="flex flex-col items-end mb-10 lg:mb-20"
           initial={{ opacity: 0, x: 50 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: false }}
@@ -40,13 +40,13 @@ export function Projects() {
             <div className="h-px w-24 bg-[#7F8C8D]" />
             <span className="text-[#7F8C8D] text-sm font-bold uppercase tracking-[0.3em]">Selected Works</span>
           </div>
-          <h2 className="text-6xl lg:text-8xl font-black text-[#2C3E50] leading-none text-right">
+          <h2 className="text-4xl lg:text-8xl font-black text-[#2C3E50] leading-none text-right">
             FEATURED<br />PROJECTS
           </h2>
         </motion.div>
         
         {/* Magazine Grid - Asymmetric */}
-        <div className="space-y-32">
+        <div className="space-y-16 lg:space-y-32">
           {portfolioContent.projects.map((project, index) => {
             const isEven = index % 2 === 0;
             
@@ -125,7 +125,7 @@ export function Projects() {
 
                   {/* Title */}
                   <motion.h3
-                    className="text-4xl lg:text-5xl font-black text-[#2C3E50] leading-tight"
+                    className="text-2xl lg:text-5xl font-black text-[#2C3E50] leading-tight"
                     initial={{ opacity: 0, x: isEven ? -20 : 20 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: false }}
@@ -181,7 +181,7 @@ export function Projects() {
 
         {/* Call to Action */}
         <motion.div
-          className="mt-32 text-center"
+          className="mt-16 lg:mt-32 text-center"
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: false }}
